@@ -61,10 +61,7 @@ export default function App() {
 function HomePage() {
   return (
     <div className="home-page">
-      <h1 className="text-5xl font-extrabold text-center mt-8 mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent drop-shadow-lg">
-        Welcome to Jubee's World!
-      </h1>
-      <p className="text-center text-xl font-semibold text-foreground/80 mb-4">Let's Learn and Play!</p>
+      <h1 className="text-4xl font-bold text-center mt-8">Welcome to Jubee's World!</h1>
       <div className="grid grid-cols-2 gap-6 p-8">
         <GameCard title="Writing" icon="✏️" path="/write" />
         <GameCard title="Shapes" icon="⭐" path="/shapes" />
@@ -79,8 +76,8 @@ function GameCard({ title, icon, path }: { title: string; icon: string; path: st
 
   return (
     <button onClick={() => { triggerAnimation('excited'); navigate(path) }} className="game-card">
-      <span className="text-7xl mb-3 drop-shadow-lg">{icon}</span>
-      <span className="text-2xl font-bold text-foreground">{title}</span>
+      <span className="text-6xl">{icon}</span>
+      <span className="text-2xl mt-2">{title}</span>
     </button>
   )
 }
