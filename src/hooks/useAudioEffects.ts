@@ -1,11 +1,17 @@
 import { useRef, useCallback } from 'react';
 
+// Extend Window interface to include webkit prefix
+interface WindowWithWebkit extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 export const useAudioEffects = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const windowWithWebkit = window as WindowWithWebkit;
+      audioContextRef.current = new (window.AudioContext || windowWithWebkit.webkitAudioContext || AudioContext)();
     }
     return audioContextRef.current;
   }, []);

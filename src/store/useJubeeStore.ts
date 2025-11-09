@@ -1,13 +1,19 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 
+interface Position {
+  x: number;
+  y: number;
+  z: number;
+}
+
 interface JubeeState {
   gender: 'male' | 'female'
   position: { x: number, y: number, z: number }
   currentAnimation: string
   speechText: string
   setGender: (gender: 'male' | 'female') => void
-  updatePosition: (position: any) => void
+  updatePosition: (position: Position) => void
   triggerAnimation: (animation: string) => void
   speak: (text: string) => void
 }
