@@ -12,9 +12,15 @@ import { LoadingScreen } from './components/LoadingScreen';
 import iconHome from '@/assets/icon-home.png';
 import iconWriting from '@/assets/icon-writing.png';
 import iconShapes from '@/assets/icon-shapes.png';
+import iconProgress from '@/assets/icon-progress.png';
+import iconStickers from '@/assets/icon-stickers.png';
+import iconSettings from '@/assets/icon-settings.png';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
+const ProgressPage = lazy(() => import('./pages/Progress'));
+const StickersPage = lazy(() => import('./pages/Stickers'));
+const SettingsPage = lazy(() => import('./pages/Settings'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +76,9 @@ export default function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/write" element={<WritingCanvas />} />
                   <Route path="/shapes" element={<ShapeSorter />} />
+                  <Route path="/progress" element={<ProgressPage />} />
+                  <Route path="/stickers" element={<StickersPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </Suspense>
             </main>
@@ -109,6 +118,18 @@ function HomePage() {
             icon={iconShapes}
             path="/shapes"
             description="Learn and identify different shapes"
+          />
+          <GameCard 
+            title="My Progress" 
+            icon={iconProgress}
+            path="/progress"
+            description="See your scores, achievements, and learning stats"
+          />
+          <GameCard 
+            title="Sticker Collection" 
+            icon={iconStickers}
+            path="/stickers"
+            description="Collect and unlock colorful stickers and rewards"
           />
         </div>
       </div>
@@ -156,6 +177,9 @@ function Navigation() {
       <TabButton path="/" icon={iconHome} label="Home" />
       <TabButton path="/write" icon={iconWriting} label="Write" />
       <TabButton path="/shapes" icon={iconShapes} label="Shapes" />
+      <TabButton path="/progress" icon={iconProgress} label="Progress" />
+      <TabButton path="/stickers" icon={iconStickers} label="Stickers" />
+      <TabButton path="/settings" icon={iconSettings} label="Settings" />
     </nav>
   );
 }

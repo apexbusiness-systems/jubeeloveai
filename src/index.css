@@ -138,6 +138,7 @@ All colors MUST be HSL.
   @apply fixed bottom-0 left-0 right-0 h-20;
   @apply shadow-2xl rounded-t-3xl;
   @apply flex items-center justify-around;
+  @apply overflow-x-auto;
   z-index: 1000;
   background: var(--gradient-accent);
   border-top: 3px solid hsl(var(--primary));
@@ -147,7 +148,9 @@ All colors MUST be HSL.
   @apply flex flex-col items-center justify-center gap-1;
   @apply transition-all duration-200 hover:scale-110 active:scale-95;
   @apply text-primary;
-  padding: 8px 16px;
+  @apply flex-shrink-0;
+  padding: 8px 12px;
+  min-width: 60px;
 }
 
 .writing-canvas-container {
