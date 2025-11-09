@@ -166,19 +166,19 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
 function Navigation() {
   return (
     <nav className="tab-bar" role="navigation" aria-label="Main navigation">
-      <TabButton path="/" icon={<HomeIcon />} label="Home" />
-      <TabButton path="/write" icon={<PencilIcon />} label="Write" />
-      <TabButton path="/shapes" icon={<StarIcon />} label="Shapes" />
-      <TabButton path="/progress" icon={<TrophyIcon />} label="Progress" />
-      <TabButton path="/stickers" icon={<GiftIcon />} label="Stickers" />
-      <TabButton path="/settings" icon={<GearIcon />} label="Settings" />
+      <TabButton path="/" icon="/src/assets/icon-home.png" label="Home" />
+      <TabButton path="/write" icon="/src/assets/icon-writing.png" label="Write" />
+      <TabButton path="/shapes" icon="/src/assets/icon-shapes.png" label="Shapes" />
+      <TabButton path="/progress" icon="/src/assets/icon-progress.png" label="Progress" />
+      <TabButton path="/stickers" icon="/src/assets/icon-stickers.png" label="Stickers" />
+      <TabButton path="/settings" icon="/src/assets/icon-settings.png" label="Settings" />
     </nav>
   );
 }
 
 interface TabButtonProps {
   path: string;
-  icon: React.ReactNode;
+  icon: string;
   label: string;
 }
 
@@ -196,9 +196,12 @@ function TabButton({ path, icon, label }: TabButtonProps) {
       aria-label={`Navigate to ${label}`}
       aria-current={isActive ? 'page' : undefined}
     >
-      <div className="w-8 h-8 text-primary flex items-center justify-center" aria-hidden="true">
-        {icon}
-      </div>
+      <img 
+        src={icon} 
+        alt="" 
+        className="w-8 h-8 object-contain" 
+        aria-hidden="true"
+      />
       <span className="text-xs font-medium text-primary">{label}</span>
     </button>
   );
