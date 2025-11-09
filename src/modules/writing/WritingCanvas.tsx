@@ -8,7 +8,7 @@ import { toast } from '@/hooks/use-toast';
 import { Eraser, SkipForward, Palette } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 
-const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 
 const colors = [
   { name: 'Red', value: '#ef4444' },
