@@ -15,13 +15,9 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
   const { gender, speechText, updatePosition } = useJubeeStore()
 
   const colors = {
-    male: { primary: '#FFD93D', accent: '#4169E1' },
-    female: { primary: '#FFD93D', accent: '#FF69B4' }
+    male: { primary: 'hsl(45, 100%, 60%)', accent: 'hsl(220, 75%, 55%)' },
+    female: { primary: 'hsl(45, 100%, 60%)', accent: 'hsl(330, 100%, 70%)' }
   }
-
-  useEffect(() => {
-    console.log('Animation:', animation)
-  }, [animation])
 
   useFrame((state) => {
     if (!group.current) return
@@ -45,26 +41,26 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
 
       {/* Eyes */}
       <Sphere args={[0.08, 16, 16]} position={[-0.1, 0.55, 0.25]}>
-        <meshStandardMaterial color="#000000" />
+        <meshStandardMaterial color="hsl(0, 0%, 0%)" />
       </Sphere>
       <Sphere args={[0.08, 16, 16]} position={[0.1, 0.55, 0.25]}>
-        <meshStandardMaterial color="#000000" />
+        <meshStandardMaterial color="hsl(0, 0%, 0%)" />
       </Sphere>
 
       {/* Stripes */}
       <Box args={[0.6, 0.15, 0.5]} position={[0, 0.1, 0]}>
-        <meshStandardMaterial color="#000000" />
+        <meshStandardMaterial color="hsl(0, 0%, 0%)" />
       </Box>
       <Box args={[0.6, 0.15, 0.5]} position={[0, -0.2, 0]}>
-        <meshStandardMaterial color="#000000" />
+        <meshStandardMaterial color="hsl(0, 0%, 0%)" />
       </Box>
 
       {/* Wings */}
       <Box args={[0.3, 0.5, 0.05]} position={[-0.4, 0.2, -0.1]} rotation={[0, 0, 0.3]}>
-        <meshStandardMaterial color="#ffffff" opacity={0.7} transparent />
+        <meshStandardMaterial color="hsl(0, 0%, 100%)" opacity={0.7} transparent />
       </Box>
       <Box args={[0.3, 0.5, 0.05]} position={[0.4, 0.2, -0.1]} rotation={[0, 0, -0.3]}>
-        <meshStandardMaterial color="#ffffff" opacity={0.7} transparent />
+        <meshStandardMaterial color="hsl(0, 0%, 100%)" opacity={0.7} transparent />
       </Box>
 
       {/* Accent bow */}
@@ -74,7 +70,14 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
 
       {/* Speech Bubble */}
       {speechText && (
-        <Text position={[0, 1.5, 0]} fontSize={0.2} color="black" anchorX="center" anchorY="middle" maxWidth={1.5}>
+        <Text 
+          position={[0, 1.5, 0]} 
+          fontSize={0.2} 
+          color="hsl(0, 0%, 0%)" 
+          anchorX="center" 
+          anchorY="middle" 
+          maxWidth={1.5}
+        >
           {speechText}
         </Text>
       )}
