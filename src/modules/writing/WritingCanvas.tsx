@@ -5,7 +5,7 @@ import { SEO } from '../../components/SEO';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
-import { Eraser, SkipForward, Palette } from 'lucide-react';
+import { Eraser, SkipForward, Palette, Download } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
@@ -112,6 +112,27 @@ export default function WritingCanvas() {
     });
   };
 
+  const saveDrawing = () => {
+    playSuccessSound();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `letter-${currentLetter}-${Date.now()}.png`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Drawing saved!",
+        description: "Your letter has been saved as an image.",
+      });
+    });
+  };
+
   const nextLetter = () => {
     playSuccessSound();
     const currentIndex = letters.indexOf(currentLetter);
@@ -204,6 +225,16 @@ export default function WritingCanvas() {
           >
             <Eraser className="mr-2 h-5 w-5" />
             Clear
+          </Button>
+          <Button 
+            onClick={saveDrawing} 
+            variant="secondary"
+            size="lg"
+            className="min-h-[44px] min-w-[44px]"
+            aria-label="Save drawing"
+          >
+            <Download className="mr-2 h-5 w-5" />
+            Save
           </Button>
           <Button 
             onClick={nextLetter} 
