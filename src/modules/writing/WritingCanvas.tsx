@@ -21,15 +21,18 @@ export default function WritingCanvas() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    // Set canvas size to match container
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width || 800;
+    canvas.height = 400;
 
     // Draw guide letter
     ctx.strokeStyle = 'hsl(var(--muted))';
     ctx.lineWidth = 8;
     ctx.font = 'bold 200px Arial';
-    ctx.strokeText(currentLetter, 50, 250);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeText(currentLetter, canvas.width / 2, canvas.height / 2);
   }, [currentLetter]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
@@ -82,7 +85,9 @@ export default function WritingCanvas() {
     ctx.strokeStyle = 'hsl(var(--muted))';
     ctx.lineWidth = 8;
     ctx.font = 'bold 200px Arial';
-    ctx.strokeText(currentLetter, 50, 250);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeText(currentLetter, canvas.width / 2, canvas.height / 2);
 
     toast({
       title: "Canvas cleared",
