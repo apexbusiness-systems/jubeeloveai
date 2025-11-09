@@ -9,7 +9,9 @@ import { useJubeeStore } from './store/useJubeeStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
-import { Home, Edit3, Star } from 'lucide-react';
+import iconHome from '@/assets/icon-home.png';
+import iconWriting from '@/assets/icon-writing.png';
+import iconShapes from '@/assets/icon-shapes.png';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -98,13 +100,13 @@ function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 max-w-4xl mx-auto">
           <GameCard 
             title="Writing Practice" 
-            icon={<Edit3 className="w-16 h-16" />}
+            icon={iconWriting}
             path="/write"
             description="Practice your writing skills with fun drawing activities"
           />
           <GameCard 
             title="Shape Recognition" 
-            icon={<Star className="w-16 h-16" />}
+            icon={iconShapes}
             path="/shapes"
             description="Learn and identify different shapes"
           />
@@ -116,7 +118,7 @@ function HomePage() {
 
 interface GameCardProps {
   title: string;
-  icon: React.ReactNode;
+  icon: string;
   path: string;
   description: string;
 }
@@ -136,9 +138,12 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
       className="game-card group focus:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
       aria-label={`Start ${title} activity`}
     >
-      <div className="text-primary transition-transform group-hover:scale-110" aria-hidden="true">
-        {icon}
-      </div>
+      <img 
+        src={icon} 
+        alt="" 
+        className="w-24 h-24 transition-transform group-hover:scale-110" 
+        aria-hidden="true"
+      />
       <span className="text-2xl md:text-3xl mt-4 font-bold text-foreground">{title}</span>
       <p className="text-sm text-muted-foreground mt-2 px-4">{description}</p>
     </button>
@@ -148,16 +153,16 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
 function Navigation() {
   return (
     <nav className="tab-bar" role="navigation" aria-label="Main navigation">
-      <TabButton path="/" icon={<Home />} label="Home" />
-      <TabButton path="/write" icon={<Edit3 />} label="Write" />
-      <TabButton path="/shapes" icon={<Star />} label="Shapes" />
+      <TabButton path="/" icon={iconHome} label="Home" />
+      <TabButton path="/write" icon={iconWriting} label="Write" />
+      <TabButton path="/shapes" icon={iconShapes} label="Shapes" />
     </nav>
   );
 }
 
 interface TabButtonProps {
   path: string;
-  icon: React.ReactNode;
+  icon: string;
   label: string;
 }
 
@@ -175,9 +180,12 @@ function TabButton({ path, icon, label }: TabButtonProps) {
       aria-label={`Navigate to ${label}`}
       aria-current={isActive ? 'page' : undefined}
     >
-      <div className="w-6 h-6" aria-hidden="true">
-        {icon}
-      </div>
+      <img 
+        src={icon} 
+        alt="" 
+        className="w-8 h-8" 
+        aria-hidden="true"
+      />
       <span className="text-xs font-medium">{label}</span>
     </button>
   );
