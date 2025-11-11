@@ -107,8 +107,8 @@ export default function PatternGame() {
 
   if (!difficulty) {
     return (
-      <div className="pattern-game-menu p-8">
-        <h1 className="text-5xl font-bold text-center mb-8" style={{ color: '#FF4757' }}>
+      <div className="pattern-game-menu p-4 sm:p-6 md:p-8 pt-8">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-8" style={{ color: '#FF4757' }}>
           🎯 Pattern Game! 🎯
         </h1>
         <p className="text-2xl text-center mb-12 text-gray-700">
@@ -163,8 +163,8 @@ export default function PatternGame() {
   }
 
   return (
-    <div className="pattern-game p-8">
-      <div className="game-header mb-8 text-center">
+    <div className="pattern-game p-4 sm:p-6 md:p-8 pt-8">
+      <div className="game-header mb-6 md:mb-8 text-center">
         <h1 className="text-4xl font-bold mb-4" style={{ color: '#FF4757' }}>
           Pattern Game - {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
         </h1>

@@ -230,13 +230,13 @@ export default function WritingCanvas() {
         description="Practice writing letters and numbers with Jubee! Trace characters and improve your handwriting skills through interactive drawing activities."
       />
       <div className="writing-canvas-container">
-        <header>
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-primary">
+        <header className="mb-6">
+          <div className="flex justify-between items-center gap-4 mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2 text-primary leading-tight">
                 Trace the {mode === 'letter' ? 'Letter' : 'Number'}: {currentCharacter}
               </h1>
-              <p className="text-center text-primary mb-4">
+              <p className="text-center text-primary text-sm sm:text-base">
                 Use your finger or mouse to trace the {mode} outline
               </p>
             </div>
@@ -244,15 +244,15 @@ export default function WritingCanvas() {
               onClick={() => navigate('/gallery')}
               variant="outline"
               size="lg"
-              className="min-h-[44px]"
+              className="min-h-[44px] flex-shrink-0"
               aria-label="View gallery"
             >
-              <ImageIcon className="mr-2 h-5 w-5" />
-              Gallery
+              <ImageIcon className="sm:mr-2 h-5 w-5" />
+              <span className="hidden sm:inline">Gallery</span>
             </Button>
           </div>
 
-          <Tabs value={mode} onValueChange={(v) => handleModeChange(v as 'letter' | 'number')} className="w-full max-w-md mx-auto mb-6">
+          <Tabs value={mode} onValueChange={(v) => handleModeChange(v as 'letter' | 'number')} className="w-full max-w-md mx-auto mb-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="letter" className="text-lg">
                 Letters (A-Z)

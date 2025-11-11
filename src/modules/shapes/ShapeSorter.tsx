@@ -65,7 +65,7 @@ export default function ShapeSorter() {
         description="Learn to identify shapes with Jubee! Practice recognizing circles, squares, triangles, and stars through fun interactive games."
       />
       <div className="shape-sorter-container">
-        <header className="mb-8">
+        <header className="mb-8 pt-2">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-primary">
             Find the {targetShape}!
           </h1>

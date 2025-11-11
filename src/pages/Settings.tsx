@@ -44,8 +44,8 @@ export default function SettingsPage() {
         title="Jubee Love - Settings"
         description="Customize your Jubee learning experience with themes, sounds, and preferences."
       />
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <header className="text-center mb-8">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+        <header className="text-center mb-8 pt-4">
           <h1 className="text-4xl md:text-5xl font-bold text-primary mb-2 flex items-center justify-center gap-3">
             <SettingsIcon className="w-10 h-10" />
             Settings

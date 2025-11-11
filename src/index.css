@@ -154,7 +154,8 @@ All colors MUST be HSL.
 }
 
 .writing-canvas-container {
-  @apply max-w-4xl mx-auto;
+  @apply max-w-4xl mx-auto p-6;
+  padding-top: 2rem;
 }
 
 .writing-canvas {
@@ -170,7 +171,8 @@ All colors MUST be HSL.
 }
 
 .shape-sorter-container {
-  @apply max-w-4xl mx-auto;
+  @apply max-w-4xl mx-auto p-6;
+  padding-top: 2rem;
 }
 
 .shapes-grid {

@@ -74,8 +74,8 @@ export default function Gallery() {
         title="Jubee Love - My Gallery"
         description="View all your saved letter and number drawings. Download, share, or delete your artwork."
       />
-      <div className="max-w-6xl mx-auto p-4">
-        <header className="mb-8">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <header className="mb-8 pt-4">
           <div className="flex items-center justify-between mb-4">
             <Button
               onClick={() => navigate('/write')}
