@@ -9,13 +9,12 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  const { triggerAnimation, triggerPageTransition } = useJubeeStore();
+  const { triggerAnimation } = useJubeeStore();
 
   useEffect(() => {
     // Trigger Jubee's transition animation when page changes
-    triggerPageTransition();
     triggerAnimation('pageTransition');
-  }, [location.pathname, triggerAnimation, triggerPageTransition]);
+  }, [location.pathname, triggerAnimation]);
 
   return (
     <AnimatePresence mode="wait">
