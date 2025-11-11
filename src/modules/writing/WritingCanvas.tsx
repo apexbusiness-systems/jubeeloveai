@@ -1,14 +1,19 @@
 import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useJubeeStore } from '../../store/useJubeeStore';
 import { useGameStore } from '../../store/useGameStore';
 import { SEO } from '../../components/SEO';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Eraser, SkipForward, Palette, Download } from 'lucide-react';
+import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
+import { saveDrawing } from '@/types/drawing';
+import confetti from 'canvas-confetti';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 const colors = [
   { name: 'Red', value: '#ef4444' },
@@ -23,12 +28,17 @@ const colors = [
 
 export default function WritingCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mode, setMode] = useState<'letter' | 'number'>('letter');
   const [currentLetter, setCurrentLetter] = useState('A');
+  const [currentNumber, setCurrentNumber] = useState('0');
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawColor, setDrawColor] = useState('#3b82f6');
+  const navigate = useNavigate();
   const { speak, triggerAnimation } = useJubeeStore();
   const { addScore } = useGameStore();
   const { playDrawSound, playClearSound, playSuccessSound } = useAudioEffects();
+
+  const currentCharacter = mode === 'letter' ? currentLetter : currentNumber;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,8 +57,8 @@ export default function WritingCanvas() {
     ctx.font = 'bold 200px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.strokeText(currentLetter, canvas.width / 2, canvas.height / 2);
-  }, [currentLetter]);
+    ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
+  }, [currentCharacter]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
@@ -104,7 +114,7 @@ export default function WritingCanvas() {
     ctx.font = 'bold 200px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.strokeText(currentLetter, canvas.width / 2, canvas.height / 2);
+    ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
 
     toast({
       title: "Canvas cleared",
@@ -112,59 +122,146 @@ export default function WritingCanvas() {
     });
   };
 
-  const saveDrawing = () => {
+  const handleSaveDrawing = () => {
     playSuccessSound();
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = `letter-${currentLetter}-${Date.now()}.png`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
+    const imageData = canvas.toDataURL('image/png');
+    
+    // Save to localStorage via helper function
+    saveDrawing(currentCharacter, mode, imageData);
 
-      toast({
-        title: "Drawing saved!",
-        description: "Your letter has been saved as an image.",
-      });
+    // Also trigger download
+    const link = document.createElement('a');
+    link.download = `${mode}-${currentCharacter}-${Date.now()}.png`;
+    link.href = imageData;
+    link.click();
+
+    toast({
+      title: "Drawing saved!",
+      description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
     });
   };
 
-  const nextLetter = () => {
+  const triggerConfetti = () => {
+    const count = 200;
+    const defaults = {
+      origin: { y: 0.7 },
+      zIndex: 9999,
+    };
+
+    function fire(particleRatio: number, opts: confetti.Options) {
+      confetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio),
+      });
+    }
+
+    fire(0.25, {
+      spread: 26,
+      startVelocity: 55,
+    });
+
+    fire(0.2, {
+      spread: 60,
+    });
+
+    fire(0.35, {
+      spread: 100,
+      decay: 0.91,
+      scalar: 0.8,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 25,
+      decay: 0.92,
+      scalar: 1.2,
+    });
+
+    fire(0.1, {
+      spread: 120,
+      startVelocity: 45,
+    });
+  };
+
+  const nextCharacter = () => {
     playSuccessSound();
-    const currentIndex = letters.indexOf(currentLetter);
-    const nextIndex = (currentIndex + 1) % letters.length;
-    const nextLetterValue = letters[nextIndex];
+    triggerConfetti();
     
-    setCurrentLetter(nextLetterValue);
-    speak(`Great job! Now let's try ${nextLetterValue}!`);
+    if (mode === 'letter') {
+      const currentIndex = letters.indexOf(currentLetter);
+      const nextIndex = (currentIndex + 1) % letters.length;
+      const nextLetterValue = letters[nextIndex];
+      
+      setCurrentLetter(nextLetterValue);
+      speak(`Amazing! Now let's try ${nextLetterValue}!`);
+    } else {
+      const currentIndex = numbers.indexOf(currentNumber);
+      const nextIndex = (currentIndex + 1) % numbers.length;
+      const nextNumberValue = numbers[nextIndex];
+      
+      setCurrentNumber(nextNumberValue);
+      speak(`Fantastic! Now let's try ${nextNumberValue}!`);
+    }
+    
     triggerAnimation('excited');
     addScore(10);
     clearCanvas();
 
     toast({
-      title: "Excellent work!",
-      description: `You earned 10 points! Now try letter ${nextLetterValue}.`,
+      title: "🎉 Excellent work!",
+      description: `You earned 10 points! Keep going!`,
     });
+  };
+
+  const handleModeChange = (newMode: 'letter' | 'number') => {
+    setMode(newMode);
+    clearCanvas();
+    speak(newMode === 'letter' ? `Let's practice letters!` : `Let's practice numbers!`);
   };
 
   return (
     <>
       <SEO 
         title="Jubee Love - Writing Practice"
-        description="Practice writing letters with Jubee! Trace letters and improve your handwriting skills through interactive drawing activities."
+        description="Practice writing letters and numbers with Jubee! Trace characters and improve your handwriting skills through interactive drawing activities."
       />
       <div className="writing-canvas-container">
         <header>
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-primary">
-            Trace the Letter: {currentLetter}
-          </h1>
-          <p className="text-center text-primary mb-4">
-            Use your finger or mouse to trace the letter outline
-          </p>
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-primary">
+                Trace the {mode === 'letter' ? 'Letter' : 'Number'}: {currentCharacter}
+              </h1>
+              <p className="text-center text-primary mb-4">
+                Use your finger or mouse to trace the {mode} outline
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/gallery')}
+              variant="outline"
+              size="lg"
+              className="min-h-[44px]"
+              aria-label="View gallery"
+            >
+              <ImageIcon className="mr-2 h-5 w-5" />
+              Gallery
+            </Button>
+          </div>
+
+          <Tabs value={mode} onValueChange={(v) => handleModeChange(v as 'letter' | 'number')} className="w-full max-w-md mx-auto mb-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="letter" className="text-lg">
+                Letters (A-Z)
+              </TabsTrigger>
+              <TabsTrigger value="number" className="text-lg">
+                Numbers (0-9)
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </header>
         
         <canvas
@@ -177,7 +274,7 @@ export default function WritingCanvas() {
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
-          aria-label={`Writing canvas for tracing letter ${currentLetter}`}
+          aria-label={`Writing canvas for tracing ${mode} ${currentCharacter}`}
           role="img"
         />
 
@@ -227,7 +324,7 @@ export default function WritingCanvas() {
             Clear
           </Button>
           <Button 
-            onClick={saveDrawing} 
+            onClick={handleSaveDrawing} 
             variant="secondary"
             size="lg"
             className="min-h-[44px] min-w-[44px]"
@@ -237,14 +334,14 @@ export default function WritingCanvas() {
             Save
           </Button>
           <Button 
-            onClick={nextLetter} 
+            onClick={nextCharacter} 
             variant="default"
             size="lg"
             className="min-h-[44px] min-w-[44px]"
-            aria-label="Move to next letter"
+            aria-label={`Move to next ${mode}`}
           >
             <SkipForward className="mr-2 h-5 w-5" />
-            Next Letter
+            Next {mode === 'letter' ? 'Letter' : 'Number'}
           </Button>
         </div>
       </div>

@@ -22,7 +22,7 @@ export default function MemoryGame() {
   const [moves, setMoves] = useState(0)
   const [matches, setMatches] = useState(0)
   const { speak, triggerAnimation } = useJubeeStore()
-  const { addPoints } = useGameStore()
+  const { addScore } = useGameStore()
 
   const initializeGame = (level: 'easy' | 'medium' | 'hard') => {
     const emojis = emojiSets[level]
@@ -76,7 +76,7 @@ export default function MemoryGame() {
           ))
           setFlippedCards([])
           setMatches(matches + 1)
-          addPoints(20)
+          addScore(20)
           triggerAnimation('celebrate')
           speak("Great match!")
 
@@ -84,7 +84,7 @@ export default function MemoryGame() {
           const totalPairs = cards.length / 2
           if (matches + 1 === totalPairs) {
             setTimeout(() => {
-              addPoints(100)
+              addScore(100)
               triggerAnimation('celebrate')
               speak("You won! Amazing memory!")
               setTimeout(() => setDifficulty(null), 3000)

@@ -88,7 +88,7 @@ export default function StoryTime() {
   const [selectedStory, setSelectedStory] = useState<typeof stories[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const { speak, triggerAnimation } = useJubeeStore()
-  const { addPoints } = useGameStore()
+  const { addScore } = useGameStore()
 
   const handleStorySelect = (story: typeof stories[0]) => {
     setSelectedStory(story)
@@ -106,7 +106,7 @@ export default function StoryTime() {
       speak(nextPage.narration)
     } else {
       // Story completed
-      addPoints(50)
+      addScore(50)
       triggerAnimation('celebrate')
       speak("Great job reading the story! You earned 50 points!")
       setTimeout(() => {

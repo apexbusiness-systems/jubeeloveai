@@ -24,7 +24,7 @@ export default function PatternGame() {
   const [level, setLevel] = useState(1)
   const [score, setScore] = useState(0)
   const { speak, triggerAnimation } = useJubeeStore()
-  const { addPoints } = useGameStore()
+  const { addScore } = useGameStore()
 
   const speeds = {
     easy: 1000,
@@ -92,7 +92,7 @@ export default function PatternGame() {
       // Correct sequence!
       const points = 30 * level
       setScore(score + points)
-      addPoints(points)
+      addScore(points)
       triggerAnimation('celebrate')
       speak("Perfect! Let's make it harder!")
 

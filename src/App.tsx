@@ -21,6 +21,7 @@ const PatternGame = lazy(() => import('./modules/games/PatternGame'));
 const ProgressPage = lazy(() => import('./pages/Progress'));
 const StickersPage = lazy(() => import('./pages/Stickers'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
+const Gallery = lazy(() => import('./pages/Gallery'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,6 +121,7 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/write" element={<WritingCanvas />} />
+                  <Route path="/gallery" element={<Gallery />} />
                   <Route path="/shapes" element={<ShapeSorter />} />
                   <Route path="/stories" element={<StoryTime />} />
                   <Route path="/games" element={<GamesMenu />} />
