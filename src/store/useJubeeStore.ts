@@ -34,17 +34,57 @@ export const useJubeeStore = create<JubeeState>()(
       }, 2000)
     }),
 
-    speak: (text) => set((state) => {
-      state.speechText = text
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text)
-        utterance.rate = 0.9
-        utterance.pitch = state.gender === 'female' ? 1.2 : 0.9
-        speechSynthesis.speak(utterance)
+    speak: async (text) => {
+      set((state) => { state.speechText = text })
+      
+      try {
+        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            text,
+            gender: useJubeeStore.getState().gender 
+          }),
+        })
+
+        if (response.ok) {
+          const audioBlob = await response.blob()
+          const audioUrl = URL.createObjectURL(audioBlob)
+          const audio = new Audio(audioUrl)
+          
+          audio.onended = () => {
+            URL.revokeObjectURL(audioUrl)
+            set((state) => { state.speechText = '' })
+          }
+          
+          audio.play()
+        } else {
+          // Fallback to browser speech if API fails
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text)
+            utterance.rate = 0.9
+            utterance.pitch = useJubeeStore.getState().gender === 'female' ? 1.2 : 0.9
+            speechSynthesis.speak(utterance)
+          }
+          setTimeout(() => {
+            set((state) => { state.speechText = '' })
+          }, 3000)
+        }
+      } catch (error) {
+        console.error('Speech error:', error)
+        // Fallback to browser speech
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text)
+          utterance.rate = 0.9
+          utterance.pitch = useJubeeStore.getState().gender === 'female' ? 1.2 : 0.9
+          speechSynthesis.speak(utterance)
+        }
+        setTimeout(() => {
+          set((state) => { state.speechText = '' })
+        }, 3000)
       }
-      setTimeout(() => {
-        set((state) => { state.speechText = '' })
-      }, 3000)
-    })
+    }
   }))
 )
