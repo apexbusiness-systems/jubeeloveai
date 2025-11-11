@@ -6,9 +6,11 @@ interface JubeeState {
   position: { x: number, y: number, z: number }
   currentAnimation: string
   speechText: string
+  isTransitioning: boolean
   setGender: (gender: 'male' | 'female') => void
   updatePosition: (position: any) => void
   triggerAnimation: (animation: string) => void
+  triggerPageTransition: () => void
   speak: (text: string) => void
 }
 
@@ -18,6 +20,7 @@ export const useJubeeStore = create<JubeeState>()(
     position: { x: 3, y: -2, z: 0 },
     currentAnimation: 'idle',
     speechText: '',
+    isTransitioning: false,
 
     setGender: (gender) => set((state) => { state.gender = gender }),
 
@@ -33,6 +36,19 @@ export const useJubeeStore = create<JubeeState>()(
         set((state) => { state.currentAnimation = 'idle' })
       }, 2000)
     }),
+
+    triggerPageTransition: () => {
+      set((state) => {
+        state.isTransitioning = true
+        state.currentAnimation = 'pageTransition'
+      })
+      setTimeout(() => {
+        set((state) => {
+          state.isTransitioning = false
+          state.currentAnimation = 'idle'
+        })
+      }, 1200)
+    },
 
     speak: async (text) => {
       set((state) => { state.speechText = text })

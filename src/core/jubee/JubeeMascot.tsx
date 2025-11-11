@@ -58,13 +58,28 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
     // Look at camera
     group.current.lookAt(camera.position)
 
-    // Hovering motion
-    const baseY = position[1]
-    const hoverSpeed = animation === 'excited' ? 3 : 2
-    const hoverAmount = animation === 'excited' ? 0.2 : 0.1
-    group.current.position.y = baseY + Math.sin(time * hoverSpeed) * hoverAmount
+    // Page transition animation - Jubee flies across screen
+    if (animation === 'pageTransition') {
+      const transitionProgress = (time % 1.2) / 1.2 // 1.2 second cycle
+      const flyX = Math.sin(transitionProgress * Math.PI * 2) * 5 // Fly across screen
+      const flyY = position[1] + Math.sin(transitionProgress * Math.PI) * 2 // Arc motion
+      group.current.position.x = flyX
+      group.current.position.y = flyY
+      group.current.position.z = position[2]
+      
+      // Spin while flying
+      group.current.rotation.y = transitionProgress * Math.PI * 4
+    } else {
+      // Normal hovering motion
+      const baseY = position[1]
+      const hoverSpeed = animation === 'excited' ? 3 : 2
+      const hoverAmount = animation === 'excited' ? 0.2 : 0.1
+      group.current.position.y = baseY + Math.sin(time * hoverSpeed) * hoverAmount
+      group.current.position.x = position[0]
+      group.current.position.z = position[2]
+    }
 
-    // Update position
+    // Update position in store
     updatePosition(group.current.position)
 
     // Body wobble
@@ -78,8 +93,8 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
       headRef.current.rotation.z = Math.sin(time * 1.5) * 0.08
     }
 
-    // Wing flapping
-    const wingSpeed = animation === 'excited' ? 15 : animation === 'celebrate' ? 20 : 8
+    // Wing flapping - faster during page transition
+    const wingSpeed = animation === 'pageTransition' ? 25 : animation === 'excited' ? 15 : animation === 'celebrate' ? 20 : 8
     if (leftWingRef.current) {
       leftWingRef.current.rotation.y = Math.sin(time * wingSpeed) * 0.5 + 0.3
     }
@@ -90,7 +105,7 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
     // Celebration spin
     if (animation === 'celebrate') {
       group.current.rotation.y = time * 2
-    } else {
+    } else if (animation !== 'pageTransition') {
       group.current.rotation.y = 0
     }
 

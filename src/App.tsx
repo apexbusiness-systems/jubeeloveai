@@ -12,6 +12,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
 import { JubeePersonalization } from './components/common/JubeePersonalization';
 import { StickerBook } from './components/rewards/StickerBook';
+import { PageTransition } from './components/PageTransition';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -118,19 +119,21 @@ export default function App() {
 
             <main className="main-content" role="main" style={{ paddingTop: '80px' }}>
               <Suspense fallback={<LoadingScreen message="Loading activity" />}>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/write" element={<WritingCanvas />} />
-                  <Route path="/gallery" element={<Gallery />} />
-                  <Route path="/shapes" element={<ShapeSorter />} />
-                  <Route path="/stories" element={<StoryTime />} />
-                  <Route path="/games" element={<GamesMenu />} />
-                  <Route path="/games/memory" element={<MemoryGame />} />
-                  <Route path="/games/pattern" element={<PatternGame />} />
-                  <Route path="/progress" element={<ProgressPage />} />
-                  <Route path="/stickers" element={<StickersPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Routes>
+                <PageTransition>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/write" element={<WritingCanvas />} />
+                    <Route path="/gallery" element={<Gallery />} />
+                    <Route path="/shapes" element={<ShapeSorter />} />
+                    <Route path="/stories" element={<StoryTime />} />
+                    <Route path="/games" element={<GamesMenu />} />
+                    <Route path="/games/memory" element={<MemoryGame />} />
+                    <Route path="/games/pattern" element={<PatternGame />} />
+                    <Route path="/progress" element={<ProgressPage />} />
+                    <Route path="/stickers" element={<StickersPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </PageTransition>
               </Suspense>
             </main>
 
