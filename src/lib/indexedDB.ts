@@ -1,11 +1,20 @@
 /**
- * IndexedDB Service for Offline Storage
- * Provides persistent local storage with fallback to localStorage
+ * IndexedDB Service for Jubee Love
+ * 
+ * Provides offline-first data persistence with Supabase sync capabilities.
+ * Falls back to localStorage if IndexedDB is unavailable.
+ * 
+ * @module indexedDB
+ * @see STORAGE_STRATEGY.md for architecture decisions
  */
 
 const DB_NAME = 'jubee-love-db'
 const DB_VERSION = 1
 
+/**
+ * IndexedDB Schema Definition
+ * Defines all object stores and their data structures
+ */
 interface DBSchema {
   gameProgress: {
     key: string
@@ -63,6 +72,12 @@ interface DBSchema {
   }
 }
 
+/**
+ * IndexedDB Service Class
+ * 
+ * Manages all IndexedDB operations with automatic localStorage fallback.
+ * Provides CRUD operations for all data stores with sync tracking.
+ */
 class IndexedDBService {
   private db: IDBDatabase | null = null
   private dbPromise: Promise<IDBDatabase> | null = null
@@ -73,7 +88,11 @@ class IndexedDBService {
   }
 
   /**
-   * Initialize the database
+   * Initialize the IndexedDB database
+   * Creates object stores if they don't exist
+   * 
+   * @returns Promise resolving to the database instance
+   * @throws {Error} If IndexedDB is not supported or initialization fails
    */
   async init(): Promise<IDBDatabase> {
     if (this.db) return this.db
@@ -132,6 +151,22 @@ class IndexedDBService {
   /**
    * Generic method to add or update data
    */
+  /**
+   * Add or update a record in the specified store
+   * 
+   * @param storeName - Name of the object store
+   * @param data - Data to store (must include id field)
+   * @throws {Error} If operation fails
+   * 
+   * @example
+   * ```typescript
+   * await jubeeDB.put('drawings', {
+   *   id: 'drawing-123',
+   *   imageData: 'data:image/png;base64,...',
+   *   synced: false
+   * });
+   * ```
+   */
   async put<K extends keyof DBSchema>(
     storeName: K,
     data: DBSchema[K]['value']
@@ -155,6 +190,21 @@ class IndexedDBService {
 
   /**
    * Generic method to get data by key
+   */
+  /**
+   * Retrieve a single record by key
+   * 
+   * @param storeName - Name of the object store
+   * @param key - Record identifier
+   * @returns Record data or undefined if not found
+   * 
+   * @example
+   * ```typescript
+   * const drawing = await jubeeDB.get('drawings', 'drawing-123');
+   * if (drawing) {
+   *   console.log('Found drawing:', drawing.title);
+   * }
+   * ```
    */
   async get<K extends keyof DBSchema>(
     storeName: K,
@@ -180,6 +230,18 @@ class IndexedDBService {
   /**
    * Generic method to get all data from a store
    */
+  /**
+   * Retrieve all records from a store
+   * 
+   * @param storeName - Name of the object store
+   * @returns Array of all records in the store
+   * 
+   * @example
+   * ```typescript
+   * const allDrawings = await jubeeDB.getAll('drawings');
+   * console.log(`Found ${allDrawings.length} drawings`);
+   * ```
+   */
   async getAll<K extends keyof DBSchema>(
     storeName: K
   ): Promise<DBSchema[K]['value'][]> {
@@ -202,6 +264,18 @@ class IndexedDBService {
 
   /**
    * Generic method to delete data
+   */
+  /**
+   * Delete a record from the store
+   * 
+   * @param storeName - Name of the object store
+   * @param key - Record identifier to delete
+   * @throws {Error} If deletion fails
+   * 
+   * @example
+   * ```typescript
+   * await jubeeDB.delete('drawings', 'drawing-123');
+   * ```
    */
   async delete<K extends keyof DBSchema>(
     storeName: K,
@@ -227,6 +301,21 @@ class IndexedDBService {
   /**
    * Get unsynced records
    */
+  /**
+   * Get all records that haven't been synced to Supabase
+   * Filters by synced === false
+   * 
+   * @param storeName - Name of the object store
+   * @returns Array of unsynced records
+   * 
+   * @example
+   * ```typescript
+   * const unsyncedDrawings = await jubeeDB.getUnsynced('drawings');
+   * if (unsyncedDrawings.length > 0) {
+   *   console.log(`${unsyncedDrawings.length} drawings need syncing`);
+   * }
+   * ```
+   */
   async getUnsynced<K extends keyof DBSchema>(
     storeName: K
   ): Promise<DBSchema[K]['value'][]> {
@@ -241,6 +330,18 @@ class IndexedDBService {
 
   /**
    * Clear all data from a store
+   */
+  /**
+   * Clear all records from a store
+   * Use with caution - this is destructive
+   * 
+   * @param storeName - Name of the object store to clear
+   * @throws {Error} If clear operation fails
+   * 
+   * @example
+   * ```typescript
+   * await jubeeDB.clear('drawings'); // Removes all drawings
+   * ```
    */
   async clear<K extends keyof DBSchema>(storeName: K): Promise<void> {
     try {
@@ -261,6 +362,13 @@ class IndexedDBService {
 
   /**
    * Fallback to localStorage when IndexedDB fails
+   * Provides basic CRUD operations using localStorage
+   * 
+   * @private
+   * @param operation - Type of operation (put, get, getAll, delete)
+   * @param storeName - Name of the store
+   * @param data - Data for the operation
+   * @returns Result of the operation
    */
   private fallbackToLocalStorage(
     operation: string,
@@ -303,5 +411,19 @@ class IndexedDBService {
   }
 }
 
-// Export singleton instance
+/**
+ * Singleton instance of IndexedDBService
+ * Import and use this throughout the application
+ * 
+ * @example
+ * ```typescript
+ * import { jubeeDB } from '@/lib/indexedDB';
+ * 
+ * // Save data
+ * await jubeeDB.put('drawings', drawingData);
+ * 
+ * // Retrieve data
+ * const drawings = await jubeeDB.getAll('drawings');
+ * ```
+ */
 export const jubeeDB = new IndexedDBService()

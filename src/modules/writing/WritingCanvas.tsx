@@ -1,3 +1,18 @@
+/**
+ * Writing Canvas Module
+ * 
+ * Interactive canvas for tracing letters and numbers.
+ * Optimized for touch and mouse input with efficient drawing operations.
+ * 
+ * Performance optimizations:
+ * - Canvas rendering outside React lifecycle
+ * - Async save operations with IndexedDB
+ * - Error boundaries for graceful degradation
+ * - Efficient event handlers with try-catch blocks
+ * 
+ * @component
+ */
+
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJubeeStore } from '../../store/useJubeeStore';

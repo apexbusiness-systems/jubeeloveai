@@ -1,3 +1,18 @@
+/**
+ * JubeeMascot 3D Component
+ * 
+ * The core 3D animated mascot for Jubee Love.
+ * Optimized for 60fps performance with efficient Three.js rendering.
+ * 
+ * Performance optimizations:
+ * - Memoized constants and color values
+ * - Reusable Three.js vector objects
+ * - Efficient geometry with appropriate segment counts
+ * - Conditional rendering for speech bubbles
+ * 
+ * @component
+ */
+
 import { useRef, useEffect, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Text, Sparkles } from '@react-three/drei'

@@ -31,6 +31,7 @@ const SettingsPage = lazy(() => import('./pages/Settings'));
 const Gallery = lazy(() => import('./pages/Gallery'));
 const InstallPage = lazy(() => import('./pages/Install'));
 const ParentalControls = lazy(() => import('./pages/ParentalControls'));
+const PerformanceMonitor = lazy(() => import('./pages/PerformanceMonitor'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -149,6 +150,7 @@ export default function App() {
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/install" element={<InstallPage />} />
                     <Route path="/parental-controls" element={<ParentalControls />} />
+                    <Route path="/performance-monitor" element={<PerformanceMonitor />} />
                   </Routes>
                 </PageTransition>
               </Suspense>

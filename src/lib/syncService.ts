@@ -1,11 +1,19 @@
 /**
- * Sync Service for syncing offline data with Supabase
- * Handles bidirectional sync with conflict resolution
+ * Sync Service for Jubee Love
+ * 
+ * Manages bidirectional synchronization between IndexedDB and Supabase.
+ * Handles automatic sync, conflict resolution, and retry logic.
+ * 
+ * @module syncService
+ * @see STORAGE_STRATEGY.md for sync architecture
  */
 
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from './indexedDB'
 
+/**
+ * Result of a sync operation
+ */
 interface SyncResult {
   success: boolean
   synced: number
@@ -13,19 +21,33 @@ interface SyncResult {
   errors: string[]
 }
 
+/**
+ * Sync Service Class
+ * 
+ * Orchestrates data synchronization between local IndexedDB and Supabase.
+ * Provides automatic syncing, manual sync triggers, and conflict resolution.
+ */
 class SyncService {
   private isSyncing = false
   private syncInterval: NodeJS.Timeout | null = null
 
   /**
    * Check if the browser is online
+   * @returns true if online, false if offline
    */
   isOnline(): boolean {
     return typeof navigator !== 'undefined' && navigator.onLine
   }
 
   /**
-   * Start automatic sync interval
+   * Start automatic synchronization at regular intervals
+   * 
+   * @param intervalMs - Sync interval in milliseconds (default: 1 minute)
+   * 
+   * @example
+   * ```typescript
+   * syncService.startAutoSync(300000); // Sync every 5 minutes
+   * ```
    */
   startAutoSync(intervalMs: number = 60000) {
     if (this.syncInterval) return
@@ -38,7 +60,8 @@ class SyncService {
   }
 
   /**
-   * Stop automatic sync
+   * Stop automatic synchronization
+   * Should be called when component unmounts or app closes
    */
   stopAutoSync() {
     if (this.syncInterval) {
@@ -90,7 +113,8 @@ class SyncService {
   }
 
   /**
-   * Sync game progress
+   * Synchronize game progress from IndexedDB to Supabase
+   * @private
    */
   private async syncGameProgress(): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
@@ -138,7 +162,8 @@ class SyncService {
   }
 
   /**
-   * Sync achievements
+   * Synchronize achievements from IndexedDB to Supabase
+   * @private
    */
   private async syncAchievements(): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
@@ -182,7 +207,8 @@ class SyncService {
   }
 
   /**
-   * Sync drawings
+   * Synchronize drawings from IndexedDB to Supabase
+   * @private
    */
   private async syncDrawings(): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
@@ -226,7 +252,8 @@ class SyncService {
   }
 
   /**
-   * Sync stickers
+   * Synchronize stickers from IndexedDB to Supabase
+   * @private
    */
   private async syncStickers(): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
@@ -270,7 +297,8 @@ class SyncService {
   }
 
   /**
-   * Sync children profiles
+   * Synchronize children profiles from IndexedDB to Supabase
+   * @private
    */
   private async syncChildrenProfiles(): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
@@ -316,6 +344,18 @@ class SyncService {
 
   /**
    * Pull latest data from Supabase to IndexedDB
+   */
+  /**
+   * Pull latest data from Supabase and update local IndexedDB
+   * Server data takes precedence (server wins conflict resolution)
+   * 
+   * @throws {Error} If pull operation fails
+   * 
+   * @example
+   * ```typescript
+   * await syncService.pullFromSupabase();
+   * console.log('Local cache updated with server data');
+   * ```
    */
   async pullFromSupabase(): Promise<void> {
     if (!this.isOnline()) return
