@@ -378,7 +378,6 @@ export const useJubeeStore = create<JubeeState>()(
       name: 'jubee-store',
       partialize: (state) => ({ 
         gender: state.gender, 
-        isVisible: state.isVisible, 
         containerPosition: state.containerPosition 
       })
     }
