@@ -151,12 +151,19 @@ All colors MUST be HSL.
 /* Jubee Love App Styles */
 .jubee-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 200px;
-  height: 200px;
+  bottom: 80px;
+  right: 30px;
+  width: 300px;
+  height: 300px;
   z-index: 9999;
-  pointer-events: none;
+  pointer-events: auto;
+  filter: drop-shadow(0 0 20px hsl(var(--primary) / 0.4));
+  transition: var(--transition-smooth);
+}
+
+.jubee-container:hover {
+  filter: drop-shadow(0 0 30px hsl(var(--primary) / 0.6));
+  transform: scale(1.05);
 }
 
 .main-content {

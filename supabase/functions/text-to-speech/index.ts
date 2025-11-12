@@ -19,17 +19,14 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Voice selection based on gender and optimized for different languages
-    // OpenAI TTS models work well across all these languages
-    let voice = gender === 'female' ? 'shimmer' : 'onyx';
+    // Use highest quality, most natural voices for child-friendly experience
+    // Nova (female) and Echo (male) are warmer and more expressive
+    let voice = gender === 'female' ? 'nova' : 'echo';
     
     // Adjust voice for better clarity in certain languages
-    if (language === 'zh') {
-      // Nova has better Chinese pronunciation
-      voice = gender === 'female' ? 'nova' : 'onyx';
-    } else if (language === 'hi') {
-      // Alloy works well for Hindi
-      voice = gender === 'female' ? 'alloy' : 'onyx';
+    if (language === 'zh' || language === 'hi') {
+      // Alloy is most versatile for non-English
+      voice = 'alloy';
     }
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -39,10 +36,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1',
+        model: 'tts-1-hd', // Higher quality for more natural sound
         input: text,
         voice: voice,
-        speed: 1.1, // Slightly faster for more energetic feel
+        speed: 1.05, // Slightly slower for clearer, warmer delivery
       }),
     });
 

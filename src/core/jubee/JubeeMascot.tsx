@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Text, Sparkles } from '@react-three/drei'
 import { Group, Mesh } from 'three'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import * as THREE from 'three'
@@ -42,8 +42,11 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
   const headRef = useRef<Mesh>(null)
   const leftWingRef = useRef<Mesh>(null)
   const rightWingRef = useRef<Mesh>(null)
+  const leftEyeRef = useRef<Mesh>(null)
+  const rightEyeRef = useRef<Mesh>(null)
   const { camera } = useThree()
   const [isHovered, setIsHovered] = useState(false)
+  const [blinkTime, setBlinkTime] = useState(0)
   const { gender, speechText, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
 
   // Memoize current colors
@@ -67,6 +70,19 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
     if (!group.current) return
 
     const time = state.clock.elapsedTime
+    
+    // Blinking animation - blink every 3-5 seconds
+    if (time - blinkTime > 3 + Math.random() * 2) {
+      setBlinkTime(time)
+    }
+    const isBlinking = time - blinkTime < 0.15
+    
+    // Eye blink scale
+    if (leftEyeRef.current && rightEyeRef.current) {
+      const blinkScale = isBlinking ? 0.1 : 1
+      leftEyeRef.current.scale.y = blinkScale
+      rightEyeRef.current.scale.y = blinkScale
+    }
 
     // Look at camera
     group.current.lookAt(camera.position)
@@ -95,15 +111,19 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
     // Update position in store
     updatePosition(group.current.position)
 
-    // Body wobble
+    // Breathing animation - body scale
     if (bodyRef.current) {
+      const breathe = 1 + Math.sin(time * 1.2) * 0.03
+      bodyRef.current.scale.set(breathe, breathe, breathe)
       bodyRef.current.rotation.z = Math.sin(time * 1.5) * 0.05
     }
 
-    // Head tilt
+    // Head tilt and breathing
     if (headRef.current) {
-      headRef.current.rotation.x = Math.sin(time * 2) * 0.1
-      headRef.current.rotation.z = Math.sin(time * 1.5) * 0.08
+      const breathe = 1 + Math.sin(time * 1.2) * 0.02
+      headRef.current.scale.set(breathe, breathe, breathe)
+      headRef.current.rotation.x = Math.sin(time * 2) * 0.12
+      headRef.current.rotation.z = Math.sin(time * 1.5) * 0.1
     }
 
     // Wing flapping - faster during page transition
@@ -185,38 +205,46 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
         />
       </mesh>
 
-      {/* Eyes - large and expressive */}
+      {/* Eyes - large and expressive with blinking */}
       <group position={[0, 0.65, 0]}>
         {/* Left eye white */}
-        <mesh position={[-0.15, 0.08, 0.28]} castShadow>
-          <sphereGeometry args={[0.12, 16, 16]} />
+        <mesh ref={leftEyeRef} position={[-0.15, 0.08, 0.28]} castShadow>
+          <sphereGeometry args={[0.13, 16, 16]} />
           <meshStandardMaterial color="#FFFFFF" />
         </mesh>
         {/* Left pupil */}
         <mesh position={[-0.15, 0.08, 0.38]} castShadow>
-          <sphereGeometry args={[0.06, 16, 16]} />
+          <sphereGeometry args={[0.07, 16, 16]} />
           <meshStandardMaterial color="#000000" />
         </mesh>
-        {/* Left eye shine */}
-        <mesh position={[-0.13, 0.12, 0.42]} castShadow>
-          <sphereGeometry args={[0.03, 16, 16]} />
+        {/* Left eye shine - multiple for sparkle effect */}
+        <mesh position={[-0.13, 0.13, 0.43]} castShadow>
+          <sphereGeometry args={[0.035, 16, 16]} />
           <meshBasicMaterial color="#FFFFFF" />
+        </mesh>
+        <mesh position={[-0.16, 0.1, 0.42]} castShadow>
+          <sphereGeometry args={[0.02, 16, 16]} />
+          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.7} />
         </mesh>
 
         {/* Right eye white */}
-        <mesh position={[0.15, 0.08, 0.28]} castShadow>
-          <sphereGeometry args={[0.12, 16, 16]} />
+        <mesh ref={rightEyeRef} position={[0.15, 0.08, 0.28]} castShadow>
+          <sphereGeometry args={[0.13, 16, 16]} />
           <meshStandardMaterial color="#FFFFFF" />
         </mesh>
         {/* Right pupil */}
         <mesh position={[0.15, 0.08, 0.38]} castShadow>
-          <sphereGeometry args={[0.06, 16, 16]} />
+          <sphereGeometry args={[0.07, 16, 16]} />
           <meshStandardMaterial color="#000000" />
         </mesh>
-        {/* Right eye shine */}
-        <mesh position={[0.17, 0.12, 0.42]} castShadow>
-          <sphereGeometry args={[0.03, 16, 16]} />
+        {/* Right eye shine - multiple for sparkle effect */}
+        <mesh position={[0.17, 0.13, 0.43]} castShadow>
+          <sphereGeometry args={[0.035, 16, 16]} />
           <meshBasicMaterial color="#FFFFFF" />
+        </mesh>
+        <mesh position={[0.14, 0.1, 0.42]} castShadow>
+          <sphereGeometry args={[0.02, 16, 16]} />
+          <meshBasicMaterial color="#FFFFFF" transparent opacity={0.7} />
         </mesh>
       </group>
 
@@ -364,12 +392,33 @@ export function JubeeMascot({ position = [3, -2, 0], animation = 'idle' }: Jubee
         </group>
       )}
 
-      {/* Ambient glow around Jubee */}
+      {/* Sparkle particles around Jubee */}
+      <Sparkles
+        count={20}
+        scale={2}
+        size={3}
+        speed={0.3}
+        opacity={0.6}
+        color={currentColors.accent}
+      />
+
+      {/* Ambient glow around Jubee - enhanced */}
       <pointLight
         position={[0, 0, 0]}
         color={currentColors.accent}
+        intensity={0.8}
+        distance={3}
+        decay={2}
+      />
+      
+      {/* Spotlight from above for dramatic effect */}
+      <spotLight
+        position={[0, 3, 2]}
+        angle={0.3}
+        penumbra={1}
         intensity={0.5}
-        distance={2}
+        color={currentColors.body}
+        castShadow
       />
     </group>
   )
