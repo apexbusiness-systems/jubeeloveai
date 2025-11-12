@@ -109,19 +109,25 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
   const attemptRecovery = () => {
     recoveryAttemptsRef.current++
     
-    // Recovery strategy 1: Reset to safe default position
+    // Recovery strategy: Reset to guaranteed safe position
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+    const jubeeHeight = 500
+    const jubeeWidth = 450
+    
+    // Calculate a safe position that's definitely visible
     const safePosition = {
-      bottom: Math.max(100, window.innerHeight - 600),
-      right: 40
+      bottom: Math.min(150, viewportHeight - jubeeHeight - 100),
+      right: Math.min(50, viewportWidth - jubeeWidth - 50)
     }
     
     console.log('[Jubee Visibility] Attempting recovery - resetting position to:', safePosition)
     setContainerPosition(safePosition)
     
-    // Recovery strategy 2: Force re-render by toggling visibility flag
+    // Force re-render by toggling visibility flag
     setTimeout(() => {
       if (!stateRef.current.isActuallyVisible) {
-        console.log('[Jubee Visibility] Still not visible, showing recovery UI')
+        console.log('[Jubee Visibility] Still not visible after recovery, showing manual reset UI')
         setNeedsRecovery(true)
       }
     }, 1000)
@@ -131,12 +137,19 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     console.log('[Jubee Visibility] Manual reset triggered')
     recoveryAttemptsRef.current = 0
     
-    // Reset to guaranteed safe position (top-right corner)
+    // Reset to guaranteed safe position with proper bounds
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+    const jubeeHeight = 500
+    const jubeeWidth = 450
+    
+    // Ensure position is safe and visible
     const safePosition = {
-      bottom: window.innerHeight - 550, // Near top
-      right: 40
+      bottom: Math.max(150, Math.min(viewportHeight - jubeeHeight - 100, viewportHeight / 2)),
+      right: Math.max(50, Math.min(viewportWidth - jubeeWidth - 50, 50))
     }
     
+    console.log('[Jubee Visibility] Resetting to safe position:', safePosition)
     setContainerPosition(safePosition)
     setNeedsRecovery(false)
     
