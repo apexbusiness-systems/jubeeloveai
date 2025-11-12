@@ -400,8 +400,8 @@ function useBrowserSpeech(text: string, gender: 'male' | 'female') {
     }
     utterance.lang = langMap[language] || 'en-US'
     
-    utterance.rate = 0.9
-    utterance.pitch = gender === 'female' ? 1.2 : 0.9
+    utterance.rate = 1.1
+    utterance.pitch = gender === 'female' ? 1.3 : 1.0
     speechSynthesis.speak(utterance)
   }
 }

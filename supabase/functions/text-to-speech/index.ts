@@ -19,14 +19,14 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Use highest quality, most natural voices for child-friendly experience
-    // Nova (female) and Echo (male) are warmer and more expressive
-    let voice = gender === 'female' ? 'nova' : 'echo';
+    // Use whimsical, expressive voices for child-friendly, cartoonish experience
+    // Shimmer (female) is playful and animated, Fable is theatrical and expressive
+    let voice = gender === 'female' ? 'shimmer' : 'fable';
     
     // Adjust voice for better clarity in certain languages
     if (language === 'zh' || language === 'hi') {
-      // Alloy is most versatile for non-English
-      voice = 'alloy';
+      // Shimmer works well for non-English too with its playful tone
+      voice = 'shimmer';
     }
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -39,7 +39,7 @@ serve(async (req) => {
         model: 'tts-1-hd', // Higher quality for more natural sound
         input: text,
         voice: voice,
-        speed: 1.05, // Slightly slower for clearer, warmer delivery
+        speed: 1.15, // Slightly faster for more energetic, animated delivery
       }),
     });
 
