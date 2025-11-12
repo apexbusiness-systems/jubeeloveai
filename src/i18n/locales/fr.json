@@ -1,0 +1,221 @@
+{
+  "app": {
+    "title": "Jubee Love",
+    "tagline": "Apprends et joue avec Jubee !"
+  },
+  "nav": {
+    "home": "Accueil",
+    "write": "Écrire",
+    "shapes": "Formes",
+    "progress": "Progrès",
+    "stickers": "Autocollants",
+    "settings": "Paramètres"
+  },
+  "home": {
+    "welcome": "Bienvenue dans le Monde de Jubee !",
+    "subtitle": "Apprends et joue avec Jubee l'abeille amicale ! Choisis une activité ci-dessous pour commencer ton aventure éducative.",
+    "writingPractice": "Pratique de l'Écriture",
+    "writingDesc": "Pratique tes compétences en écriture avec des activités de dessin amusantes",
+    "shapeRecognition": "Reconnaissance des Formes",
+    "shapeDesc": "Apprends et identifie différentes formes",
+    "storyTime": "Heure du Conte",
+    "storyDesc": "Lis des histoires interactives avec Jubee",
+    "games": "Jeux",
+    "gamesDesc": "Joue à des jeux de mémoire et de motifs",
+    "myProgress": "Mes Progrès",
+    "progressDesc": "Vois tes scores, réalisations et statistiques d'apprentissage",
+    "stickerCollection": "Collection d'Autocollants",
+    "stickerDesc": "Collectionne et débloque des autocollants colorés et des récompenses"
+  },
+  "header": {
+    "points": "points",
+    "customize": "Personnaliser",
+    "stickers": "Autocollants"
+  },
+  "progress": {
+    "title": "Mes Progrès",
+    "subtitle": "Continue ton excellent travail ! Voici comment tu te débrouilles.",
+    "totalScore": "Score Total",
+    "totalScoreDesc": "Points gagnés de toutes les activités",
+    "stickersCollected": "Autocollants Collectés",
+    "stickersDesc": "Autocollants uniques gagnés",
+    "completedActivities": "Activités Terminées",
+    "completedDesc": "Activités que tu as maîtrisées",
+    "learningProgress": "Progrès d'Apprentissage",
+    "learningDesc": "Achèvement global",
+    "yourStickers": "Ta Collection d'Autocollants",
+    "amazingWork": "Travail incroyable ! Continue à collectionner !",
+    "completedList": "Activités Terminées",
+    "masteredThese": "Tu as maîtrisé celles-ci !",
+    "yourAchievements": "Tes Réalisations",
+    "achievementsUnlocked": "sur {{total}} réalisations débloquées",
+    "allAchievements": "Toutes"
+  },
+  "achievements": {
+    "earned": "Gagné",
+    "complete": "terminé",
+    "category": {
+      "activity": "Activité",
+      "streak": "Série",
+      "milestone": "Étape",
+      "special": "Spécial"
+    },
+    "streak": {
+      "title": "Série Quotidienne",
+      "days": "jours d'affilée",
+      "day": "jour d'affilée",
+      "startToday": "Commence ta série aujourd'hui !",
+      "greatStart": "Excellent départ ! Reviens demain !",
+      "onFire": "Tu es en feu ! Continue comme ça !",
+      "amazing": "Série incroyable ! Tu es inarrêtable !",
+      "incredible": "Dévouement incroyable !",
+      "legend": "Tu es une légende !",
+      "longest": "Plus Longue Série",
+      "lastActivity": "Dernière activité"
+    },
+    "unlocked": "Réalisation Débloquée !",
+    "amazing": "Incroyable ! Tu as débloqué"
+  },
+  "shapes": {
+    "title": "Reconnaissance des Formes",
+    "find": "Trouve le",
+    "score": "Score",
+    "circle": "Cercle - Une forme ronde sans coins",
+    "square": "Carré - Quatre côtés et coins égaux",
+    "triangle": "Triangle - Trois côtés et coins",
+    "star": "Étoile - Une forme avec des pointes",
+    "great": "Bien joué !",
+    "tryAgain": "Réessaie !",
+    "correct": "C'est la bonne forme !",
+    "incorrect": "Oups ! Ce n'est pas tout à fait ça."
+  },
+  "writing": {
+    "title": "Pratique de l'Écriture",
+    "subtitle": "Trace ou dessine la lettre !",
+    "clear": "Effacer",
+    "save": "Sauvegarder le Dessin",
+    "yourDrawings": "Tes Dessins",
+    "noDrawings": "Pas encore de dessins. Crée ton premier chef-d'œuvre !",
+    "saved": "Dessin sauvegardé !",
+    "saveError": "Échec de la sauvegarde du dessin",
+    "canvasError": "Canvas non disponible"
+  },
+  "games": {
+    "title": "Choisis un Jeu !",
+    "subtitle": "Joue et apprends avec Jubee !",
+    "memory": "Mémoire",
+    "memoryDesc": "Trouve les paires correspondantes !",
+    "pattern": "Jeu de Motifs",
+    "patternDesc": "Répète le motif !",
+    "backHome": "Retour à l'Accueil"
+  },
+  "memory": {
+    "title": "Jeu de Mémoire",
+    "moves": "Mouvements",
+    "matched": "Correspondances",
+    "playAgain": "Rejouer",
+    "wellDone": "Bien joué !",
+    "completed": "Tu as terminé le jeu !",
+    "foundPair": "Super ! Tu as trouvé une paire !",
+    "notMatch": "Pas de correspondance. Continue d'essayer !"
+  },
+  "pattern": {
+    "title": "Jeu de Motifs",
+    "level": "Niveau",
+    "watch": "Regarde le motif !",
+    "yourTurn": "À ton tour !",
+    "playAgain": "Rejouer",
+    "correct": "Correct !",
+    "wrong": "Oups ! Réessaie.",
+    "great": "Bien joué !"
+  },
+  "stories": {
+    "title": "Heure du Conte avec Jubee",
+    "subtitle": "Choisis une histoire à lire ensemble",
+    "beeBusy": "L'Abeille Occupée",
+    "beeDesc": "Suis Jubee dans une journée d'aventure",
+    "garden": "Le Jardin Magique",
+    "gardenDesc": "Découvre les secrets d'un lieu magique",
+    "friends": "Se Faire des Amis",
+    "friendsDesc": "Apprends l'amitié et la gentillesse"
+  },
+  "stickers": {
+    "title": "Collection d'Autocollants",
+    "yourStickers": "Mes Autocollants",
+    "available": "Autocollants Disponibles",
+    "cost": "Chaque autocollant coûte",
+    "currentPoints": "points. Tu as",
+    "buy": "Acheter",
+    "notEnough": "Pas assez de points !",
+    "needMore": "Tu as besoin de {{points}} points de plus.",
+    "alreadyOwn": "Déjà possédé !",
+    "purchased": "Autocollant acheté !",
+    "enjoy": "Profite de ton nouvel autocollant !"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "selectLanguage": "Sélectionne ta Langue",
+    "volume": "Volume",
+    "soundEffects": "Effets Sonores",
+    "voiceNarration": "Narration Vocale",
+    "theme": "Thème",
+    "lightMode": "Mode Clair",
+    "darkMode": "Mode Sombre",
+    "parentalControls": "Contrôles Parentaux",
+    "manageProfiles": "Gérer les profils et paramètres des enfants",
+    "install": "Installer l'Application",
+    "installDesc": "Installer Jubee Love en tant qu'application"
+  },
+  "personalization": {
+    "title": "Personnaliser Jubee",
+    "gender": "Choisir le Genre",
+    "boy": "Garçon",
+    "girl": "Fille",
+    "voiceGender": "Genre de la Voix",
+    "male": "Voix Masculine",
+    "female": "Voix Féminine",
+    "difficulty": "Niveau de Difficulté",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "close": "Fermer"
+  },
+  "parental": {
+    "title": "Contrôles Parentaux",
+    "childProfiles": "Profils d'Enfants",
+    "addChild": "Ajouter un Profil d'Enfant",
+    "security": "Paramètres de Sécurité",
+    "pinProtection": "Protection par PIN",
+    "requirePin": "Exiger un PIN pour Quitter",
+    "setPinFirst": "Veuillez d'abord définir un PIN",
+    "timeLimit": "Limite de Temps Quotidienne par Défaut",
+    "minutes": "minutes",
+    "usageReports": "Rapports d'Utilisation"
+  },
+  "install": {
+    "title": "Installer Jubee Love",
+    "subtitle": "Profite de l'expérience complète de l'application !",
+    "benefits": "Avantages de l'Installation",
+    "offline": "Fonctionne hors ligne",
+    "faster": "Chargement plus rapide",
+    "homeScreen": "Accès facile depuis l'écran d'accueil",
+    "fullScreen": "Expérience plein écran",
+    "instructions": "Comment Installer"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Sauvegarder",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "start": "Commencer",
+    "finish": "Terminer"
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "app": {
+    "title": "Jubee Love",
+    "tagline": "与Jubee一起学习和玩耍！"
+  },
+  "nav": {
+    "home": "主页",
+    "write": "写作",
+    "shapes": "形状",
+    "progress": "进度",
+    "stickers": "贴纸",
+    "settings": "设置"
+  },
+  "home": {
+    "welcome": "欢迎来到Jubee的世界！",
+    "subtitle": "与友好的蜜蜂Jubee一起学习和玩耍！选择下面的活动开始你的教育冒险。",
+    "writingPractice": "写作练习",
+    "writingDesc": "通过有趣的绘画活动练习写作技能",
+    "shapeRecognition": "形状识别",
+    "shapeDesc": "学习和识别不同的形状",
+    "storyTime": "故事时间",
+    "storyDesc": "与Jubee一起阅读互动故事",
+    "games": "游戏",
+    "gamesDesc": "玩记忆和图案游戏",
+    "myProgress": "我的进度",
+    "progressDesc": "查看你的分数、成就和学习统计",
+    "stickerCollection": "贴纸收藏",
+    "stickerDesc": "收集和解锁彩色贴纸和奖励"
+  },
+  "header": {
+    "points": "分",
+    "customize": "自定义",
+    "stickers": "贴纸"
+  },
+  "progress": {
+    "title": "我的进度",
+    "subtitle": "继续保持出色的工作！这是你的表现。",
+    "totalScore": "总分",
+    "totalScoreDesc": "从所有活动中获得的积分",
+    "stickersCollected": "收集的贴纸",
+    "stickersDesc": "获得的独特贴纸",
+    "completedActivities": "完成的活动",
+    "completedDesc": "你已掌握的活动",
+    "learningProgress": "学习进度",
+    "learningDesc": "整体完成度",
+    "yourStickers": "你的贴纸收藏",
+    "amazingWork": "做得太棒了！继续收集！",
+    "completedList": "完成的活动",
+    "masteredThese": "你已经掌握了这些！",
+    "yourAchievements": "你的成就",
+    "achievementsUnlocked": "已解锁{{total}}个成就中的",
+    "allAchievements": "全部"
+  },
+  "achievements": {
+    "earned": "已获得",
+    "complete": "完成",
+    "category": {
+      "activity": "活动",
+      "streak": "连续",
+      "milestone": "里程碑",
+      "special": "特殊"
+    },
+    "streak": {
+      "title": "每日连续",
+      "days": "天连续",
+      "day": "天连续",
+      "startToday": "今天开始你的连续！",
+      "greatStart": "很好的开始！明天再来！",
+      "onFire": "你太棒了！继续保持！",
+      "amazing": "惊人的连续！你势不可挡！",
+      "incredible": "令人难以置信的奉献！",
+      "legend": "你是传奇！",
+      "longest": "最长连续",
+      "lastActivity": "最后活动"
+    },
+    "unlocked": "成就解锁！",
+    "amazing": "太棒了！你解锁了"
+  },
+  "shapes": {
+    "title": "形状识别",
+    "find": "找到",
+    "score": "分数",
+    "circle": "圆形 - 没有角的圆形",
+    "square": "正方形 - 四条相等的边和角",
+    "triangle": "三角形 - 三条边和角",
+    "star": "星形 - 有尖角的形状",
+    "great": "做得好！",
+    "tryAgain": "再试一次！",
+    "correct": "那是正确的形状！",
+    "incorrect": "哎呀！那不太对。"
+  },
+  "writing": {
+    "title": "写作练习",
+    "subtitle": "描摹或绘制字母！",
+    "clear": "清除",
+    "save": "保存绘图",
+    "yourDrawings": "你的绘图",
+    "noDrawings": "还没有绘图。创作你的第一件杰作！",
+    "saved": "绘图已保存！",
+    "saveError": "保存绘图失败",
+    "canvasError": "画布不可用"
+  },
+  "games": {
+    "title": "选择游戏！",
+    "subtitle": "与Jubee一起玩耍和学习！",
+    "memory": "记忆匹配",
+    "memoryDesc": "找到匹配的对！",
+    "pattern": "图案游戏",
+    "patternDesc": "重复图案！",
+    "backHome": "返回主页"
+  },
+  "memory": {
+    "title": "记忆游戏",
+    "moves": "移动",
+    "matched": "匹配",
+    "playAgain": "再玩一次",
+    "wellDone": "做得好！",
+    "completed": "你完成了游戏！",
+    "foundPair": "太棒了！你找到了一对！",
+    "notMatch": "不匹配。继续尝试！"
+  },
+  "pattern": {
+    "title": "图案游戏",
+    "level": "级别",
+    "watch": "观看图案！",
+    "yourTurn": "轮到你了！",
+    "playAgain": "再玩一次",
+    "correct": "正确！",
+    "wrong": "哎呀！再试一次。",
+    "great": "做得好！"
+  },
+  "stories": {
+    "title": "与Jubee的故事时间",
+    "subtitle": "选择一个故事一起阅读",
+    "beeBusy": "忙碌的蜜蜂",
+    "beeDesc": "跟随Jubee度过冒险的一天",
+    "garden": "魔法花园",
+    "gardenDesc": "发现一个神奇地方的秘密",
+    "friends": "交朋友",
+    "friendsDesc": "学习友谊和善良"
+  },
+  "stickers": {
+    "title": "贴纸收藏",
+    "yourStickers": "我的贴纸",
+    "available": "可用贴纸",
+    "cost": "每个贴纸花费",
+    "currentPoints": "分。你有",
+    "buy": "购买",
+    "notEnough": "积分不足！",
+    "needMore": "你还需要{{points}}分。",
+    "alreadyOwn": "已拥有！",
+    "purchased": "贴纸已购买！",
+    "enjoy": "享受你的新贴纸！"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "selectLanguage": "选择你的语言",
+    "volume": "音量",
+    "soundEffects": "音效",
+    "voiceNarration": "语音旁白",
+    "theme": "主题",
+    "lightMode": "浅色模式",
+    "darkMode": "深色模式",
+    "parentalControls": "家长控制",
+    "manageProfiles": "管理儿童资料和设置",
+    "install": "安装应用",
+    "installDesc": "将Jubee Love安装为应用"
+  },
+  "personalization": {
+    "title": "自定义Jubee",
+    "gender": "选择性别",
+    "boy": "男孩",
+    "girl": "女孩",
+    "voiceGender": "语音性别",
+    "male": "男声",
+    "female": "女声",
+    "difficulty": "难度级别",
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难",
+    "close": "关闭"
+  },
+  "parental": {
+    "title": "家长控制",
+    "childProfiles": "儿童资料",
+    "addChild": "添加儿童资料",
+    "security": "安全设置",
+    "pinProtection": "PIN保护",
+    "requirePin": "需要PIN退出应用",
+    "setPinFirst": "请先设置PIN",
+    "timeLimit": "默认每日时间限制",
+    "minutes": "分钟",
+    "usageReports": "使用报告"
+  },
+  "install": {
+    "title": "安装Jubee Love",
+    "subtitle": "获得完整的应用体验！",
+    "benefits": "安装的好处",
+    "offline": "离线工作",
+    "faster": "加载更快",
+    "homeScreen": "从主屏幕轻松访问",
+    "fullScreen": "全屏体验",
+    "instructions": "如何安装"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一个",
+    "start": "开始",
+    "finish": "完成"
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "app": {
+    "title": "Jubee Love",
+    "tagline": "Learn and play with Jubee!"
+  },
+  "nav": {
+    "home": "Home",
+    "write": "Write",
+    "shapes": "Shapes",
+    "progress": "Progress",
+    "stickers": "Stickers",
+    "settings": "Settings"
+  },
+  "home": {
+    "welcome": "Welcome to Jubee's World!",
+    "subtitle": "Learn and play with Jubee the friendly bee! Choose an activity below to start your educational adventure.",
+    "writingPractice": "Writing Practice",
+    "writingDesc": "Practice your writing skills with fun drawing activities",
+    "shapeRecognition": "Shape Recognition",
+    "shapeDesc": "Learn and identify different shapes",
+    "storyTime": "Story Time",
+    "storyDesc": "Read interactive stories with Jubee",
+    "games": "Games",
+    "gamesDesc": "Play memory and pattern games",
+    "myProgress": "My Progress",
+    "progressDesc": "See your scores, achievements, and learning stats",
+    "stickerCollection": "Sticker Collection",
+    "stickerDesc": "Collect and unlock colorful stickers and rewards"
+  },
+  "header": {
+    "points": "points",
+    "customize": "Customize",
+    "stickers": "Stickers"
+  },
+  "progress": {
+    "title": "My Progress",
+    "subtitle": "Keep up the great work! Here's how you're doing.",
+    "totalScore": "Total Score",
+    "totalScoreDesc": "Points earned from all activities",
+    "stickersCollected": "Stickers Collected",
+    "stickersDesc": "Unique stickers earned",
+    "completedActivities": "Completed Activities",
+    "completedDesc": "Activities you've mastered",
+    "learningProgress": "Learning Progress",
+    "learningDesc": "Overall completion",
+    "yourStickers": "Your Sticker Collection",
+    "amazingWork": "Amazing work! Keep collecting!",
+    "completedList": "Completed Activities",
+    "masteredThese": "You've mastered these!",
+    "yourAchievements": "Your Achievements",
+    "achievementsUnlocked": "of {{total}} achievements unlocked",
+    "allAchievements": "All"
+  },
+  "achievements": {
+    "earned": "Earned",
+    "complete": "complete",
+    "category": {
+      "activity": "Activity",
+      "streak": "Streak",
+      "milestone": "Milestone",
+      "special": "Special"
+    },
+    "streak": {
+      "title": "Daily Streak",
+      "days": "days in a row",
+      "day": "day in a row",
+      "startToday": "Start your streak today!",
+      "greatStart": "Great start! Come back tomorrow!",
+      "onFire": "You're on fire! Keep it going!",
+      "amazing": "Amazing streak! You're unstoppable!",
+      "incredible": "Incredible dedication!",
+      "legend": "You're a legend!",
+      "longest": "Longest Streak",
+      "lastActivity": "Last activity"
+    },
+    "unlocked": "Achievement Unlocked!",
+    "amazing": "Amazing! You unlocked"
+  },
+  "shapes": {
+    "title": "Shape Recognition",
+    "find": "Find the",
+    "score": "Score",
+    "circle": "Circle - A round shape with no corners",
+    "square": "Square - Four equal sides and corners",
+    "triangle": "Triangle - Three sides and corners",
+    "star": "Star - A shape with pointed tips",
+    "great": "Great job!",
+    "tryAgain": "Try again!",
+    "correct": "That's the correct shape!",
+    "incorrect": "Oops! That's not quite right."
+  },
+  "writing": {
+    "title": "Writing Practice",
+    "subtitle": "Trace or draw the letter!",
+    "clear": "Clear",
+    "save": "Save Drawing",
+    "yourDrawings": "Your Drawings",
+    "noDrawings": "No drawings yet. Create your first masterpiece!",
+    "saved": "Drawing saved!",
+    "saveError": "Failed to save drawing",
+    "canvasError": "Canvas not available"
+  },
+  "games": {
+    "title": "Choose a Game!",
+    "subtitle": "Play and learn with Jubee!",
+    "memory": "Memory Match",
+    "memoryDesc": "Find matching pairs!",
+    "pattern": "Pattern Game",
+    "patternDesc": "Repeat the pattern!",
+    "backHome": "Back to Home"
+  },
+  "memory": {
+    "title": "Memory Match",
+    "moves": "Moves",
+    "matched": "Matched",
+    "playAgain": "Play Again",
+    "wellDone": "Well done!",
+    "completed": "You completed the game!",
+    "foundPair": "Great! You found a pair!",
+    "notMatch": "Not a match. Keep trying!"
+  },
+  "pattern": {
+    "title": "Pattern Game",
+    "level": "Level",
+    "watch": "Watch the pattern!",
+    "yourTurn": "Your turn!",
+    "playAgain": "Play Again",
+    "correct": "Correct!",
+    "wrong": "Oops! Try again.",
+    "great": "Great job!"
+  },
+  "stories": {
+    "title": "Story Time with Jubee",
+    "subtitle": "Choose a story to read together",
+    "beeBusy": "The Busy Bee",
+    "beeDesc": "Follow Jubee on a day of adventure",
+    "garden": "The Magic Garden",
+    "gardenDesc": "Discover the secrets of a magical place",
+    "friends": "Making Friends",
+    "friendsDesc": "Learn about friendship and kindness"
+  },
+  "stickers": {
+    "title": "Sticker Collection",
+    "yourStickers": "My Stickers",
+    "available": "Available Stickers",
+    "cost": "Each sticker costs",
+    "currentPoints": "points. You have",
+    "buy": "Buy",
+    "notEnough": "Not enough points!",
+    "needMore": "You need {{points}} more points.",
+    "alreadyOwn": "Already owned!",
+    "purchased": "Sticker purchased!",
+    "enjoy": "Enjoy your new sticker!"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "selectLanguage": "Select Your Language",
+    "volume": "Volume",
+    "soundEffects": "Sound Effects",
+    "voiceNarration": "Voice Narration",
+    "theme": "Theme",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "parentalControls": "Parental Controls",
+    "manageProfiles": "Manage child profiles and settings",
+    "install": "Install App",
+    "installDesc": "Install Jubee Love as an app"
+  },
+  "personalization": {
+    "title": "Customize Jubee",
+    "gender": "Choose Gender",
+    "boy": "Boy",
+    "girl": "Girl",
+    "voiceGender": "Voice Gender",
+    "male": "Male Voice",
+    "female": "Female Voice",
+    "difficulty": "Difficulty Level",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "close": "Close"
+  },
+  "parental": {
+    "title": "Parental Controls",
+    "childProfiles": "Child Profiles",
+    "addChild": "Add Child Profile",
+    "security": "Security Settings",
+    "pinProtection": "PIN Protection",
+    "requirePin": "Require PIN to Exit App",
+    "setPinFirst": "Please set a PIN first",
+    "timeLimit": "Default Daily Time Limit",
+    "minutes": "minutes",
+    "usageReports": "Usage Reports"
+  },
+  "install": {
+    "title": "Install Jubee Love",
+    "subtitle": "Get the full app experience!",
+    "benefits": "Benefits of Installing",
+    "offline": "Works offline",
+    "faster": "Faster loading",
+    "homeScreen": "Easy access from home screen",
+    "fullScreen": "Full-screen experience",
+    "instructions": "How to Install"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "start": "Start",
+    "finish": "Finish"
+  }
+}

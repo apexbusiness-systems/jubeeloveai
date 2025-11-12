@@ -1,0 +1,221 @@
+{
+  "app": {
+    "title": "Jubee Love",
+    "tagline": "¡Aprende y juega con Jubee!"
+  },
+  "nav": {
+    "home": "Inicio",
+    "write": "Escribir",
+    "shapes": "Formas",
+    "progress": "Progreso",
+    "stickers": "Pegatinas",
+    "settings": "Ajustes"
+  },
+  "home": {
+    "welcome": "¡Bienvenido al Mundo de Jubee!",
+    "subtitle": "¡Aprende y juega con Jubee, la abeja amigable! Elige una actividad para comenzar tu aventura educativa.",
+    "writingPractice": "Práctica de Escritura",
+    "writingDesc": "Practica tus habilidades de escritura con actividades de dibujo divertidas",
+    "shapeRecognition": "Reconocimiento de Formas",
+    "shapeDesc": "Aprende e identifica diferentes formas",
+    "storyTime": "Hora del Cuento",
+    "storyDesc": "Lee historias interactivas con Jubee",
+    "games": "Juegos",
+    "gamesDesc": "Juega juegos de memoria y patrones",
+    "myProgress": "Mi Progreso",
+    "progressDesc": "Ve tus puntuaciones, logros y estadísticas de aprendizaje",
+    "stickerCollection": "Colección de Pegatinas",
+    "stickerDesc": "Colecciona y desbloquea pegatinas coloridas y recompensas"
+  },
+  "header": {
+    "points": "puntos",
+    "customize": "Personalizar",
+    "stickers": "Pegatinas"
+  },
+  "progress": {
+    "title": "Mi Progreso",
+    "subtitle": "¡Sigue con el buen trabajo! Así es como te está yendo.",
+    "totalScore": "Puntuación Total",
+    "totalScoreDesc": "Puntos ganados de todas las actividades",
+    "stickersCollected": "Pegatinas Coleccionadas",
+    "stickersDesc": "Pegatinas únicas ganadas",
+    "completedActivities": "Actividades Completadas",
+    "completedDesc": "Actividades que has dominado",
+    "learningProgress": "Progreso de Aprendizaje",
+    "learningDesc": "Finalización general",
+    "yourStickers": "Tu Colección de Pegatinas",
+    "amazingWork": "¡Trabajo increíble! ¡Sigue coleccionando!",
+    "completedList": "Actividades Completadas",
+    "masteredThese": "¡Has dominado estas!",
+    "yourAchievements": "Tus Logros",
+    "achievementsUnlocked": "de {{total}} logros desbloqueados",
+    "allAchievements": "Todos"
+  },
+  "achievements": {
+    "earned": "Ganado",
+    "complete": "completo",
+    "category": {
+      "activity": "Actividad",
+      "streak": "Racha",
+      "milestone": "Hito",
+      "special": "Especial"
+    },
+    "streak": {
+      "title": "Racha Diaria",
+      "days": "días seguidos",
+      "day": "día seguido",
+      "startToday": "¡Comienza tu racha hoy!",
+      "greatStart": "¡Gran comienzo! ¡Vuelve mañana!",
+      "onFire": "¡Estás en llamas! ¡Sigue así!",
+      "amazing": "¡Racha increíble! ¡Eres imparable!",
+      "incredible": "¡Dedicación increíble!",
+      "legend": "¡Eres una leyenda!",
+      "longest": "Racha Más Larga",
+      "lastActivity": "Última actividad"
+    },
+    "unlocked": "¡Logro Desbloqueado!",
+    "amazing": "¡Increíble! Desbloqueaste"
+  },
+  "shapes": {
+    "title": "Reconocimiento de Formas",
+    "find": "Encuentra el",
+    "score": "Puntuación",
+    "circle": "Círculo - Una forma redonda sin esquinas",
+    "square": "Cuadrado - Cuatro lados y esquinas iguales",
+    "triangle": "Triángulo - Tres lados y esquinas",
+    "star": "Estrella - Una forma con puntas",
+    "great": "¡Buen trabajo!",
+    "tryAgain": "¡Inténtalo de nuevo!",
+    "correct": "¡Esa es la forma correcta!",
+    "incorrect": "¡Ups! Eso no es correcto."
+  },
+  "writing": {
+    "title": "Práctica de Escritura",
+    "subtitle": "¡Traza o dibuja la letra!",
+    "clear": "Limpiar",
+    "save": "Guardar Dibujo",
+    "yourDrawings": "Tus Dibujos",
+    "noDrawings": "Aún no hay dibujos. ¡Crea tu primera obra maestra!",
+    "saved": "¡Dibujo guardado!",
+    "saveError": "Error al guardar el dibujo",
+    "canvasError": "Canvas no disponible"
+  },
+  "games": {
+    "title": "¡Elige un Juego!",
+    "subtitle": "¡Juega y aprende con Jubee!",
+    "memory": "Memoria",
+    "memoryDesc": "¡Encuentra pares coincidentes!",
+    "pattern": "Juego de Patrones",
+    "patternDesc": "¡Repite el patrón!",
+    "backHome": "Volver al Inicio"
+  },
+  "memory": {
+    "title": "Juego de Memoria",
+    "moves": "Movimientos",
+    "matched": "Emparejados",
+    "playAgain": "Jugar de Nuevo",
+    "wellDone": "¡Bien hecho!",
+    "completed": "¡Completaste el juego!",
+    "foundPair": "¡Genial! ¡Encontraste un par!",
+    "notMatch": "No coinciden. ¡Sigue intentando!"
+  },
+  "pattern": {
+    "title": "Juego de Patrones",
+    "level": "Nivel",
+    "watch": "¡Mira el patrón!",
+    "yourTurn": "¡Tu turno!",
+    "playAgain": "Jugar de Nuevo",
+    "correct": "¡Correcto!",
+    "wrong": "¡Ups! Inténtalo de nuevo.",
+    "great": "¡Buen trabajo!"
+  },
+  "stories": {
+    "title": "Hora del Cuento con Jubee",
+    "subtitle": "Elige una historia para leer juntos",
+    "beeBusy": "La Abeja Ocupada",
+    "beeDesc": "Sigue a Jubee en un día de aventura",
+    "garden": "El Jardín Mágico",
+    "gardenDesc": "Descubre los secretos de un lugar mágico",
+    "friends": "Haciendo Amigos",
+    "friendsDesc": "Aprende sobre la amistad y la bondad"
+  },
+  "stickers": {
+    "title": "Colección de Pegatinas",
+    "yourStickers": "Mis Pegatinas",
+    "available": "Pegatinas Disponibles",
+    "cost": "Cada pegatina cuesta",
+    "currentPoints": "puntos. Tienes",
+    "buy": "Comprar",
+    "notEnough": "¡No hay suficientes puntos!",
+    "needMore": "Necesitas {{points}} puntos más.",
+    "alreadyOwn": "¡Ya lo tienes!",
+    "purchased": "¡Pegatina comprada!",
+    "enjoy": "¡Disfruta tu nueva pegatina!"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "selectLanguage": "Selecciona tu Idioma",
+    "volume": "Volumen",
+    "soundEffects": "Efectos de Sonido",
+    "voiceNarration": "Narración de Voz",
+    "theme": "Tema",
+    "lightMode": "Modo Claro",
+    "darkMode": "Modo Oscuro",
+    "parentalControls": "Controles Parentales",
+    "manageProfiles": "Administrar perfiles y configuraciones de niños",
+    "install": "Instalar Aplicación",
+    "installDesc": "Instalar Jubee Love como una aplicación"
+  },
+  "personalization": {
+    "title": "Personalizar Jubee",
+    "gender": "Elegir Género",
+    "boy": "Niño",
+    "girl": "Niña",
+    "voiceGender": "Género de Voz",
+    "male": "Voz Masculina",
+    "female": "Voz Femenina",
+    "difficulty": "Nivel de Dificultad",
+    "easy": "Fácil",
+    "medium": "Medio",
+    "hard": "Difícil",
+    "close": "Cerrar"
+  },
+  "parental": {
+    "title": "Controles Parentales",
+    "childProfiles": "Perfiles de Niños",
+    "addChild": "Agregar Perfil de Niño",
+    "security": "Configuración de Seguridad",
+    "pinProtection": "Protección PIN",
+    "requirePin": "Requerir PIN para Salir",
+    "setPinFirst": "Por favor establece un PIN primero",
+    "timeLimit": "Límite de Tiempo Diario Predeterminado",
+    "minutes": "minutos",
+    "usageReports": "Informes de Uso"
+  },
+  "install": {
+    "title": "Instalar Jubee Love",
+    "subtitle": "¡Obtén la experiencia completa de la aplicación!",
+    "benefits": "Beneficios de la Instalación",
+    "offline": "Funciona sin conexión",
+    "faster": "Carga más rápida",
+    "homeScreen": "Acceso fácil desde la pantalla de inicio",
+    "fullScreen": "Experiencia de pantalla completa",
+    "instructions": "Cómo Instalar"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "start": "Comenzar",
+    "finish": "Terminar"
+  }
+}

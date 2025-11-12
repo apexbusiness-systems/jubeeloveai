@@ -12,15 +12,25 @@ serve(async (req) => {
   }
 
   try {
-    const { text, gender } = await req.json();
+    const { text, gender, language = 'en' } = await req.json();
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Use different voices based on gender - both are cartoonish and expressive
-    const voice = gender === 'female' ? 'shimmer' : 'onyx';
+    // Voice selection based on gender and optimized for different languages
+    // OpenAI TTS models work well across all these languages
+    let voice = gender === 'female' ? 'shimmer' : 'onyx';
+    
+    // Adjust voice for better clarity in certain languages
+    if (language === 'zh') {
+      // Nova has better Chinese pronunciation
+      voice = gender === 'female' ? 'nova' : 'onyx';
+    } else if (language === 'hi') {
+      // Alloy works well for Hindi
+      voice = gender === 'female' ? 'alloy' : 'onyx';
+    }
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',

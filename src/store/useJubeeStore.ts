@@ -101,6 +101,8 @@ export const useJubeeStore = create<JubeeState>()(
       }
       
       const gender = useJubeeStore.getState().gender
+      // Get current language from i18n if available
+      const language = (window as any).i18nextLanguage || 'en'
       set((state) => { state.speechText = text })
       
       try {
@@ -109,7 +111,7 @@ export const useJubeeStore = create<JubeeState>()(
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text, gender }),
+          body: JSON.stringify({ text, gender, language }),
         })
 
         if (response.ok) {
@@ -175,8 +177,39 @@ export const useJubeeStore = create<JubeeState>()(
 function useBrowserSpeech(text: string, gender: 'male' | 'female') {
   if ('speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text)
+    
+    // Set language based on i18n
+    const language = (window as any).i18nextLanguage || 'en'
+    const langMap: Record<string, string> = {
+      'en': 'en-US',
+      'es': 'es-ES',
+      'fr': 'fr-FR',
+      'zh': 'zh-CN',
+      'hi': 'hi-IN'
+    }
+    utterance.lang = langMap[language] || 'en-US'
+    
     utterance.rate = 0.9
     utterance.pitch = gender === 'female' ? 1.2 : 0.9
     speechSynthesis.speak(utterance)
+  }
+}
+
+// Expose language for the store
+if (typeof window !== 'undefined') {
+  const updateI18nLanguage = () => {
+    const i18n = (window as any).i18next
+    if (i18n) {
+      (window as any).i18nextLanguage = i18n.language
+    }
+  }
+  
+  // Update on language change
+  if ((window as any).i18next) {
+    (window as any).i18next.on('languageChanged', updateI18nLanguage)
+    updateI18nLanguage()
+  } else {
+    // Retry after a short delay if i18next isn't loaded yet
+    setTimeout(updateI18nLanguage, 100)
   }
 }
