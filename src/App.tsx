@@ -62,16 +62,9 @@ export default function App() {
           <SEO />
           <div className="app" data-theme={currentTheme}>
             {/* Header with score and action buttons */}
-            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-4 bg-gradient-to-r from-yellow-400 to-red-500">
+            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-4" style={{ background: 'var(--gradient-warm)' }}>
               {/* Score display */}
-              <div
-                className="score-display px-6 py-3 rounded-full text-2xl font-bold text-white"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '3px solid white',
-                  boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
-                }}
-              >
+              <div className="score-display px-6 py-3 rounded-full text-2xl font-bold text-primary-foreground bg-primary/20 border-3 border-primary-foreground shadow-lg">
                 ⭐ {score} points
               </div>
 
@@ -79,24 +72,14 @@ export default function App() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowPersonalization(true)}
-                  className="action-button px-5 py-3 rounded-full text-lg font-bold text-white transform hover:scale-105 transition-all"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.3)',
-                    border: '3px solid white',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
-                  }}
+                  className="action-button px-5 py-3 rounded-full text-lg font-bold text-primary-foreground bg-primary-foreground/30 border-3 border-primary-foreground shadow-lg transform hover:scale-105 transition-all"
                   aria-label="Customize Jubee"
                 >
                   🐝 Customize
                 </button>
                 <button
                   onClick={() => setShowStickerBook(true)}
-                  className="action-button px-5 py-3 rounded-full text-lg font-bold text-white transform hover:scale-105 transition-all"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.3)',
-                    border: '3px solid white',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
-                  }}
+                  className="action-button px-5 py-3 rounded-full text-lg font-bold text-primary-foreground bg-primary-foreground/30 border-3 border-primary-foreground shadow-lg transform hover:scale-105 transition-all"
                   aria-label="View Sticker Collection"
                 >
                   📚 Stickers
@@ -248,10 +231,10 @@ function GamesMenu() {
 
   return (
     <div className="games-menu p-8">
-      <h1 className="text-5xl font-bold text-center mb-8" style={{ color: '#FF4757' }}>
+      <h1 className="text-5xl font-bold text-center mb-8 text-game">
         🎮 Choose a Game! 🎮
       </h1>
-      <p className="text-2xl text-center mb-12 text-gray-700">
+      <p className="text-2xl text-center mb-12 text-game-neutral">
         Play and learn with Jubee!
       </p>
 
@@ -261,16 +244,15 @@ function GamesMenu() {
             triggerAnimation('excited');
             navigate('/games/memory');
           }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
           style={{
-            background: 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)',
-            border: '4px solid #FFD93D',
-            boxShadow: '0 8px 20px rgba(255, 71, 87, 0.3)'
+            background: 'var(--gradient-warm)',
+            boxShadow: 'var(--shadow-game)'
           }}
         >
           <div className="text-8xl mb-4">🧠</div>
-          <h2 className="text-3xl font-bold text-white mb-2">Memory Match</h2>
-          <p className="text-xl text-white opacity-90">Find matching pairs!</p>
+          <h2 className="text-3xl font-bold text-primary-foreground mb-2">Memory Match</h2>
+          <p className="text-xl text-primary-foreground opacity-90">Find matching pairs!</p>
         </button>
 
         <button
@@ -278,28 +260,25 @@ function GamesMenu() {
             triggerAnimation('excited');
             navigate('/games/pattern');
           }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
           style={{
-            background: 'linear-gradient(135deg, #FF6348 0%, #FFD93D 100%)',
-            border: '4px solid #FFD93D',
-            boxShadow: '0 8px 20px rgba(255, 217, 61, 0.3)'
+            background: 'var(--gradient-cool)',
+            boxShadow: 'var(--shadow-accent)'
           }}
         >
           <div className="text-8xl mb-4">🎯</div>
-          <h2 className="text-3xl font-bold text-white mb-2">Pattern Game</h2>
-          <p className="text-xl text-white opacity-90">Repeat the pattern!</p>
+          <h2 className="text-3xl font-bold text-primary-foreground mb-2">Pattern Game</h2>
+          <p className="text-xl text-primary-foreground opacity-90">Repeat the pattern!</p>
         </button>
       </div>
 
       <div className="text-center mt-12">
         <button
           onClick={() => navigate('/')}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all border-3 border-border text-game-neutral"
           style={{
-            background: 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)',
-            color: '#4B5563',
-            border: '3px solid #9CA3AF',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'
+            background: 'var(--gradient-neutral)',
+            boxShadow: '0 4px 10px hsl(var(--muted) / 0.3)'
           }}
         >
           ← Back to Home

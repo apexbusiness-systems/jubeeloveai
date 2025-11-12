@@ -47,16 +47,29 @@ export function StickerBook({ onClose }: Props) {
     })
   }, [score, unlockedStickers, addSticker, triggerAnimation, speak])
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryGradient = (category: string) => {
     switch (category) {
       case 'beginner':
-        return { bg: '#FFD93D', border: '#FFC107' }
+        return 'var(--gradient-beginner)'
       case 'intermediate':
-        return { bg: '#FF6348', border: '#FF4757' }
+        return 'var(--gradient-intermediate)'
       case 'expert':
-        return { bg: '#9C27B0', border: '#7B1FA2' }
+        return 'var(--gradient-expert)'
       default:
-        return { bg: '#E5E7EB', border: '#9CA3AF' }
+        return 'var(--gradient-neutral)'
+    }
+  }
+
+  const getCategoryBorder = (category: string) => {
+    switch (category) {
+      case 'beginner':
+        return 'hsl(var(--beginner-border))'
+      case 'intermediate':
+        return 'hsl(var(--intermediate-border))'
+      case 'expert':
+        return 'hsl(var(--expert-border))'
+      default:
+        return 'hsl(var(--border))'
     }
   }
 
@@ -72,20 +85,19 @@ export function StickerBook({ onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-8 max-w-5xl w-full mx-4 my-8"
+        className="bg-card rounded-3xl p-8 max-w-5xl w-full mx-4 my-8 border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
         style={{
-          border: '4px solid #FFD93D',
-          boxShadow: '0 10px 40px rgba(255, 71, 87, 0.3)',
+          boxShadow: 'var(--shadow-elevated)',
           maxHeight: '90vh',
           overflowY: 'auto'
         }}
       >
-        <h2 className="text-4xl font-bold text-center mb-4" style={{ color: '#FF4757' }}>
+        <h2 className="text-4xl font-bold text-center mb-4 text-game">
           📚 Sticker Collection! 📚
         </h2>
 
-        <p className="text-2xl text-center mb-8 text-gray-700">
+        <p className="text-2xl text-center mb-8 text-game-neutral">
           Collect all {stickers.length} stickers! You have {unlockedStickers.length} so far!
         </p>
 
@@ -93,7 +105,7 @@ export function StickerBook({ onClose }: Props) {
           <div key={category} className="mb-8">
             <h3
               className="text-3xl font-bold mb-4 capitalize"
-              style={{ color: getCategoryColor(category).border }}
+              style={{ color: getCategoryBorder(category) }}
             >
               {category} Collection
             </h3>
@@ -101,7 +113,6 @@ export function StickerBook({ onClose }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {categoryStickers.map((sticker) => {
                 const isUnlocked = unlockedStickers.includes(sticker.id)
-                const colors = getCategoryColor(category)
 
                 return (
                   <div
@@ -109,12 +120,12 @@ export function StickerBook({ onClose }: Props) {
                     className="sticker-card p-6 rounded-2xl transform transition-all duration-300"
                     style={{
                       background: isUnlocked
-                        ? `linear-gradient(135deg, ${colors.bg} 0%, ${colors.border} 100%)`
-                        : 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)',
-                      border: `3px solid ${isUnlocked ? colors.border : '#9CA3AF'}`,
+                        ? getCategoryGradient(category)
+                        : 'var(--gradient-neutral)',
+                      border: `3px solid ${isUnlocked ? getCategoryBorder(category) : 'hsl(var(--border))'}`,
                       boxShadow: isUnlocked
-                        ? `0 6px 15px ${colors.border}40`
-                        : '0 4px 10px rgba(0, 0, 0, 0.1)',
+                        ? `0 6px 15px ${getCategoryBorder(category)}40`
+                        : '0 4px 10px hsl(var(--muted) / 0.3)',
                       opacity: isUnlocked ? 1 : 0.5
                     }}
                   >
@@ -123,15 +134,14 @@ export function StickerBook({ onClose }: Props) {
                     </div>
                     <h4
                       className="text-xl font-bold text-center mb-1"
-                      style={{ color: isUnlocked ? 'white' : '#6B7280' }}
+                      style={{ color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }}
                     >
                       {sticker.name}
                     </h4>
                     <p
-                      className="text-sm text-center"
+                      className="text-sm text-center opacity-90"
                       style={{
-                        color: isUnlocked ? 'white' : '#9CA3AF',
-                        opacity: 0.9
+                        color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
                       }}
                     >
                       {isUnlocked ? sticker.description : `${sticker.unlockRequirement} points`}
@@ -146,12 +156,10 @@ export function StickerBook({ onClose }: Props) {
         <div className="text-center mt-8">
           <button
             onClick={onClose}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FFD93D 0%, #FF4757 100%)',
-              color: 'white',
-              border: '3px solid #FFD93D',
-              boxShadow: '0 4px 10px rgba(255, 71, 87, 0.3)'
+              background: 'var(--gradient-warm)',
+              boxShadow: 'var(--shadow-game)'
             }}
           >
             Close

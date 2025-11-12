@@ -16,14 +16,14 @@ const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c'
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 const colors = [
-  { name: 'Red', value: '#ef4444' },
-  { name: 'Orange', value: '#f97316' },
-  { name: 'Yellow', value: '#eab308' },
-  { name: 'Green', value: '#22c55e' },
-  { name: 'Blue', value: '#3b82f6' },
-  { name: 'Purple', value: '#a855f7' },
-  { name: 'Pink', value: '#ec4899' },
-  { name: 'Black', value: '#000000' },
+  { name: 'Red', value: 'hsl(0 85% 60%)' },
+  { name: 'Orange', value: 'hsl(20 95% 55%)' },
+  { name: 'Yellow', value: 'hsl(45 93% 47%)' },
+  { name: 'Green', value: 'hsl(142 71% 45%)' },
+  { name: 'Blue', value: 'hsl(217 91% 60%)' },
+  { name: 'Purple', value: 'hsl(271 81% 56%)' },
+  { name: 'Pink', value: 'hsl(330 81% 60%)' },
+  { name: 'Black', value: 'hsl(0 0% 0%)' },
 ];
 
 export default function WritingCanvas() {
@@ -32,7 +32,7 @@ export default function WritingCanvas() {
   const [currentLetter, setCurrentLetter] = useState('A');
   const [currentNumber, setCurrentNumber] = useState('0');
   const [isDrawing, setIsDrawing] = useState(false);
-  const [drawColor, setDrawColor] = useState('#3b82f6');
+  const [drawColor, setDrawColor] = useState('hsl(217 91% 60%)');
   const navigate = useNavigate();
   const { speak, triggerAnimation } = useJubeeStore();
   const { addScore } = useGameStore();
@@ -41,59 +41,94 @@ export default function WritingCanvas() {
   const currentCharacter = mode === 'letter' ? currentLetter : currentNumber;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        console.warn('Canvas element not found');
+        return;
+      }
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error('Failed to get canvas context');
+        toast({
+          title: "Canvas Error",
+          description: "Unable to initialize drawing canvas.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    // Set canvas size to match container
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width || 800;
-    canvas.height = 400;
+      // Set canvas size to match container
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width || 800;
+      canvas.height = 400;
 
-    // Draw guide letter
-    ctx.strokeStyle = 'hsl(var(--muted))';
-    ctx.lineWidth = 8;
-    ctx.font = 'bold 200px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
-  }, [currentCharacter]);
+      // Draw guide letter
+      ctx.strokeStyle = 'hsl(var(--muted))';
+      ctx.lineWidth = 8;
+      ctx.font = 'bold 200px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
+    } catch (error) {
+      console.error('Canvas initialization error:', error);
+      toast({
+        title: "Canvas Error",
+        description: "Failed to initialize drawing canvas.",
+        variant: "destructive"
+      });
+    }
+  }, [currentCharacter, toast]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    setIsDrawing(true);
-    playDrawSound();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    try {
+      e.preventDefault();
+      setIsDrawing(true);
+      playDrawSound();
+      
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+      const rect = canvas.getBoundingClientRect();
+      const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+      const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    } catch (error) {
+      console.error('Drawing start error:', error);
+      setIsDrawing(false);
+    }
   };
 
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    try {
+      e.preventDefault();
+      if (!isDrawing) return;
+      
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+      const rect = canvas.getBoundingClientRect();
+      const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+      const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
 
-    ctx.strokeStyle = drawColor;
-    ctx.lineWidth = 12;
-    ctx.lineCap = 'round';
-    ctx.lineTo(x, y);
-    ctx.stroke();
+      ctx.strokeStyle = drawColor;
+      ctx.lineWidth = 12;
+      ctx.lineCap = 'round';
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    } catch (error) {
+      console.error('Drawing error:', error);
+      setIsDrawing(false);
+    }
   };
 
   const stopDrawing = () => {
@@ -101,47 +136,69 @@ export default function WritingCanvas() {
   };
 
   const clearCanvas = () => {
-    playClearSound();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Redraw guide
-    ctx.strokeStyle = 'hsl(var(--muted))';
-    ctx.lineWidth = 8;
-    ctx.font = 'bold 200px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
+    try {
+      playClearSound();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Redraw guide
+      ctx.strokeStyle = 'hsl(var(--muted))';
+      ctx.lineWidth = 8;
+      ctx.font = 'bold 200px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
 
-    toast({
-      title: "Canvas cleared",
-      description: "Try tracing the letter again!",
-    });
+      toast({
+        title: "Canvas cleared",
+        description: "Try tracing the letter again!",
+      });
+    } catch (error) {
+      console.error('Clear canvas error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear canvas.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveDrawing = () => {
-    playSuccessSound();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    try {
+      playSuccessSound();
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        throw new Error('Canvas not found');
+      }
 
-    const imageData = canvas.toDataURL('image/png');
-    
-    // Save to localStorage via helper function
-    saveDrawing(currentCharacter, mode, imageData);
+      const imageData = canvas.toDataURL('image/png');
+      
+      // Save to localStorage via helper function
+      saveDrawing(currentCharacter, mode, imageData);
 
-    // Also trigger download
-    const link = document.createElement('a');
-    link.download = `${mode}-${currentCharacter}-${Date.now()}.png`;
-    link.href = imageData;
-    link.click();
+      // Also trigger download
+      const link = document.createElement('a');
+      link.download = `${mode}-${currentCharacter}-${Date.now()}.png`;
+      link.href = imageData;
+      link.click();
 
-    toast({
-      title: "Drawing saved!",
-      description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
-    });
+      toast({
+        title: "Drawing saved!",
+        description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
+      });
+    } catch (error) {
+      console.error('Save drawing error:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save your drawing. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const triggerConfetti = () => {

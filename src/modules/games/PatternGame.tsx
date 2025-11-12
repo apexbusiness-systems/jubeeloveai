@@ -108,54 +108,51 @@ export default function PatternGame() {
   if (!difficulty) {
     return (
       <div className="pattern-game-menu p-4 sm:p-6 md:p-8 pt-8">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-8" style={{ color: '#FF4757' }}>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-6 md:mb-8 text-game">
           🎯 Pattern Game! 🎯
         </h1>
-        <p className="text-2xl text-center mb-12 text-gray-700">
+        <p className="text-2xl text-center mb-12 text-game-neutral">
           Watch the pattern and repeat it!
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <button
             onClick={() => startGame('easy')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)',
-              border: '4px solid #FFD93D',
-              boxShadow: '0 8px 20px rgba(255, 71, 87, 0.3)'
+              background: 'var(--gradient-warm)',
+              boxShadow: 'var(--shadow-game)'
             }}
           >
             <div className="text-6xl mb-4">😊</div>
-            <h2 className="text-3xl font-bold text-white mb-2">Easy</h2>
-            <p className="text-xl text-white opacity-90">Slow speed</p>
+            <h2 className="text-3xl font-bold text-primary-foreground mb-2">Easy</h2>
+            <p className="text-xl text-primary-foreground opacity-90">Slow speed</p>
           </button>
 
           <button
             onClick={() => startGame('medium')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FF6348 0%, #FFD93D 100%)',
-              border: '4px solid #FFD93D',
-              boxShadow: '0 8px 20px rgba(255, 217, 61, 0.3)'
+              background: 'var(--gradient-cool)',
+              boxShadow: 'var(--shadow-accent)'
             }}
           >
             <div className="text-6xl mb-4">🤔</div>
-            <h2 className="text-3xl font-bold text-white mb-2">Medium</h2>
-            <p className="text-xl text-white opacity-90">Normal speed</p>
+            <h2 className="text-3xl font-bold text-primary-foreground mb-2">Medium</h2>
+            <p className="text-xl text-primary-foreground opacity-90">Normal speed</p>
           </button>
 
           <button
             onClick={() => startGame('hard')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FF4757 0%, #FF6348 100%)',
-              border: '4px solid #FFD93D',
-              boxShadow: '0 8px 20px rgba(255, 71, 87, 0.3)'
+              background: 'var(--gradient-game)',
+              boxShadow: 'var(--shadow-game)'
             }}
           >
             <div className="text-6xl mb-4">🧐</div>
-            <h2 className="text-3xl font-bold text-white mb-2">Hard</h2>
-            <p className="text-xl text-white opacity-90">Fast speed</p>
+            <h2 className="text-3xl font-bold text-primary-foreground mb-2">Hard</h2>
+            <p className="text-xl text-primary-foreground opacity-90">Fast speed</p>
           </button>
         </div>
       </div>
@@ -165,17 +162,17 @@ export default function PatternGame() {
   return (
     <div className="pattern-game p-4 sm:p-6 md:p-8 pt-8">
       <div className="game-header mb-6 md:mb-8 text-center">
-        <h1 className="text-4xl font-bold mb-4" style={{ color: '#FF4757' }}>
+        <h1 className="text-4xl font-bold mb-4 text-game">
           Pattern Game - {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
         </h1>
         <div className="stats flex gap-8 justify-center text-2xl">
-          <div className="stat" style={{ color: '#FFD93D', fontWeight: 'bold' }}>
+          <div className="stat text-game-accent font-bold">
             Level: {level}
           </div>
-          <div className="stat" style={{ color: '#FF4757', fontWeight: 'bold' }}>
+          <div className="stat text-game font-bold">
             Score: {score}
           </div>
-          <div className="stat" style={{ color: '#FF6348', fontWeight: 'bold' }}>
+          <div className="stat text-intermediate font-bold">
             {isShowingPattern ? '👀 Watch!' : '🎮 Your Turn!'}
           </div>
         </div>
@@ -188,15 +185,14 @@ export default function PatternGame() {
               key={pattern.id}
               onClick={() => handlePatternClick(index)}
               disabled={isShowingPattern}
-              className="pattern-button aspect-square rounded-3xl flex flex-col items-center justify-center text-8xl transform transition-all duration-200"
+              className="pattern-button aspect-square rounded-3xl flex flex-col items-center justify-center text-8xl transform transition-all duration-200 border-4 border-game-accent"
               style={{
                 background: activePattern === index
-                  ? 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)'
-                  : 'linear-gradient(135deg, #FF4757 0%, #FF6348 100%)',
-                border: '4px solid #FFD93D',
+                  ? 'var(--gradient-warm)'
+                  : 'var(--gradient-game)',
                 boxShadow: activePattern === index
-                  ? '0 0 30px rgba(255, 217, 61, 0.8)'
-                  : '0 4px 15px rgba(255, 71, 87, 0.3)',
+                  ? 'var(--shadow-accent)'
+                  : 'var(--shadow-game)',
                 transform: activePattern === index ? 'scale(1.1)' : 'scale(1)',
                 cursor: isShowingPattern ? 'not-allowed' : 'pointer',
                 opacity: isShowingPattern ? 0.7 : 1
@@ -213,12 +209,11 @@ export default function PatternGame() {
           {sequence.map((_, index) => (
             <div
               key={index}
-              className="sequence-dot w-4 h-4 rounded-full"
+              className="sequence-dot w-4 h-4 rounded-full border-2 border-game"
               style={{
                 background: index < playerSequence.length
-                  ? '#FFD93D'
-                  : '#ccc',
-                border: '2px solid #FF4757'
+                  ? 'hsl(var(--game-accent))'
+                  : 'hsl(var(--muted))'
               }}
             />
           ))}
@@ -228,12 +223,10 @@ export default function PatternGame() {
       <div className="controls text-center">
         <button
           onClick={() => setDifficulty(null)}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
           style={{
-            background: 'linear-gradient(135deg, #FFD93D 0%, #FF4757 100%)',
-            color: 'white',
-            border: '3px solid #FFD93D',
-            boxShadow: '0 4px 10px rgba(255, 71, 87, 0.3)'
+            background: 'var(--gradient-warm)',
+            boxShadow: 'var(--shadow-game)'
           }}
         >
           ← Back to Menu

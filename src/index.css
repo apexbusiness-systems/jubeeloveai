@@ -38,11 +38,42 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
-    /* Custom tokens */
+    /* Custom semantic tokens */
     --gradient-primary: linear-gradient(135deg, hsl(0 85% 60%), hsl(15 90% 65%));
     --gradient-accent: linear-gradient(135deg, hsl(45 100% 55%), hsl(50 100% 60%));
     --gradient-subtle: linear-gradient(135deg, hsl(0 85% 60% / 0.1), hsl(45 100% 55% / 0.1));
+    --gradient-warm: linear-gradient(135deg, hsl(45 100% 59%), hsl(3 100% 64%));
+    --gradient-cool: linear-gradient(135deg, hsl(3 100% 57%), hsl(45 100% 59%));
+    --gradient-game: linear-gradient(135deg, hsl(3 100% 59%), hsl(3 100% 64%));
+    --gradient-neutral: linear-gradient(135deg, hsl(220 13% 91%), hsl(220 9% 82%));
+    --gradient-boy: linear-gradient(135deg, hsl(217 91% 60%), hsl(213 97% 87%));
+    --gradient-girl: linear-gradient(135deg, hsl(330 81% 60%), hsl(330 77% 78%));
+    --gradient-beginner: linear-gradient(135deg, hsl(45 100% 59%), hsl(45 98% 51%));
+    --gradient-intermediate: linear-gradient(135deg, hsl(3 100% 64%), hsl(0 100% 59%));
+    --gradient-expert: linear-gradient(135deg, hsl(291 64% 42%), hsl(291 44% 51%));
+    --gradient-reward: linear-gradient(135deg, hsl(45 100% 59%), hsl(3 100% 64%));
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Game colors */
+    --game-primary: 3 100% 59%;
+    --game-accent: 45 100% 59%;
+    --game-neutral: 220 7% 65%;
+    --boy-primary: 217 91% 60%;
+    --boy-border: 217 83% 47%;
+    --girl-primary: 330 81% 60%;
+    --girl-border: 330 65% 39%;
+    --beginner: 45 100% 59%;
+    --beginner-border: 45 98% 51%;
+    --intermediate: 3 100% 64%;
+    --intermediate-border: 0 100% 59%;
+    --expert: 291 64% 42%;
+    --expert-border: 291 44% 36%;
+    
+    /* Shadow tokens */
+    --shadow-game: 0 8px 20px hsl(0 100% 59% / 0.3);
+    --shadow-accent: 0 8px 20px hsl(45 100% 59% / 0.3);
+    --shadow-elevated: 0 10px 40px hsl(0 100% 59% / 0.3);
+    --shadow-reward: 0 20px 60px hsl(0 100% 59% / 0.5);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -86,6 +117,16 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(0 85% 65%), hsl(15 90% 70%));
     --gradient-accent: linear-gradient(135deg, hsl(45 100% 60%), hsl(50 100% 65%));
     --gradient-subtle: linear-gradient(135deg, hsl(0 85% 65% / 0.12), hsl(45 100% 60% / 0.12));
+    --gradient-warm: linear-gradient(135deg, hsl(45 100% 60%), hsl(3 100% 65%));
+    --gradient-cool: linear-gradient(135deg, hsl(3 100% 60%), hsl(45 100% 60%));
+    --gradient-game: linear-gradient(135deg, hsl(3 100% 60%), hsl(3 100% 65%));
+    --gradient-neutral: linear-gradient(135deg, hsl(220 13% 91%), hsl(220 9% 82%));
+    --gradient-boy: linear-gradient(135deg, hsl(217 91% 60%), hsl(213 97% 87%));
+    --gradient-girl: linear-gradient(135deg, hsl(330 81% 60%), hsl(330 77% 78%));
+    --gradient-beginner: linear-gradient(135deg, hsl(45 100% 60%), hsl(45 98% 51%));
+    --gradient-intermediate: linear-gradient(135deg, hsl(3 100% 65%), hsl(0 100% 60%));
+    --gradient-expert: linear-gradient(135deg, hsl(291 64% 42%), hsl(291 44% 51%));
+    --gradient-reward: linear-gradient(135deg, hsl(45 100% 60%), hsl(3 100% 65%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

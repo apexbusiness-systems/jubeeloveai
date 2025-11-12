@@ -57,6 +57,31 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        game: {
+          DEFAULT: "hsl(var(--game-primary))",
+          accent: "hsl(var(--game-accent))",
+          neutral: "hsl(var(--game-neutral))",
+        },
+        boy: {
+          DEFAULT: "hsl(var(--boy-primary))",
+          border: "hsl(var(--boy-border))",
+        },
+        girl: {
+          DEFAULT: "hsl(var(--girl-primary))",
+          border: "hsl(var(--girl-border))",
+        },
+        beginner: {
+          DEFAULT: "hsl(var(--beginner))",
+          border: "hsl(var(--beginner-border))",
+        },
+        intermediate: {
+          DEFAULT: "hsl(var(--intermediate))",
+          border: "hsl(var(--intermediate-border))",
+        },
+        expert: {
+          DEFAULT: "hsl(var(--expert))",
+          border: "hsl(var(--expert-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

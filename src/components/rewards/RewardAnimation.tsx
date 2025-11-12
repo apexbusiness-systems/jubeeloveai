@@ -76,11 +76,10 @@ export function RewardAnimation({ show, message, emoji = '🎉', onComplete }: P
 
       {/* Main message */}
       <div
-        className="reward-message p-12 rounded-3xl transform"
+        className="reward-message p-12 rounded-3xl transform border-6 border-game-accent"
         style={{
-          background: 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)',
-          border: '6px solid #FFD93D',
-          boxShadow: '0 20px 60px rgba(255, 71, 87, 0.5)',
+          background: 'var(--gradient-reward)',
+          boxShadow: 'var(--shadow-reward)',
           animation: 'bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
         }}
       >
@@ -89,7 +88,7 @@ export function RewardAnimation({ show, message, emoji = '🎉', onComplete }: P
         }}>
           {emoji}
         </div>
-        <h2 className="text-5xl font-bold text-white text-center mb-4">
+        <h2 className="text-5xl font-bold text-primary-foreground text-center mb-4">
           {message}
         </h2>
       </div>

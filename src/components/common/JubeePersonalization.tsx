@@ -24,18 +24,15 @@ export function JubeePersonalization({ onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-8 max-w-2xl w-full mx-4"
+        className="bg-card rounded-3xl p-8 max-w-2xl w-full mx-4 border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          border: '4px solid #FFD93D',
-          boxShadow: '0 10px 40px rgba(255, 71, 87, 0.3)'
-        }}
+        style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
-        <h2 className="text-4xl font-bold text-center mb-8" style={{ color: '#FF4757' }}>
+        <h2 className="text-4xl font-bold text-center mb-8 text-game">
           🐝 Customize Jubee! 🐝
         </h2>
 
-        <p className="text-2xl text-center mb-8 text-gray-700">
+        <p className="text-2xl text-center mb-8 text-game-neutral">
           Is Jubee a boy or a girl?
         </p>
 
@@ -45,23 +42,22 @@ export function JubeePersonalization({ onClose }: Props) {
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
               background: selectedGender === 'male'
-                ? 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)'
-                : 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)',
-              border: selectedGender === 'male' ? '4px solid #2563EB' : '4px solid #9CA3AF',
+                ? 'var(--gradient-boy)'
+                : 'var(--gradient-neutral)',
+              border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--border))',
               boxShadow: selectedGender === 'male'
-                ? '0 8px 20px rgba(59, 130, 246, 0.4)'
-                : '0 4px 10px rgba(0, 0, 0, 0.1)'
+                ? '0 8px 20px hsl(var(--boy-primary) / 0.4)'
+                : '0 4px 10px hsl(var(--muted) / 0.3)'
             }}
           >
             <div className="text-8xl mb-4">👦</div>
             <h3 className="text-3xl font-bold" style={{
-              color: selectedGender === 'male' ? 'white' : '#4B5563'
+              color: selectedGender === 'male' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
             }}>
               Boy
             </h3>
-            <p className="text-xl mt-2" style={{
-              color: selectedGender === 'male' ? 'white' : '#6B7280',
-              opacity: 0.9
+            <p className="text-xl mt-2 opacity-90" style={{
+              color: selectedGender === 'male' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
             }}>
               Blue accents
             </p>
@@ -72,23 +68,22 @@ export function JubeePersonalization({ onClose }: Props) {
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
               background: selectedGender === 'female'
-                ? 'linear-gradient(135deg, #EC4899 0%, #F472B6 100%)'
-                : 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)',
-              border: selectedGender === 'female' ? '4px solid #DB2777' : '4px solid #9CA3AF',
+                ? 'var(--gradient-girl)'
+                : 'var(--gradient-neutral)',
+              border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--border))',
               boxShadow: selectedGender === 'female'
-                ? '0 8px 20px rgba(236, 72, 153, 0.4)'
-                : '0 4px 10px rgba(0, 0, 0, 0.1)'
+                ? '0 8px 20px hsl(var(--girl-primary) / 0.4)'
+                : '0 4px 10px hsl(var(--muted) / 0.3)'
             }}
           >
             <div className="text-8xl mb-4">👧</div>
             <h3 className="text-3xl font-bold" style={{
-              color: selectedGender === 'female' ? 'white' : '#4B5563'
+              color: selectedGender === 'female' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
             }}>
               Girl
             </h3>
-            <p className="text-xl mt-2" style={{
-              color: selectedGender === 'female' ? 'white' : '#6B7280',
-              opacity: 0.9
+            <p className="text-xl mt-2 opacity-90" style={{
+              color: selectedGender === 'female' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
             }}>
               Pink accents
             </p>
@@ -98,12 +93,10 @@ export function JubeePersonalization({ onClose }: Props) {
         <div className="flex gap-4 justify-center">
           <button
             onClick={onClose}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-game-neutral border-3 border-border"
             style={{
-              background: 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)',
-              color: '#4B5563',
-              border: '3px solid #9CA3AF',
-              boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'
+              background: 'var(--gradient-neutral)',
+              boxShadow: '0 4px 10px hsl(var(--muted) / 0.3)'
             }}
           >
             Cancel
@@ -111,12 +104,10 @@ export function JubeePersonalization({ onClose }: Props) {
 
           <button
             onClick={handleSave}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FFD93D 0%, #FF4757 100%)',
-              color: 'white',
-              border: '3px solid #FFD93D',
-              boxShadow: '0 4px 10px rgba(255, 71, 87, 0.3)'
+              background: 'var(--gradient-warm)',
+              boxShadow: 'var(--shadow-game)'
             }}
           >
             Save Changes

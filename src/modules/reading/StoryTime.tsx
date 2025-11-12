@@ -134,10 +134,10 @@ export default function StoryTime() {
   if (!selectedStory) {
     return (
       <div className="story-time-menu p-8">
-        <h1 className="text-5xl font-bold text-center mb-8" style={{ color: '#FF4757' }}>
+        <h1 className="text-5xl font-bold text-center mb-8 text-game">
           📖 Story Time! 📖
         </h1>
-        <p className="text-2xl text-center mb-12 text-gray-700">
+        <p className="text-2xl text-center mb-12 text-game-neutral">
           Choose a story to read with Jubee!
         </p>
 
@@ -146,16 +146,15 @@ export default function StoryTime() {
             <button
               key={story.id}
               onClick={() => handleStorySelect(story)}
-              className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
+              className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent"
               style={{
-                background: 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)',
-                border: '4px solid #FFD93D',
-                boxShadow: '0 8px 20px rgba(255, 71, 87, 0.3)'
+                background: 'var(--gradient-warm)',
+                boxShadow: 'var(--shadow-game)'
               }}
             >
               <div className="text-8xl mb-4">{story.pages[0].illustration}</div>
-              <h2 className="text-3xl font-bold text-white mb-2">{story.title}</h2>
-              <p className="text-xl text-white opacity-90">{story.pages.length} pages</p>
+              <h2 className="text-3xl font-bold text-primary-foreground mb-2">{story.title}</h2>
+              <p className="text-xl text-primary-foreground opacity-90">{story.pages.length} pages</p>
             </button>
           ))}
         </div>
@@ -169,57 +168,42 @@ export default function StoryTime() {
   return (
     <div className="story-reader p-8 max-w-4xl mx-auto">
       <div className="story-header mb-8">
-        <h1 className="text-4xl font-bold text-center mb-4" style={{ color: '#FF4757' }}>
+        <h1 className="text-4xl font-bold text-center mb-4 text-game">
           {selectedStory.title}
         </h1>
-        <div className="progress-bar mb-4" style={{
-          height: '12px',
-          background: '#f0f0f0',
-          borderRadius: '10px',
-          overflow: 'hidden',
-          border: '2px solid #FFD93D'
-        }}>
+        <div className="progress-bar mb-4 border-2 border-game-accent rounded-xl overflow-hidden bg-muted" style={{ height: '12px' }}>
           <div
+            className="h-full transition-all duration-300"
             style={{
               width: `${progress}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #FFD93D 0%, #FF4757 100%)',
-              transition: 'width 0.3s ease'
+              background: 'var(--gradient-warm)'
             }}
           />
         </div>
-        <p className="text-center text-xl text-gray-600">
+        <p className="text-center text-xl text-game-neutral">
           Page {currentPage + 1} of {selectedStory.pages.length}
         </p>
       </div>
 
       <div
-        className="story-page p-12 rounded-3xl mb-8"
+        className="story-page p-12 rounded-3xl mb-8 bg-card border-4 border-game-accent flex flex-col items-center justify-center"
         style={{
-          background: 'white',
-          border: '4px solid #FFD93D',
-          boxShadow: '0 8px 20px rgba(255, 217, 61, 0.3)',
-          minHeight: '400px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center'
+          boxShadow: 'var(--shadow-accent)',
+          minHeight: '400px'
         }}
       >
         <div className="illustration text-9xl mb-8">{page.illustration}</div>
-        <p className="text-3xl text-gray-800 text-center leading-relaxed">{page.text}</p>
+        <p className="text-3xl text-card-foreground text-center leading-relaxed">{page.text}</p>
       </div>
 
       <div className="controls flex gap-4 justify-center">
         <button
           onClick={handlePrevPage}
           disabled={currentPage === 0}
-          className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all"
+          className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
           style={{
-            background: currentPage === 0 ? '#ccc' : 'linear-gradient(135deg, #FFD93D 0%, #FF6348 100%)',
-            color: 'white',
-            border: '3px solid #FFD93D',
-            boxShadow: '0 4px 10px rgba(255, 71, 87, 0.3)'
+            background: currentPage === 0 ? 'var(--gradient-neutral)' : 'var(--gradient-warm)',
+            boxShadow: 'var(--shadow-game)'
           }}
         >
           ⬅️ Previous
@@ -227,12 +211,10 @@ export default function StoryTime() {
 
         <button
           onClick={handleReadAloud}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
           style={{
-            background: 'linear-gradient(135deg, #FF4757 0%, #FFD93D 100%)',
-            color: 'white',
-            border: '3px solid #FFD93D',
-            boxShadow: '0 4px 10px rgba(255, 217, 61, 0.3)'
+            background: 'var(--gradient-game)',
+            boxShadow: 'var(--shadow-accent)'
           }}
         >
           🔊 Read Aloud
@@ -240,12 +222,10 @@ export default function StoryTime() {
 
         <button
           onClick={handleNextPage}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
           style={{
-            background: 'linear-gradient(135deg, #FF6348 0%, #FFD93D 100%)',
-            color: 'white',
-            border: '3px solid #FFD93D',
-            boxShadow: '0 4px 10px rgba(255, 71, 87, 0.3)'
+            background: 'var(--gradient-cool)',
+            boxShadow: 'var(--shadow-game)'
           }}
         >
           {currentPage === selectedStory.pages.length - 1 ? '✓ Finish' : 'Next ➡️'}
