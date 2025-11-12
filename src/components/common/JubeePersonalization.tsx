@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   onClose: () => void
+  onOpenVoiceSelector: () => void
 }
 
-export function JubeePersonalization({ onClose }: Props) {
+export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
   const { gender, setGender, speak, triggerAnimation } = useJubeeStore()
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
 
@@ -36,7 +38,7 @@ export function JubeePersonalization({ onClose }: Props) {
           Is Jubee a boy or a girl?
         </p>
 
-        <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-6 mb-6">
           <button
             onClick={() => setSelectedGender('male')}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
@@ -88,6 +90,20 @@ export function JubeePersonalization({ onClose }: Props) {
               Pink accents
             </p>
           </button>
+        </div>
+
+        <div className="mb-8">
+          <Button
+            onClick={() => {
+              onClose()
+              onOpenVoiceSelector()
+            }}
+            variant="outline"
+            size="lg"
+            className="w-full text-xl py-6"
+          >
+            🎤 Choose Voice
+          </Button>
         </div>
 
         <div className="flex gap-4 justify-center">

@@ -6,8 +6,11 @@ import { persist } from 'zustand/middleware'
 const timers = new Map<string, NodeJS.Timeout>()
 let currentAudio: HTMLAudioElement | null = null
 
+export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
+
 interface JubeeState {
   gender: 'male' | 'female'
+  voice: JubeeVoice
   position: { x: number, y: number, z: number }
   containerPosition: { bottom: number, right: number }
   isDragging: boolean
@@ -18,6 +21,7 @@ interface JubeeState {
   lastError: string | null
   isVisible: boolean
   setGender: (gender: 'male' | 'female') => void
+  setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: any) => void
   setContainerPosition: (position: { bottom: number, right: number }) => void
   setIsDragging: (isDragging: boolean) => void
@@ -46,6 +50,7 @@ export const useJubeeStore = create<JubeeState>()(
   persist(
     immer((set, get) => ({
       gender: 'female',
+      voice: 'shimmer',
       position: { x: 2.5, y: -1.5, z: 0 },
       containerPosition: { bottom: 200, right: 100 }, // Safe default position
       isDragging: false,
@@ -59,6 +64,11 @@ export const useJubeeStore = create<JubeeState>()(
       setGender: (gender) => {
         console.log('[Jubee] Gender changed:', gender)
         set((state) => { state.gender = gender })
+      },
+
+      setVoice: (voice) => {
+        console.log('[Jubee] Voice changed:', voice)
+        set((state) => { state.voice = voice })
       },
 
       updatePosition: (position) => {
@@ -171,6 +181,7 @@ export const useJubeeStore = create<JubeeState>()(
       }
       
       const gender = get().gender
+      const voice = get().voice
       // Get current language from i18n if available
       const language = (window as any).i18nextLanguage || 'en'
       set((state) => { 
@@ -193,7 +204,7 @@ export const useJubeeStore = create<JubeeState>()(
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ text, gender, language, mood }),
+            body: JSON.stringify({ text, gender, language, mood, voice }),
             signal: controller.signal,
           })
 
@@ -377,7 +388,8 @@ export const useJubeeStore = create<JubeeState>()(
     {
       name: 'jubee-store',
       partialize: (state) => ({ 
-        gender: state.gender, 
+        gender: state.gender,
+        voice: state.voice,
         containerPosition: state.containerPosition 
       })
     }

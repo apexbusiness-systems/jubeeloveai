@@ -12,6 +12,7 @@ import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
 import { JubeePersonalization } from './components/common/JubeePersonalization';
+import { VoiceSelector } from './components/common/VoiceSelector';
 import { StickerBook } from './components/rewards/StickerBook';
 import { PageTransition } from './components/PageTransition';
 import { SessionMonitor } from './components/SessionMonitor';
@@ -62,6 +63,7 @@ function AchievementTracker() {
 
 export default function App() {
   const [showPersonalization, setShowPersonalization] = useState(false);
+  const [showVoiceSelector, setShowVoiceSelector] = useState(false);
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
   const [canvasError, setCanvasError] = useState(false);
@@ -258,7 +260,13 @@ export default function App() {
 
             {/* Modals */}
             {showPersonalization && (
-              <JubeePersonalization onClose={() => setShowPersonalization(false)} />
+              <JubeePersonalization 
+                onClose={() => setShowPersonalization(false)}
+                onOpenVoiceSelector={() => setShowVoiceSelector(true)}
+              />
+            )}
+            {showVoiceSelector && (
+              <VoiceSelector onClose={() => setShowVoiceSelector(false)} />
             )}
             {showStickerBook && (
               <StickerBook onClose={() => setShowStickerBook(false)} />

@@ -12,31 +12,34 @@ serve(async (req) => {
   }
 
   try {
-    const { text, gender, language = 'en', mood = 'happy' } = await req.json();
+    const { text, gender, language = 'en', mood = 'happy', voice: selectedVoice } = await req.json();
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Select voice based on mood and gender for emotional expressiveness
-    let voice = 'shimmer'; // Default playful female voice
+    // Use explicit voice selection if provided, otherwise fallback to mood/gender logic
+    let voice = selectedVoice || 'shimmer'; // Default playful female voice
     
-    if (mood === 'excited') {
-      voice = gender === 'female' ? 'shimmer' : 'fable';
-    } else if (mood === 'happy') {
-      voice = gender === 'female' ? 'shimmer' : 'fable';
-    } else if (mood === 'curious') {
-      voice = gender === 'female' ? 'nova' : 'onyx';
-    } else if (mood === 'frustrated' || mood === 'tired') {
-      voice = gender === 'female' ? 'nova' : 'echo';
-    } else {
-      voice = gender === 'female' ? 'shimmer' : 'fable';
-    }
-    
-    // Adjust voice for better clarity in certain languages
-    if (language === 'zh' || language === 'hi') {
-      voice = 'shimmer';
+    if (!selectedVoice) {
+      // Select voice based on mood and gender for emotional expressiveness
+      if (mood === 'excited') {
+        voice = gender === 'female' ? 'shimmer' : 'fable';
+      } else if (mood === 'happy') {
+        voice = gender === 'female' ? 'shimmer' : 'fable';
+      } else if (mood === 'curious') {
+        voice = gender === 'female' ? 'nova' : 'onyx';
+      } else if (mood === 'frustrated' || mood === 'tired') {
+        voice = gender === 'female' ? 'nova' : 'echo';
+      } else {
+        voice = gender === 'female' ? 'shimmer' : 'fable';
+      }
+      
+      // Adjust voice for better clarity in certain languages
+      if (language === 'zh' || language === 'hi') {
+        voice = 'shimmer';
+      }
     }
     
     // Dynamic speed based on mood
