@@ -12,21 +12,45 @@ serve(async (req) => {
   }
 
   try {
-    const { text, gender, language = 'en' } = await req.json();
+    const { text, gender, language = 'en', mood = 'happy' } = await req.json();
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    // Use whimsical, expressive voices for child-friendly, cartoonish experience
-    // Shimmer (female) is playful and animated, Fable is theatrical and expressive
-    let voice = gender === 'female' ? 'shimmer' : 'fable';
+    // Select voice based on mood and gender for emotional expressiveness
+    let voice = 'shimmer'; // Default playful female voice
+    
+    if (mood === 'excited') {
+      voice = gender === 'female' ? 'shimmer' : 'fable';
+    } else if (mood === 'happy') {
+      voice = gender === 'female' ? 'shimmer' : 'fable';
+    } else if (mood === 'curious') {
+      voice = gender === 'female' ? 'nova' : 'onyx';
+    } else if (mood === 'frustrated' || mood === 'tired') {
+      voice = gender === 'female' ? 'nova' : 'echo';
+    } else {
+      voice = gender === 'female' ? 'shimmer' : 'fable';
+    }
     
     // Adjust voice for better clarity in certain languages
     if (language === 'zh' || language === 'hi') {
-      // Shimmer works well for non-English too with its playful tone
       voice = 'shimmer';
+    }
+    
+    // Dynamic speed based on mood
+    let speed = 1.15; // Default
+    if (mood === 'excited') {
+      speed = 1.3;
+    } else if (mood === 'happy') {
+      speed = 1.2;
+    } else if (mood === 'curious') {
+      speed = 1.1;
+    } else if (mood === 'frustrated') {
+      speed = 0.95;
+    } else if (mood === 'tired') {
+      speed = 0.9;
     }
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -36,10 +60,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1-hd', // Higher quality for more natural sound
+        model: 'tts-1-hd',
         input: text,
         voice: voice,
-        speed: 1.15, // Slightly faster for more energetic, animated delivery
+        speed: speed,
       }),
     });
 

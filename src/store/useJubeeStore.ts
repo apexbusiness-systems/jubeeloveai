@@ -23,7 +23,7 @@ interface JubeeState {
   setIsDragging: (isDragging: boolean) => void
   triggerAnimation: (animation: string) => void
   triggerPageTransition: () => void
-  speak: (text: string) => void
+  speak: (text: string, mood?: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired') => void
   converse: (message: string, context?: ConversationContext) => Promise<string>
   cleanup: () => void
   toggleVisibility: () => void
@@ -157,7 +157,7 @@ export const useJubeeStore = create<JubeeState>()(
         timers.set('transition', timer)
       },
 
-    speak: async (text) => {
+    speak: async (text, mood = 'happy') => {
       // Stop any currently playing audio
       if (currentAudio) {
         currentAudio.pause()
@@ -193,7 +193,7 @@ export const useJubeeStore = create<JubeeState>()(
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ text, gender, language }),
+            body: JSON.stringify({ text, gender, language, mood }),
             signal: controller.signal,
           })
 
@@ -242,7 +242,7 @@ export const useJubeeStore = create<JubeeState>()(
       // All retries failed, use browser speech fallback
       console.warn('TTS service unavailable, using browser fallback')
       set((state) => { state.lastError = 'TTS_FALLBACK' })
-      useBrowserSpeech(text, gender)
+      useBrowserSpeech(text, gender, mood)
       const timer = setTimeout(() => {
         set((state) => { state.speechText = '' })
         timers.delete('speech')
@@ -297,11 +297,12 @@ export const useJubeeStore = create<JubeeState>()(
             if (data.success || data.fallback) {
               const aiResponse = data.response
               
-              // Speak the response
-              get().speak(aiResponse)
+              // Speak with contextual mood
+              const speechMood = context.mood || 'happy'
+              get().speak(aiResponse, speechMood)
               
-              // Show excitement animation
-              get().triggerAnimation('excited')
+              // Show animation matching mood
+              get().triggerAnimation(context.mood || 'excited')
               
               set((state) => { state.isProcessing = false })
               return aiResponse
@@ -348,8 +349,8 @@ export const useJubeeStore = create<JubeeState>()(
           state.lastError = error instanceof Error ? error.message : 'CONVERSATION_ERROR'
         })
 
-        // Still speak the fallback
-        get().speak(fallbackMessage)
+        // Still speak the fallback with frustrated mood
+        get().speak(fallbackMessage, 'frustrated')
         
         return fallbackMessage
       }
@@ -384,8 +385,8 @@ export const useJubeeStore = create<JubeeState>()(
   )
 )
 
-// Browser speech fallback helper
-function useBrowserSpeech(text: string, gender: 'male' | 'female') {
+// Browser speech fallback helper with mood support
+function useBrowserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
   if ('speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text)
     
@@ -400,8 +401,29 @@ function useBrowserSpeech(text: string, gender: 'male' | 'female') {
     }
     utterance.lang = langMap[language] || 'en-US'
     
-    utterance.rate = 1.1
-    utterance.pitch = gender === 'female' ? 1.3 : 1.0
+    // Adjust rate and pitch based on mood
+    let rate = 1.1
+    let pitchMultiplier = gender === 'female' ? 1.3 : 1.0
+    
+    if (mood === 'excited') {
+      rate = 1.3
+      pitchMultiplier = gender === 'female' ? 1.4 : 1.1
+    } else if (mood === 'happy') {
+      rate = 1.2
+      pitchMultiplier = gender === 'female' ? 1.3 : 1.0
+    } else if (mood === 'curious') {
+      rate = 1.1
+      pitchMultiplier = gender === 'female' ? 1.2 : 0.95
+    } else if (mood === 'frustrated') {
+      rate = 0.95
+      pitchMultiplier = gender === 'female' ? 1.1 : 0.85
+    } else if (mood === 'tired') {
+      rate = 0.9
+      pitchMultiplier = gender === 'female' ? 1.0 : 0.8
+    }
+    
+    utterance.rate = rate
+    utterance.pitch = pitchMultiplier
     speechSynthesis.speak(utterance)
   }
 }
