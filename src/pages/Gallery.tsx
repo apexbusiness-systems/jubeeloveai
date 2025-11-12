@@ -28,28 +28,28 @@ export default function Gallery() {
     loadDrawings();
   }, []);
 
-  const loadDrawings = () => {
-    const saved = getSavedDrawings();
-    setDrawings(saved.sort((a, b) => b.timestamp - a.timestamp));
+  const loadDrawings = async () => {
+    const saved = await getSavedDrawings();
+    setDrawings(saved);
   };
 
-  const handleDelete = (id: string) => {
-    deleteDrawing(id);
-    loadDrawings();
+  const handleDelete = async (id: string) => {
+    await deleteDrawing(id);
+    await loadDrawings();
     toast({
       title: "Drawing deleted",
       description: "Your drawing has been removed from the gallery.",
     });
   };
 
-  const handleClearAll = () => {
-    clearAllDrawings();
-    setDrawings([]);
-    speak("All drawings cleared!");
+  const handleClearAll = async () => {
+    await clearAllDrawings();
+    await loadDrawings();
     toast({
       title: "Gallery cleared",
-      description: "All your drawings have been removed.",
+      description: "All drawings have been removed.",
     });
+    speak("All drawings cleared!");
   };
 
   const handleDownload = (drawing: SavedDrawing) => {

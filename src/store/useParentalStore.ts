@@ -12,6 +12,7 @@ export interface ChildProfile {
   sessionStartTime: number | null;
   totalTimeToday: number; // in seconds
   allowedActivities: string[];
+  lastResetDate: string | null; // Track daily reset per child
 }
 
 export interface ParentalSettings {
@@ -30,7 +31,7 @@ interface ParentalState {
   isParentMode: boolean;
   
   // Child management
-  addChild: (child: Omit<ChildProfile, 'id' | 'createdAt' | 'sessionStartTime' | 'totalTimeToday'>) => void;
+  addChild: (child: Omit<ChildProfile, 'id' | 'createdAt' | 'sessionStartTime' | 'totalTimeToday' | 'lastResetDate'>) => void;
   updateChild: (id: string, updates: Partial<ChildProfile>) => void;
   deleteChild: (id: string) => void;
   setActiveChild: (id: string | null) => void;
@@ -78,6 +79,7 @@ export const useParentalStore = create<ParentalState>()(
           createdAt: Date.now(),
           sessionStartTime: null,
           totalTimeToday: 0,
+          lastResetDate: null,
           allowedActivities: childData.allowedActivities || [
             'write', 'shapes', 'stories', 'games', 'progress', 'stickers'
           ],
@@ -107,12 +109,12 @@ export const useParentalStore = create<ParentalState>()(
         const child = state.children.find((c) => c.id === childId);
         if (child) {
           child.sessionStartTime = Date.now();
+          
           // Reset daily time if it's a new day
-          const lastReset = localStorage.getItem(`lastReset-${childId}`);
           const today = new Date().toDateString();
-          if (lastReset !== today) {
+          if (child.lastResetDate !== today) {
             child.totalTimeToday = 0;
-            localStorage.setItem(`lastReset-${childId}`, today);
+            child.lastResetDate = today;
           }
         }
         state.activeChildId = childId;

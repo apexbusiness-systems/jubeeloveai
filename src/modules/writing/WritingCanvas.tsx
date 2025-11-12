@@ -168,7 +168,7 @@ export default function WritingCanvas() {
     }
   };
 
-  const handleSaveDrawing = () => {
+  const handleSaveDrawing = async () => {
     try {
       playSuccessSound();
       const canvas = canvasRef.current;
@@ -178,8 +178,8 @@ export default function WritingCanvas() {
 
       const imageData = canvas.toDataURL('image/png');
       
-      // Save to localStorage via helper function
-      saveDrawing(currentCharacter, mode, imageData);
+      // Save to IndexedDB via helper function
+      await saveDrawing(currentCharacter, mode, imageData);
 
       // Also trigger download
       const link = document.createElement('a');
@@ -190,6 +190,14 @@ export default function WritingCanvas() {
       toast({
         title: "Drawing saved!",
         description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
+      });
+
+      addScore(20);
+      triggerAnimation('celebrate');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
       });
     } catch (error) {
       console.error('Save drawing error:', error);
