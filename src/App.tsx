@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { JubeeMascot } from './core/jubee/JubeeMascot';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
+import { useParentalStore } from './store/useParentalStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -13,6 +14,8 @@ import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@
 import { JubeePersonalization } from './components/common/JubeePersonalization';
 import { StickerBook } from './components/rewards/StickerBook';
 import { PageTransition } from './components/PageTransition';
+import { SessionMonitor } from './components/SessionMonitor';
+import { ChildSelector } from './components/ChildSelector';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -23,6 +26,8 @@ const ProgressPage = lazy(() => import('./pages/Progress'));
 const StickersPage = lazy(() => import('./pages/Stickers'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
 const Gallery = lazy(() => import('./pages/Gallery'));
+const InstallPage = lazy(() => import('./pages/Install'));
+const ParentalControls = lazy(() => import('./pages/ParentalControls'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,8 +42,10 @@ const queryClient = new QueryClient({
 export default function App() {
   const [showPersonalization, setShowPersonalization] = useState(false);
   const [showStickerBook, setShowStickerBook] = useState(false);
+  const [showChildSelector, setShowChildSelector] = useState(false);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { position: jubeePosition, currentAnimation: jubeeAnimation } = useJubeeStore();
+  const { children, activeChildId } = useParentalStore();
 
   useEffect(() => {
     const updateThemeBasedOnTime = () => {
@@ -54,6 +61,13 @@ export default function App() {
     const interval = setInterval(updateThemeBasedOnTime, 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [updateTheme]);
+
+  // Show child selector if profiles exist but no active child
+  useEffect(() => {
+    if (children.length > 0 && !activeChildId) {
+      setShowChildSelector(true);
+    }
+  }, [children.length, activeChildId]);
 
   return (
     <ErrorBoundary>
@@ -115,6 +129,8 @@ export default function App() {
                     <Route path="/progress" element={<ProgressPage />} />
                     <Route path="/stickers" element={<StickersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/install" element={<InstallPage />} />
+                    <Route path="/parental-controls" element={<ParentalControls />} />
                   </Routes>
                 </PageTransition>
               </Suspense>
@@ -129,6 +145,8 @@ export default function App() {
             {showStickerBook && (
               <StickerBook onClose={() => setShowStickerBook(false)} />
             )}
+            <ChildSelector open={showChildSelector} onOpenChange={setShowChildSelector} />
+            <SessionMonitor />
           </div>
           <Toaster />
         </BrowserRouter>
