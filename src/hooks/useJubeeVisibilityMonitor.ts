@@ -48,12 +48,8 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
         rect.left < window.innerWidth &&
         rect.right > 0
       
-      // Check if canvas exists and has context
-      let hasValidCanvas = false
-      if (canvas) {
-        const gl = canvas.getContext('webgl') || canvas.getContext('webgl2')
-        hasValidCanvas = gl !== null && !gl.isContextLost()
-      }
+      // Check if canvas exists - don't check context as it's managed by React Three Fiber
+      const hasValidCanvas = !!canvas
       
       // Check opacity
       const computedStyle = window.getComputedStyle(containerRef.current)

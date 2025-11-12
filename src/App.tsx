@@ -188,53 +188,18 @@ export default function App() {
                   }}
                 >
                   <Canvas 
+                    key={`jubee-canvas-${isVisible}`}
                     camera={{ position: [0, 0, 6], fov: 45 }}
                     shadows
                     style={{ background: 'transparent' }}
                     gl={{ 
                       antialias: true,
                       alpha: true,
-                      powerPreference: "high-performance",
-                      preserveDrawingBuffer: true
+                      powerPreference: "high-performance"
                     }}
-                    onCreated={({ gl, scene, camera }) => {
-                      console.log('[Jubee] Canvas created successfully');
-                      gl.setClearColor('#000000', 0)
-                      
-                      // Enhanced WebGL context loss recovery
-                      gl.domElement.addEventListener('webglcontextlost', (event) => {
-                        event.preventDefault();
-                        console.error('[Jubee] WebGL context lost! Preventing default and preparing for restoration...');
-                        
-                        // Store current state before context loss
-                        const currentState = {
-                          position: jubeePosition,
-                          animation: jubeeAnimation
-                        }
-                        console.log('[Jubee] Saved state before context loss:', currentState);
-                        setCanvasError(true);
-                      });
-                      
-                      gl.domElement.addEventListener('webglcontextrestored', () => {
-                        console.log('[Jubee] WebGL context restored! Recompiling scene...');
-                        gl.compile(scene, camera);
-                        setCanvasError(false);
-                        console.log('[Jubee] Scene recompiled successfully after context restore');
-                      });
-                      
-                      // Periodic health check
-                      const healthCheckInterval = setInterval(() => {
-                        const context = gl.getContext();
-                        if (context && context.isContextLost()) {
-                          console.error('[Jubee] Context lost detected during health check!');
-                          setCanvasError(true);
-                        }
-                      }, 5000);
-                      
-                      // Cleanup on unmount
-                      return () => {
-                        clearInterval(healthCheckInterval);
-                      };
+                    onCreated={({ gl }) => {
+                      console.log('[Jubee] Canvas created');
+                      gl.setClearColor('#000000', 0);
                     }}
                   >
                     <ambientLight intensity={1.2} />

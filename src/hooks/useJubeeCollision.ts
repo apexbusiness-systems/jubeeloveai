@@ -58,14 +58,14 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
   const validatePosition = useCallback((pos: { bottom: number; right: number }): { bottom: number; right: number } => {
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    const jubeeWidth = 450
-    const jubeeHeight = 500
+    const jubeeWidth = 400
+    const jubeeHeight = 450
     
-    // Ensure Jubee is fully visible within viewport with safe margins
-    const minBottom = 20
-    const maxBottom = viewportHeight - jubeeHeight - 20
-    const minRight = 20
-    const maxRight = viewportWidth - jubeeWidth - 20
+    // Ensure Jubee is fully visible within viewport with generous margins
+    const minBottom = 100
+    const maxBottom = viewportHeight - jubeeHeight - 100
+    const minRight = 80
+    const maxRight = viewportWidth - jubeeWidth - 80
     
     return {
       bottom: Math.max(minBottom, Math.min(maxBottom, pos.bottom)),
