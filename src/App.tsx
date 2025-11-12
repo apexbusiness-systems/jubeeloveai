@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -19,6 +19,8 @@ import { ChildSelector } from './components/ChildSelector';
 import { useAchievementTracker } from './hooks/useAchievementTracker';
 import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { useJubeeCollision } from './hooks/useJubeeCollision';
+import { useJubeeDraggable } from './hooks/useJubeeDraggable';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -62,9 +64,14 @@ export default function App() {
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
   const [canvasError, setCanvasError] = useState(false);
+  const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
-  const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility } = useJubeeStore();
+  const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
+
+  // Enable collision detection and dragging
+  useJubeeCollision(jubeeContainerRef);
+  useJubeeDraggable(jubeeContainerRef);
 
   useEffect(() => {
     const updateThemeBasedOnTime = () => {
@@ -146,7 +153,16 @@ export default function App() {
             </header>
 
             {isVisible && (
-              <div className="jubee-container" aria-hidden="true">
+              <div 
+                ref={jubeeContainerRef}
+                className="jubee-container" 
+                aria-hidden="true"
+                style={{
+                  bottom: `${containerPosition.bottom}px`,
+                  right: `${containerPosition.right}px`,
+                  transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease'
+                }}
+              >
                 <ErrorBoundary
                   fallback={
                     <div className="flex items-center justify-center h-full">

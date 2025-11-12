@@ -9,6 +9,8 @@ let currentAudio: HTMLAudioElement | null = null
 interface JubeeState {
   gender: 'male' | 'female'
   position: { x: number, y: number, z: number }
+  containerPosition: { bottom: number, right: number }
+  isDragging: boolean
   currentAnimation: string
   speechText: string
   isTransitioning: boolean
@@ -17,6 +19,8 @@ interface JubeeState {
   isVisible: boolean
   setGender: (gender: 'male' | 'female') => void
   updatePosition: (position: any) => void
+  setContainerPosition: (position: { bottom: number, right: number }) => void
+  setIsDragging: (isDragging: boolean) => void
   triggerAnimation: (animation: string) => void
   triggerPageTransition: () => void
   speak: (text: string) => void
@@ -43,6 +47,8 @@ export const useJubeeStore = create<JubeeState>()(
     immer((set, get) => ({
       gender: 'female',
       position: { x: 3, y: -2, z: 0 },
+      containerPosition: { bottom: 60, right: 20 },
+      isDragging: false,
       currentAnimation: 'idle',
       speechText: '',
       isTransitioning: false,
@@ -84,6 +90,19 @@ export const useJubeeStore = create<JubeeState>()(
               state.position = { x: boundedX, y: boundedY, z: boundedZ }
             }
           }
+        })
+      },
+
+      setContainerPosition: (position) => {
+        set((state) => {
+          state.containerPosition = position
+          console.log('[Jubee] Container position updated:', position)
+        })
+      },
+
+      setIsDragging: (isDragging) => {
+        set((state) => {
+          state.isDragging = isDragging
         })
       },
 
@@ -356,7 +375,11 @@ export const useJubeeStore = create<JubeeState>()(
     })),
     {
       name: 'jubee-store',
-      partialize: (state) => ({ gender: state.gender, isVisible: state.isVisible })
+      partialize: (state) => ({ 
+        gender: state.gender, 
+        isVisible: state.isVisible, 
+        containerPosition: state.containerPosition 
+      })
     }
   )
 )

@@ -172,8 +172,6 @@ All colors MUST be HSL.
 /* Jubee Love App Styles */
 .jubee-container {
   position: fixed;
-  bottom: 60px;
-  right: 20px;
   width: 450px;
   height: 500px;
   z-index: 30;
@@ -181,6 +179,9 @@ All colors MUST be HSL.
   overflow: visible;
   filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));
   transition: var(--transition-smooth);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
 .jubee-container:hover {
