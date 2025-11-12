@@ -18,6 +18,7 @@ import { SessionMonitor } from './components/SessionMonitor';
 import { ChildSelector } from './components/ChildSelector';
 import { useAchievementTracker } from './hooks/useAchievementTracker';
 import { VoiceCommandButton } from './components/VoiceCommandButton';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -165,6 +166,7 @@ export default function App() {
             <ChildSelector open={showChildSelector} onOpenChange={setShowChildSelector} />
             <SessionMonitor />
             <VoiceCommandButton />
+            <OfflineIndicator />
           </div>
           <Toaster />
         </BrowserRouter>

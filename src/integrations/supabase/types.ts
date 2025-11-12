@@ -14,7 +14,227 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          achievement_id: string
+          child_profile_id: string | null
+          created_at: string | null
+          id: string
+          unlocked_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievement_id: string
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievement_id?: string
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      children_profiles: {
+        Row: {
+          age: number
+          avatar_url: string | null
+          created_at: string | null
+          gender: string | null
+          id: string
+          name: string
+          parent_user_id: string | null
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          age: number
+          avatar_url?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          name: string
+          parent_user_id?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number
+          avatar_url?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          name?: string
+          parent_user_id?: string | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      drawings: {
+        Row: {
+          child_profile_id: string | null
+          created_at: string | null
+          id: string
+          image_data: string
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          image_data: string
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          image_data?: string
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drawings_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_progress: {
+        Row: {
+          activities_completed: number | null
+          child_profile_id: string | null
+          created_at: string | null
+          current_theme: string | null
+          id: string
+          last_activity: string | null
+          score: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activities_completed?: number | null
+          child_profile_id?: string | null
+          created_at?: string | null
+          current_theme?: string | null
+          id?: string
+          last_activity?: string | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activities_completed?: number | null
+          child_profile_id?: string | null
+          created_at?: string | null
+          current_theme?: string | null
+          id?: string
+          last_activity?: string | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_progress_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          gender: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          gender?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          gender?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      stickers: {
+        Row: {
+          child_profile_id: string | null
+          created_at: string | null
+          id: string
+          sticker_id: string
+          unlocked_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          sticker_id: string
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          child_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          sticker_id?: string
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stickers_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
