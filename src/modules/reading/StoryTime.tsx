@@ -97,13 +97,17 @@ export default function StoryTime() {
     speak("Let's read a story together!")
   }
 
-  const handleNextPage = () => {
+  const handleNextPage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (!selectedStory) return
 
     if (currentPage < selectedStory.pages.length - 1) {
-      setCurrentPage(currentPage + 1)
+      setCurrentPage(prev => prev + 1)
       const nextPage = selectedStory.pages[currentPage + 1]
       speak(nextPage.narration)
+      triggerAnimation('excited')
     } else {
       // Story completed
       addScore(50)
@@ -116,15 +120,22 @@ export default function StoryTime() {
     }
   }
 
-  const handlePrevPage = () => {
+  const handlePrevPage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (currentPage > 0) {
-      setCurrentPage(currentPage - 1)
+      setCurrentPage(prev => prev - 1)
       const prevPage = selectedStory!.pages[currentPage - 1]
       speak(prevPage.narration)
+      triggerAnimation('excited')
     }
   }
 
-  const handleReadAloud = () => {
+  const handleReadAloud = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
     if (!selectedStory) return
     const page = selectedStory.pages[currentPage]
     speak(page.narration)

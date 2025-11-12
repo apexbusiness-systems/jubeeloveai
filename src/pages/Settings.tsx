@@ -22,10 +22,10 @@ export default function SettingsPage() {
   const [soundEnabled, setSoundEnabled] = useState(true);
 
   const themes = [
-    { name: 'morning', icon: Sunrise, label: t('settings.lightMode') },
-    { name: 'afternoon', icon: Sun, label: t('settings.lightMode') },
-    { name: 'evening', icon: Sunset, label: t('settings.darkMode') },
-    { name: 'night', icon: Moon, label: t('settings.darkMode') },
+    { name: 'morning', icon: Sunrise, label: 'Morning' },
+    { name: 'afternoon', icon: Sun, label: 'Afternoon' },
+    { name: 'evening', icon: Sunset, label: 'Evening' },
+    { name: 'night', icon: Moon, label: 'Night' },
   ] as const;
 
   const handleGenderChange = (newGender: 'male' | 'female') => {
@@ -97,7 +97,7 @@ export default function SettingsPage() {
             <CardDescription className="text-primary">{t('settings.theme')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               {themes.map(({ name, icon: Icon, label }) => (
                 <Button
                   key={name}
