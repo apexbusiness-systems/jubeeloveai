@@ -1,12 +1,12 @@
 import { SEO } from '@/components/SEO';
 import { useGameStore } from '@/store/useGameStore';
-import { useJubeeStore } from '@/store/useJubeeStore';
+import { useJubeeStore, type JubeeVoice } from '@/store/useJubeeStore';
 import { useParentalStore } from '@/store/useParentalStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, Volume2, VolumeX, Sun, Moon, Sunrise, Sunset, Shield, Download } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, VolumeX, Sun, Moon, Sunrise, Sunset, Shield, Download, Play } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -17,9 +17,10 @@ export default function SettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentTheme, updateTheme } = useGameStore();
-  const { gender, setGender, speak } = useJubeeStore();
+  const { gender, setGender, voice, setVoice, speak } = useJubeeStore();
   const { children } = useParentalStore();
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
 
   const themes = [
     { name: 'morning', icon: Sunrise, label: 'Morning' },
@@ -27,6 +28,15 @@ export default function SettingsPage() {
     { name: 'evening', icon: Sunset, label: 'Evening' },
     { name: 'night', icon: Moon, label: 'Night' },
   ] as const;
+
+  const voiceOptions = [
+    { id: 'shimmer' as const, name: 'Shimmer', emoji: '✨', description: 'Warm & friendly' },
+    { id: 'nova' as const, name: 'Nova', emoji: '🌟', description: 'Bright & cheerful' },
+    { id: 'alloy' as const, name: 'Alloy', emoji: '🎯', description: 'Clear & balanced' },
+    { id: 'echo' as const, name: 'Echo', emoji: '🎵', description: 'Smooth & calm' },
+    { id: 'fable' as const, name: 'Fable', emoji: '📖', description: 'Storyteller voice' },
+    { id: 'onyx' as const, name: 'Onyx', emoji: '💎', description: 'Deep & strong' },
+  ];
 
   const handleGenderChange = (newGender: 'male' | 'female') => {
     setGender(newGender);
@@ -44,6 +54,28 @@ export default function SettingsPage() {
       title: t('common.success'),
       description: `${t('settings.theme')} ${theme}!`,
     });
+  };
+
+  const handleVoiceChange = (newVoice: JubeeVoice) => {
+    setVoice(newVoice);
+    const voiceOption = voiceOptions.find(v => v.id === newVoice);
+    speak(`Hi! I'm ${voiceOption?.name}!`);
+    toast({
+      title: t('common.success'),
+      description: `Voice changed to ${voiceOption?.name}!`,
+    });
+  };
+
+  const handleTestVoice = async (voiceId: JubeeVoice) => {
+    setTestingVoice(voiceId);
+    const currentVoice = voice;
+    setVoice(voiceId);
+    const voiceOption = voiceOptions.find(v => v.id === voiceId);
+    await speak(`Hi! I'm ${voiceOption?.name}!`);
+    if (voice !== voiceId) {
+      setVoice(currentVoice);
+    }
+    setTestingVoice(null);
   };
 
   return (
@@ -88,6 +120,62 @@ export default function SettingsPage() {
             >
               {t('personalization.boy')} {t('personalization.male')}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Voice Selection */}
+        <Card className="border-4 border-primary/30">
+          <CardHeader>
+            <CardTitle className="text-primary flex items-center gap-2">
+              <Volume2 className="w-6 h-6" />
+              Jubee's Voice
+            </CardTitle>
+            <CardDescription className="text-primary">
+              Choose how Jubee sounds
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {voiceOptions.map((option) => (
+                <div
+                  key={option.id}
+                  className="relative p-4 rounded-xl border-3 transition-all"
+                  style={{
+                    borderColor: voice === option.id ? 'hsl(var(--primary))' : 'hsl(var(--border))',
+                    backgroundColor: voice === option.id ? 'hsl(var(--primary) / 0.1)' : 'hsl(var(--muted) / 0.3)',
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div>
+                        <h4 className="font-bold text-primary">{option.name}</h4>
+                        <p className="text-xs text-muted-foreground">{option.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      onClick={() => handleVoiceChange(option.id)}
+                      variant={voice === option.id ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                    >
+                      {voice === option.id ? '✓ Selected' : 'Select'}
+                    </Button>
+                    <Button
+                      onClick={() => handleTestVoice(option.id)}
+                      variant="outline"
+                      size="sm"
+                      disabled={testingVoice === option.id}
+                    >
+                      <Play className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
