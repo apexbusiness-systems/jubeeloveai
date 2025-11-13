@@ -100,9 +100,13 @@ export function JubeeMascot({ position = [2.5, -1.5, 0], animation = 'idle' }: J
   }
 
   useFrame((state) => {
-    if (!group.current) return
+    if (!group.current) {
+      console.warn('[Jubee] Group ref is null, skipping frame')
+      return
+    }
 
-    const time = state.clock.elapsedTime
+    try {
+      const time = state.clock.elapsedTime
     
     // Blinking animation - blink every 3-5 seconds
     if (time - blinkTime > 3 + Math.random() * 2) {
@@ -144,8 +148,14 @@ export function JubeeMascot({ position = [2.5, -1.5, 0], animation = 'idle' }: J
       group.current.position.z = position[2]
     }
 
-    // Update position in store
-    updatePosition(group.current.position)
+    // Update position in store (with error handling)
+    try {
+      if (group.current && group.current.position) {
+        updatePosition(group.current.position)
+      }
+    } catch (error) {
+      console.error('[Jubee] Error updating position:', error)
+    }
 
     // Breathing animation - body scale
     if (bodyRef.current) {
@@ -182,6 +192,10 @@ export function JubeeMascot({ position = [2.5, -1.5, 0], animation = 'idle' }: J
     if (group.current) {
       targetScale.set(isHovered ? 1.1 : 1, isHovered ? 1.1 : 1, isHovered ? 1.1 : 1)
       group.current.scale.lerp(targetScale, 0.1)
+    }
+    } catch (error) {
+      console.error('[Jubee] Error in useFrame:', error)
+      // Continue with minimal safe operations
     }
   })
 

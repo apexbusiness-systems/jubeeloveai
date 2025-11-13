@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 
 interface StateCheckpoint {
   timestamp: number
@@ -31,7 +32,7 @@ export function useJubeeStateRecovery() {
   const recoveryLevelRef = useRef(0) // 0 = no recovery, 1 = position reset, 2 = full reset
 
   // Create a state checkpoint
-  const createCheckpoint = useCallback(() => {
+  const createCheckpoint = useCallback(async () => {
     const state = useJubeeStore.getState()
     
     const checkpoint: StateCheckpoint = {
@@ -57,6 +58,16 @@ export function useJubeeStateRecovery() {
     // Update last healthy state if system is stable
     if (recoveryLevelRef.current === 0) {
       lastHealthyStateRef.current = checkpoint
+      
+      // Also create IndexedDB backup for critical checkpoints
+      await jubeeStateBackupService.createBackup({
+        gender: state.gender,
+        voice: state.voice,
+        position: state.position,
+        containerPosition: state.containerPosition,
+        isVisible: state.isVisible,
+        currentAnimation: state.currentAnimation
+      })
     }
 
     console.log('[State Recovery] Checkpoint created:', checkpoint.timestamp)
@@ -88,16 +99,39 @@ export function useJubeeStateRecovery() {
   }, [restoreCheckpoint])
 
   // Restore to last known healthy state
-  const restoreLastHealthyState = useCallback((): boolean => {
-    if (!lastHealthyStateRef.current) {
-      console.warn('[State Recovery] No healthy state available')
-      return false
+  const restoreLastHealthyState = useCallback(async (): Promise<boolean> => {
+    // First try in-memory checkpoint
+    if (lastHealthyStateRef.current) {
+      console.log('[State Recovery] Restoring from in-memory checkpoint')
+      restoreCheckpoint(lastHealthyStateRef.current)
+      return true
     }
 
-    console.log('[State Recovery] Restoring last healthy state')
-    restoreCheckpoint(lastHealthyStateRef.current)
+    // Fallback to IndexedDB backup
+    console.log('[State Recovery] No in-memory checkpoint, trying IndexedDB backup')
+    const backupState = await jubeeStateBackupService.restoreFromBackup()
     
-    return true
+    if (backupState) {
+      const { setContainerPosition, triggerAnimation, setGender, toggleVisibility } = useJubeeStore.getState()
+      
+      setContainerPosition(backupState.containerPosition)
+      triggerAnimation(backupState.currentAnimation)
+      setGender(backupState.gender)
+      
+      if (backupState.isVisible) {
+        // Ensure visibility matches
+        const { isVisible } = useJubeeStore.getState()
+        if (!isVisible) {
+          toggleVisibility()
+        }
+      }
+      
+      console.log('[State Recovery] Restored from IndexedDB backup')
+      return true
+    }
+
+    console.warn('[State Recovery] No healthy state or backup available')
+    return false
   }, [restoreCheckpoint])
 
   // Recovery preset: Position only
@@ -161,9 +195,11 @@ export function useJubeeStateRecovery() {
 
       case 'render':
         if (recoveryLevelRef.current < 2) {
-          if (!restoreLastHealthyState()) {
-            fullReset()
-          }
+          restoreLastHealthyState().then((success) => {
+            if (!success) {
+              fullReset()
+            }
+          })
         } else {
           fullReset()
         }

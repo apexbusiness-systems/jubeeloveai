@@ -8,6 +8,7 @@ import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { JubeeErrorBoundary } from './components/JubeeErrorBoundary';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
@@ -171,28 +172,7 @@ export default function App() {
                   transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease'
                 }}
               >
-                <ErrorBoundary
-                  fallback={
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center p-4 bg-background/80 rounded-lg">
-                        <p className="text-primary font-bold mb-2">Jubee needs a quick rest! 🐝</p>
-                        <button
-                          onClick={() => {
-                            setCanvasError(false);
-                            window.location.reload();
-                          }}
-                          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:scale-105 transition-transform"
-                        >
-                          Refresh
-                        </button>
-                      </div>
-                    </div>
-                  }
-                  onError={(error) => {
-                    console.error('[Jubee] Canvas error:', error);
-                    setCanvasError(true);
-                  }}
-                >
+                <JubeeErrorBoundary>
                   <Canvas 
                     key={`jubee-canvas-${isVisible}`}
                     camera={{ position: [0, 0, 6], fov: 45 }}
@@ -233,7 +213,7 @@ export default function App() {
                       />
                     </Suspense>
                   </Canvas>
-                </ErrorBoundary>
+                </JubeeErrorBoundary>
               </div>
             )}
 

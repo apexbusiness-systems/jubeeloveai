@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
 import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
+import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 
 // Extend Window interface for i18next properties
 declare global {
@@ -392,31 +393,122 @@ export const useJubeeStore = create<JubeeState>()(
     })),
     {
       name: 'jubee-store',
+      version: 2, // Increment version for schema changes
       partialize: (state) => ({ 
         gender: state.gender,
         voice: state.voice,
-        containerPosition: state.containerPosition 
+        containerPosition: state.containerPosition,
+        position: state.position,
+        isVisible: state.isVisible,
+        currentAnimation: state.currentAnimation,
+        // Persist last known good state for recovery
+        lastError: null, // Reset errors on persist
+        isProcessing: false, // Reset processing state
+        isTransitioning: false // Reset transition state
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('[Jubee] Storage rehydration error:', error)
+          // Fallback to safe defaults
+          if (state) {
+            const safeDefaults = getSafeDefaultPosition()
+            state.containerPosition = safeDefaults.container
+            state.position = safeDefaults.canvas
+            state.isVisible = true
+            state.currentAnimation = 'idle'
+          }
+          return
+        }
+        
         if (state) {
-          // Validate persisted position on load
+          // Comprehensive state validation on load
+          console.log('[Jubee] Rehydrating state from storage')
+          
+          // Validate and fix position
           const validated = validatePosition(state.position, state.containerPosition)
           state.containerPosition = validated.container
-          console.log('[Jubee] Rehydrated with validated position')
+          state.position = validated.canvas
+          
+          // Ensure visibility is valid
+          if (typeof state.isVisible !== 'boolean') {
+            state.isVisible = true
+          }
+          
+          // Ensure animation is valid
+          if (!state.currentAnimation || typeof state.currentAnimation !== 'string') {
+            state.currentAnimation = 'idle'
+          }
+          
+          // Ensure gender is valid
+          if (state.gender !== 'male' && state.gender !== 'female') {
+            state.gender = 'female'
+          }
+          
+          // Ensure voice is valid
+          const validVoices: JubeeVoice[] = ['shimmer', 'nova', 'alloy', 'echo', 'fable', 'onyx']
+          if (!validVoices.includes(state.voice)) {
+            state.voice = 'shimmer'
+          }
+          
+          // Reset transient states
+          state.lastError = null
+          state.isProcessing = false
+          state.isTransitioning = false
+          state.speechText = ''
+          state.isDragging = false
+          
+          console.log('[Jubee] Rehydrated with validated state:', {
+            containerPosition: state.containerPosition,
+            position: state.position,
+            isVisible: state.isVisible,
+            currentAnimation: state.currentAnimation,
+            gender: state.gender,
+            voice: state.voice
+          })
         }
       }
     }
   )
 )
 
-// Periodic health check
+// Initialize backup service and start auto-backup
 if (typeof window !== 'undefined') {
+  // Initialize backup service
+  jubeeStateBackupService.init().then(() => {
+    // Start automatic backups
+    jubeeStateBackupService.startAutoBackup(() => {
+      const state = useJubeeStore.getState()
+      return {
+        gender: state.gender,
+        voice: state.voice,
+        position: state.position,
+        containerPosition: state.containerPosition,
+        isVisible: state.isVisible,
+        currentAnimation: state.currentAnimation
+      }
+    })
+  }).catch((error) => {
+    console.error('[Jubee] Failed to initialize backup service:', error)
+  })
+
+  // Periodic health check with backup on issues
   setInterval(() => {
     const state = useJubeeStore.getState()
     const health = performHealthCheck(state)
     
     if (!health.isHealthy) {
       console.warn('[Jubee Health] Issues detected:', health.issues)
+      
+      // Create emergency backup before recovery
+      jubeeStateBackupService.createBackup({
+        gender: state.gender,
+        voice: state.voice,
+        position: state.position,
+        containerPosition: state.containerPosition,
+        isVisible: state.isVisible,
+        currentAnimation: state.currentAnimation
+      })
+      
       if (health.recommendedAction !== 'none') {
         executeRecovery(health.recommendedAction, (updates) => {
           useJubeeStore.setState(updates)
