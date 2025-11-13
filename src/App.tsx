@@ -29,6 +29,10 @@ const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
 const StoryTime = lazy(() => import('./modules/reading/StoryTime'));
 const MemoryGame = lazy(() => import('./modules/games/MemoryGame'));
 const PatternGame = lazy(() => import('./modules/games/PatternGame'));
+const NumberGame = lazy(() => import('./modules/games/NumberGame'));
+const AlphabetGame = lazy(() => import('./modules/games/AlphabetGame'));
+const ColorGame = lazy(() => import('./modules/games/ColorGame'));
+const PuzzleGame = lazy(() => import('./modules/games/PuzzleGame'));
 const ProgressPage = lazy(() => import('./pages/Progress'));
 const StickersPage = lazy(() => import('./pages/Stickers'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
@@ -245,6 +249,10 @@ export default function App() {
                     <Route path="/games" element={<GamesMenu />} />
                     <Route path="/games/memory" element={<MemoryGame />} />
                     <Route path="/games/pattern" element={<PatternGame />} />
+                    <Route path="/games/numbers" element={<NumberGame />} />
+                    <Route path="/games/alphabet" element={<AlphabetGame />} />
+                    <Route path="/games/colors" element={<ColorGame />} />
+                    <Route path="/games/puzzle" element={<PuzzleGame />} />
                     <Route path="/progress" element={<ProgressPage />} />
                     <Route path="/stickers" element={<StickersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
@@ -410,7 +418,7 @@ function GamesMenu() {
         Play and learn with Jubee!
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         <button
           onClick={() => {
             triggerAnimation('excited');
@@ -422,9 +430,9 @@ function GamesMenu() {
             boxShadow: 'var(--shadow-game)'
           }}
         >
-          <div className="text-8xl mb-4">🧠</div>
-          <h2 className="text-3xl font-bold text-primary-foreground mb-2">Memory Match</h2>
-          <p className="text-xl text-primary-foreground opacity-90">Find matching pairs!</p>
+          <div className="text-7xl mb-4">🧠</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Memory Match</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Find matching pairs!</p>
         </button>
 
         <button
@@ -438,9 +446,73 @@ function GamesMenu() {
             boxShadow: 'var(--shadow-accent)'
           }}
         >
-          <div className="text-8xl mb-4">🎯</div>
-          <h2 className="text-3xl font-bold text-primary-foreground mb-2">Pattern Game</h2>
-          <p className="text-xl text-primary-foreground opacity-90">Repeat the pattern!</p>
+          <div className="text-7xl mb-4">🎯</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Pattern Game</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Repeat the pattern!</p>
+        </button>
+
+        <button
+          onClick={() => {
+            triggerAnimation('excited');
+            navigate('/games/numbers');
+          }}
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+          style={{
+            background: 'var(--gradient-game)',
+            boxShadow: 'var(--shadow-game)'
+          }}
+        >
+          <div className="text-7xl mb-4">🔢</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Number Adventure</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Learn counting & math!</p>
+        </button>
+
+        <button
+          onClick={() => {
+            triggerAnimation('excited');
+            navigate('/games/alphabet');
+          }}
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+          style={{
+            background: 'var(--gradient-warm)',
+            boxShadow: 'var(--shadow-game)'
+          }}
+        >
+          <div className="text-7xl mb-4">🔤</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Alphabet Adventure</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Master your ABCs!</p>
+        </button>
+
+        <button
+          onClick={() => {
+            triggerAnimation('excited');
+            navigate('/games/colors');
+          }}
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+          style={{
+            background: 'var(--gradient-cool)',
+            boxShadow: 'var(--shadow-accent)'
+          }}
+        >
+          <div className="text-7xl mb-4">🌈</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Color Splash</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Match beautiful colors!</p>
+        </button>
+
+        <button
+          onClick={() => {
+            triggerAnimation('excited');
+            navigate('/games/puzzle');
+          }}
+          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+          style={{
+            background: 'var(--gradient-game)',
+            boxShadow: 'var(--shadow-game)'
+          }}
+        >
+          <div className="text-7xl mb-4">🧩</div>
+          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Puzzle Master</h2>
+          <p className="text-lg text-primary-foreground opacity-90">Solve picture puzzles!</p>
         </button>
       </div>
 
