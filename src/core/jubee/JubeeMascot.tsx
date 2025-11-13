@@ -67,7 +67,7 @@ const getJubeeColors = (gender: 'male' | 'female') => ({
 const tempVector = new THREE.Vector3()
 const targetScale = new THREE.Vector3()
 
-export function JubeeMascot({ position = [2.5, -1.5, 0], animation = 'idle' }: JubeeProps) {
+export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeProps) {
   const group = useRef<Group>(null)
   const bodyRef = useRef<Mesh>(null)
   const headRef = useRef<Mesh>(null)
