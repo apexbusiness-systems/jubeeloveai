@@ -14,7 +14,7 @@
  */
 
 import { useRef, useEffect, useState, useMemo } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { Text, Sparkles } from '@react-three/drei'
 import { Group, Mesh } from 'three'
 import { useJubeeStore } from '../../store/useJubeeStore'
@@ -92,7 +92,7 @@ export function JubeeMascot({ position = [2.5, -1.5, 0], animation = 'idle' }: J
     }
   }, [cleanup])
 
-  const handleClick = (e: any) => {
+  const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
     const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
     speak(randomGreeting)

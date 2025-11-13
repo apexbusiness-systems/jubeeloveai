@@ -18,6 +18,13 @@ interface ErrorContext {
   userAgent: string
 }
 
+interface ErrorLog {
+  message: string
+  stack?: string
+  name: string
+  context: ErrorContext
+}
+
 class ErrorHandler {
   /**
    * Execute a function with automatic retry logic
@@ -229,7 +236,7 @@ class ErrorHandler {
   /**
    * Send error to tracking service
    */
-  private async sendToErrorTracking(errorLog: any): Promise<void> {
+  private async sendToErrorTracking(errorLog: ErrorLog): Promise<void> {
     try {
       // Implement error tracking service integration here
       // Example: Sentry, LogRocket, or custom endpoint

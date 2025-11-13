@@ -197,12 +197,12 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     setTimeout(checkVisibility, 500)
 
     return () => clearInterval(intervalId)
-  }, [isVisible, containerRef])
+  }, [isVisible, containerRef, checkVisibility])
 
   // Check on position changes
   useEffect(() => {
     setTimeout(checkVisibility, 300)
-  }, [containerPosition])
+  }, [containerPosition, checkVisibility])
 
   return {
     needsRecovery,

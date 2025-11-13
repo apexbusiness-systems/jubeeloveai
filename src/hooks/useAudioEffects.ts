@@ -1,11 +1,21 @@
 import { useRef, useCallback } from 'react';
 
+// Extend Window interface for webkitAudioContext
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+  }
+}
+
 export const useAudioEffects = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const getAudioContext = useCallback(() => {
     if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        audioContextRef.current = new AudioContextClass();
+      }
     }
     return audioContextRef.current;
   }, []);

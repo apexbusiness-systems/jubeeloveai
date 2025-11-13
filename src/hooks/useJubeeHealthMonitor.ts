@@ -197,7 +197,7 @@ export function useJubeeHealthMonitor() {
     }, HEALTH_CHECK_INTERVAL)
 
     return () => clearInterval(intervalId)
-  }, [healthStatus])
+  }, [healthStatus, updateHealthStatus])
 
   // Monitor position changes
   useEffect(() => {
@@ -214,7 +214,7 @@ export function useJubeeHealthMonitor() {
     })
 
     return unsubscribe
-  }, [])
+  }, [trackPositionChange])
 
   return {
     healthStatus,
