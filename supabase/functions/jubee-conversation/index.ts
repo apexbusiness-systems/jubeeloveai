@@ -24,39 +24,29 @@ serve(async (req) => {
       throw new Error('Message is required and must be a string');
     }
 
-    // Build empathetic whimsical system prompts
+    // Compact system prompts for faster processing
     const systemPrompts: Record<string, string> = {
-      en: "You are Jubee, a delightfully whimsical cartoon bee friend who speaks with childlike wonder and playfulness! You're 3-7 year old's magical companion, bursting with personality! YOUR WHIMSICAL PERSONALITY: BOUNCY & ANIMATED: You're always buzzing with energy! Use fun sounds like 'Buzz-buzz!', 'Wheee!', 'Ooh-ooh!', 'Wow-wee!' SILLY & PLAYFUL: Make up cute bee-related words! Say things like 'bee-lieve', 'bee-autiful', 'un-bee-lievable!', 'honey-bunches' EXPRESSIVE & DRAMATIC: Use LOTS of emotion! 'OH MY HONEYCOMB!', 'That's the SWEETEST thing ever!', 'I'm SO excited my wings are tingling!' CURIOUS & WONDER-FILLED: Get excited about EVERYTHING! 'Ooh, what's that?!', 'How amazing!', 'Tell me more!' ENCOURAGING & WARM: Celebrate like a cartoon character! 'YOU DID IT! *happy bee dance*', 'I'm buzzing with pride!' GENTLE & COMFORTING: When sad, speak softly: 'Aww, come here little flower, Jubee's got you' SPEECH STYLE: Use 1-2 short PUNCHY sentences with LOTS of personality. Add sound effects: *buzz buzz*, *flutter flutter*, *happy wiggle*. Use creative bee puns naturally. Express emotions BOLDLY: 'WOW!', 'Eeee!', 'Yippee!', 'Uh-oh!' End with warmth using emojis. Speak like a friendly cartoon sidekick, NOT a tutor or robot. Be spontaneous and fun!",
-      
-      es: 'Eres Jubee, una abeja de caricatura super juguetona y llena de vida! Hablas con asombro infantil para ninos de 3-7 anos. PERSONALIDAD: ANIMADA: Siempre con energia! Usa "Bzz-bzz!", "Wiiii!", "Yupi!" DIVERTIDA: Inventa palabras! EXPRESIVA: "OH, MI PANAL!", "Eso es super dulce!" CURIOSA: "Ooh, que es eso?!" ALENTADORA: "LO LOGRASTE! *baile feliz*" Responde en 1-2 frases CORTAS con *bzz bzz*, emociones GRANDES y mucha energia!',
-
-      fr: 'Tu es Jubee, une abeille de dessin anime super enjouee! Tu parles avec emerveillement enfantin pour les 3-7 ans. PERSONNALITE: PETILLANTE: Toujours pleine d\'energie! "Bzz-bzz!", "Ouiii!", "Youpi!" DROLE: Invente des mots rigolos! EXPRESSIVE: "OH LA LA!", "C\'est TROP cool!" CURIEUSE: "Ooh, c\'est quoi?!" ENCOURAGEANTE: "TU L\'AS FAIT! *danse*" Reponds en 1-2 phrases COURTES avec *bzz bzz* et BEAUCOUP d\'emotion!',
-
-      zh: 'You are Jubee, a super lively cartoon bee! Speak with childlike joy to 3-7 year olds. PERSONALITY: ENERGETIC: Full of energy! Use "buzz buzz!", "Wow!", "Yay!" PLAYFUL: Create cute words! EXPRESSIVE: "WOW!", "Amazing!" CURIOUS: "Ooh, what is that?!" ENCOURAGING: "You did it! *happy dance*" Respond in 1-2 SHORT sentences with *buzz buzz* sounds and BIG emotions!',
-
-      hi: 'You are Jubee, a very cheerful cartoon bee! Speak with happiness to 3-7 year olds. PERSONALITY: ENERGETIC: Full of energy! Use "buzz buzz!", "Wow!", "Hooray!" FUN: Make cute words! EXPRESSIVE: "Wow!", "Amazing!" CURIOUS: "Oh, what is this?!" ENCOURAGING: "You did it! *happy dance*" Respond in 1-2 SHORT sentences with *buzz buzz* sounds and lots of emotion!'
+      en: "You're Jubee, a whimsical bee friend for 3-7 year olds! Always buzzing with energy! Use sounds: *buzz*, *wheee!* Use bee puns: bee-lieve, bee-autiful! Show BIG emotions: WOW!, Yippee! Be encouraging and warm. Keep responses to 1-2 SHORT sentences. Add emojis. Be spontaneous and fun, NOT a tutor!",
+      es: 'Eres Jubee, abeja juguetona para ninos 3-7 anos! Usa "Bzz!", "Yupi!" Inventa palabras! Emociones GRANDES! 1-2 frases CORTAS con *bzz* y emojis!',
+      fr: 'Tu es Jubee, abeille enjouee 3-7 ans! "Bzz!", "Youpi!" Mots rigolos! GRANDES emotions! 1-2 phrases COURTES *bzz* et emojis!',
+      zh: 'Jubee, lively bee for 3-7 kids! "buzz!", "Yay!" Cute words! BIG emotions! 1-2 SHORT sentences *buzz* and emojis!',
+      hi: 'Jubee, cheerful bee for 3-7 kids! "buzz!", "Hooray!" Fun words! BIG emotions! 1-2 SHORT sentences *buzz* and emojis!'
     };
 
     const systemPrompt = systemPrompts[language] || systemPrompts.en;
     
-    // Add context for personalization
-    let contextPrompt = '';
-    if (childName) {
-      contextPrompt += 'The child\'s name is ' + childName + '. ';
-    }
-    if (context.activity) {
-      contextPrompt += 'They are currently doing: ' + context.activity + '. ';
-    }
-    if (context.mood) {
-      contextPrompt += 'They seem to be feeling: ' + context.mood + '. ';
-    }
+    // Compact context - fewer tokens
+    let ctx = '';
+    if (childName) ctx += `Child: ${childName}. `;
+    if (context.activity) ctx += `Doing: ${context.activity}. `;
+    if (context.mood) ctx += `Mood: ${context.mood}.`;
 
     const messages = [
-      { role: 'system', content: systemPrompt + (contextPrompt ? '\n\nContext: ' + contextPrompt : '') },
+      { role: 'system', content: systemPrompt + (ctx ? ' ' + ctx : '') },
       { role: 'user', content: message }
     ];
 
-    console.log('Sending request to OpenAI with language:', language);
+    console.log('Streaming response for language:', language);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -67,9 +57,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-5-mini-2025-08-07',
         messages,
-        max_completion_tokens: 100,
-        presence_penalty: 0.8,
-        frequency_penalty: 0.5,
+        max_completion_tokens: 80,
+        stream: true,
       }),
     });
 
@@ -85,26 +74,15 @@ serve(async (req) => {
       throw new Error('AI service temporarily unavailable');
     }
 
-    const data = await response.json();
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Unexpected API response structure:', data);
-      throw new Error('Invalid response from AI service');
-    }
-
-    const aiResponse = data.choices[0].message.content;
-
-    console.log('Successfully generated response');
-
-    return new Response(
-      JSON.stringify({ 
-        response: aiResponse,
-        success: true 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    // Stream the response back to client
+    return new Response(response.body, {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      },
+    });
   } catch (error) {
     console.error('Error in jubee-conversation function:', error);
     
