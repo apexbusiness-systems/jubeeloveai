@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
+import { validatePosition, getSafeDefaultPosition } from '@/core/jubee/JubeePositionValidator'
+import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 
 // Cleanup timers map
 const timers = new Map<string, NodeJS.Timeout>()
@@ -72,41 +74,25 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       updatePosition: (position) => {
-        // Throttle position updates to avoid excessive store updates
         const now = Date.now()
         const lastUpdate = (timers.get('positionUpdate') as any)?.time || 0
-        if (now - lastUpdate < 100) return // Update max 10 times per second
+        if (now - lastUpdate < 100) return
         
         timers.set('positionUpdate', { time: now } as any)
         
         set((state) => {
           if (position) {
-            // Apply bounds checking
-            const boundedX = Math.max(POSITION_BOUNDS.x.min, Math.min(POSITION_BOUNDS.x.max, position.x))
-            const boundedY = Math.max(POSITION_BOUNDS.y.min, Math.min(POSITION_BOUNDS.y.max, position.y))
-            const boundedZ = Math.max(POSITION_BOUNDS.z.min, Math.min(POSITION_BOUNDS.z.max, position.z))
-            
-            // Log if position was out of bounds
-            if (boundedX !== position.x || boundedY !== position.y || boundedZ !== position.z) {
-              console.warn('[Jubee] Position out of bounds, clamped:', {
-                original: position,
-                clamped: { x: boundedX, y: boundedY, z: boundedZ }
-              })
-            }
-            
-            if (Math.abs(state.position.x - boundedX) > 0.01 ||
-                Math.abs(state.position.y - boundedY) > 0.01 ||
-                Math.abs(state.position.z - boundedZ) > 0.01) {
-              state.position = { x: boundedX, y: boundedY, z: boundedZ }
-            }
+            const validated = validatePosition({ x: position.x, y: position.y, z: position.z })
+            state.position = validated.canvas
           }
         })
       },
 
       setContainerPosition: (position) => {
         set((state) => {
-          state.containerPosition = position
-          console.log('[Jubee] Container position updated:', position)
+          const validated = validatePosition(undefined, position)
+          state.containerPosition = validated.container
+          console.log('[Jubee] Container position validated:', validated.container)
         })
       },
 
@@ -369,17 +355,14 @@ export const useJubeeStore = create<JubeeState>()(
 
       cleanup: () => {
         console.log('[Jubee] Cleanup called')
-        // Clear all timers
         timers.forEach((timer) => clearTimeout(timer))
         timers.clear()
         
-        // Stop audio
         if (currentAudio) {
           currentAudio.pause()
           currentAudio = null
         }
         
-        // Stop browser speech
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel()
         }
@@ -391,10 +374,35 @@ export const useJubeeStore = create<JubeeState>()(
         gender: state.gender,
         voice: state.voice,
         containerPosition: state.containerPosition 
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Validate persisted position on load
+          const validated = validatePosition(state.position, state.containerPosition)
+          state.containerPosition = validated.container
+          console.log('[Jubee] Rehydrated with validated position')
+        }
+      }
     }
   )
 )
+
+// Periodic health check
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    const state = useJubeeStore.getState()
+    const health = performHealthCheck(state)
+    
+    if (!health.isHealthy) {
+      console.warn('[Jubee Health] Issues detected:', health.issues)
+      if (health.recommendedAction !== 'none') {
+        executeRecovery(health.recommendedAction, (updates) => {
+          useJubeeStore.setState(updates)
+        })
+      }
+    }
+  }, 10000) // Check every 10 seconds
+}
 
 // Browser speech fallback helper with mood support
 function useBrowserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
