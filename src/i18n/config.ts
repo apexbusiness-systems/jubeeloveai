@@ -28,14 +28,22 @@ i18n
     }
   })
 
+// Extend Window interface for i18next (if not already extended)
+declare global {
+  interface Window {
+    i18next?: typeof i18n
+    i18nextLanguage?: string
+  }
+}
+
 // Expose i18n and current language to window for use in other modules
 if (typeof window !== 'undefined') {
-  (window as any).i18next = i18n;
-  (window as any).i18nextLanguage = i18n.language;
+  window.i18next = i18n;
+  window.i18nextLanguage = i18n.language;
   
   // Update window language when it changes
   i18n.on('languageChanged', (lng) => {
-    (window as any).i18nextLanguage = lng;
+    window.i18nextLanguage = lng;
   });
 }
 

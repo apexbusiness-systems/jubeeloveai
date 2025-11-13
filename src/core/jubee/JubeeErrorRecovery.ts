@@ -1,9 +1,11 @@
 /**
  * Jubee Error Recovery System
- * 
+ *
  * Proactive error detection and graceful recovery.
  * Ensures Jubee never breaks, always recovers gracefully.
  */
+
+import { getContainerDimensions, getViewportBounds } from './JubeeDom'
 
 export type RecoveryAction = 'none' | 'position_reset' | 'animation_reset' | 'full_reset' | 'force_visibility'
 
@@ -12,6 +14,17 @@ export interface HealthCheck {
   issues: string[]
   recommendedAction: RecoveryAction
 }
+
+interface JubeeState {
+  containerPosition: { bottom: number; right: number }
+  position: { x: number; y: number; z: number }
+  isDragging: boolean
+  isVisible: boolean
+  currentAnimation: string
+  [key: string]: unknown
+}
+
+type StateUpdater = (updates: Partial<JubeeState>) => void
 
 /**
  * Comprehensive health check
@@ -27,14 +40,10 @@ export function performHealthCheck(state: {
   let recommendedAction: RecoveryAction = 'none'
 
   // Check viewport clipping
-  const viewport = {
-    width: window.innerWidth,
-    height: window.innerHeight
-  }
-
-  const jubeeSize = { width: 150, height: 200 }
-  const absoluteLeft = viewport.width - state.containerPosition.right - jubeeSize.width
-  const absoluteTop = viewport.height - state.containerPosition.bottom - jubeeSize.height
+  const viewport = getViewportBounds()
+  const containerDims = getContainerDimensions()
+  const absoluteLeft = viewport.width - state.containerPosition.right - containerDims.width
+  const absoluteTop = viewport.height - state.containerPosition.bottom - containerDims.height
 
   if (absoluteLeft < 0 || absoluteTop < 0 ||
       state.containerPosition.right < 0 || state.containerPosition.bottom < 0) {
@@ -83,7 +92,7 @@ export function performHealthCheck(state: {
  */
 export function executeRecovery(
   action: RecoveryAction,
-  setState: (updates: any) => void
+  setState: StateUpdater
 ): void {
   console.log('[Jubee Recovery] Executing:', action)
 
@@ -131,23 +140,21 @@ export function executeRecovery(
  * Proactive validation before state changes
  */
 export function validateStateChange(
-  currentState: any,
-  proposedChanges: any
-): { valid: boolean; safeChanges: any } {
+  currentState: JubeeState,
+  proposedChanges: Partial<JubeeState>
+): { valid: boolean; safeChanges: Partial<JubeeState> } {
   const safeChanges = { ...proposedChanges }
 
   // Validate position changes
   if (proposedChanges.containerPosition) {
-    const viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight
-    }
-    
+    const viewport = getViewportBounds()
+    const containerDims = getContainerDimensions()
+
     const pos = proposedChanges.containerPosition
     const minRight = 20
-    const maxRight = viewport.width - 170
+    const maxRight = viewport.width - containerDims.width - 20
     const minBottom = 20
-    const maxBottom = viewport.height - 220
+    const maxBottom = viewport.height - containerDims.height - 20
 
     safeChanges.containerPosition = {
       right: Math.max(minRight, Math.min(maxRight, pos.right)),

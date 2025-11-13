@@ -65,7 +65,7 @@ interface DBSchema {
       age: number
       gender: string
       avatarUrl?: string
-      settings: Record<string, any>
+      settings: Record<string, unknown>
       updatedAt: string
       synced: boolean
     }
@@ -321,7 +321,7 @@ class IndexedDBService {
   ): Promise<DBSchema[K]['value'][]> {
     try {
       const all = await this.getAll(storeName)
-      return all.filter((item: any) => !item.synced)
+      return all.filter((item: DBSchema[K]['value']) => !item.synced)
     } catch (error) {
       console.error(`IndexedDB getUnsynced error in ${storeName}:`, error)
       return []
@@ -373,33 +373,41 @@ class IndexedDBService {
   private fallbackToLocalStorage(
     operation: string,
     storeName: string,
-    data?: any
-  ): any {
+    data?: unknown
+  ): unknown {
     const key = `${DB_NAME}_${storeName}`
+    
+    interface ItemWithId {
+      id: string
+      [key: string]: unknown
+    }
     
     try {
       switch (operation) {
         case 'put': {
-          const existing = JSON.parse(localStorage.getItem(key) || '[]')
-          const index = existing.findIndex((item: any) => item.id === data.id)
+          const existing = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
+          const putData = data as ItemWithId
+          const index = existing.findIndex((item: ItemWithId) => item.id === putData.id)
           if (index >= 0) {
-            existing[index] = data
+            existing[index] = putData
           } else {
-            existing.push(data)
+            existing.push(putData)
           }
           localStorage.setItem(key, JSON.stringify(existing))
           break
         }
         case 'get': {
-          const items = JSON.parse(localStorage.getItem(key) || '[]')
-          return items.find((item: any) => item.id === data)
+          const items = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
+          const id = data as string
+          return items.find((item: ItemWithId) => item.id === id)
         }
         case 'getAll': {
           return JSON.parse(localStorage.getItem(key) || '[]')
         }
         case 'delete': {
-          const items = JSON.parse(localStorage.getItem(key) || '[]')
-          const filtered = items.filter((item: any) => item.id !== data)
+          const items = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
+          const id = data as string
+          const filtered = items.filter((item: ItemWithId) => item.id !== id)
           localStorage.setItem(key, JSON.stringify(filtered))
           break
         }

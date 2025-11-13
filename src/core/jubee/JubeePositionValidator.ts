@@ -1,10 +1,12 @@
 /**
  * Jubee Position Validator
- * 
+ *
  * Bulletproof positioning system with multiple validation layers.
  * Ensures Jubee NEVER clips outside viewport boundaries.
  * Apple-level precision and reliability.
  */
+
+import { getContainerDimensions, getViewportBounds } from './JubeeDom'
 
 export interface Position3D {
   x: number
@@ -20,12 +22,6 @@ export interface ContainerPosition {
 export interface ViewportBounds {
   width: number
   height: number
-}
-
-// SAFE ZONE CONSTANTS - Conservative boundaries
-const JUBEE_SIZE = {
-  width: 150, // Container width
-  height: 200, // Container height (including antenna)
 }
 
 const SAFE_MARGINS = {
@@ -63,15 +59,7 @@ export function validateCanvasPosition(pos: Position3D): Position3D {
   return clamped
 }
 
-/**
- * Get current viewport dimensions
- */
-export function getViewportBounds(): ViewportBounds {
-  return {
-    width: window.innerWidth,
-    height: window.innerHeight
-  }
-}
+// getViewportBounds is imported from JubeeDom
 
 /**
  * Validate and clamp container position within viewport
@@ -79,17 +67,18 @@ export function getViewportBounds(): ViewportBounds {
  */
 export function validateContainerPosition(pos: ContainerPosition): ContainerPosition {
   const viewport = getViewportBounds()
-  
+  const containerDims = getContainerDimensions()
+
   // Calculate absolute position from bottom-right
   const absoluteRight = pos.right
   const absoluteBottom = pos.bottom
-  
+
   // Ensure we stay within safe bounds
   const minRight = SAFE_MARGINS.right
-  const maxRight = viewport.width - JUBEE_SIZE.width - SAFE_MARGINS.left
+  const maxRight = viewport.width - containerDims.width - SAFE_MARGINS.left
   const minBottom = SAFE_MARGINS.bottom
-  const maxBottom = viewport.height - JUBEE_SIZE.height - SAFE_MARGINS.top
-  
+  const maxBottom = viewport.height - containerDims.height - SAFE_MARGINS.top
+
   const clamped = {
     right: Math.max(minRight, Math.min(maxRight, absoluteRight)),
     bottom: Math.max(minBottom, Math.min(maxBottom, absoluteBottom))
@@ -126,10 +115,11 @@ export function getSafeDefaultPosition(): ContainerPosition {
  */
 export function isPositionSafe(pos: ContainerPosition): boolean {
   const viewport = getViewportBounds()
-  
-  const absoluteLeft = viewport.width - pos.right - JUBEE_SIZE.width
-  const absoluteTop = viewport.height - pos.bottom - JUBEE_SIZE.height
-  
+  const containerDims = getContainerDimensions()
+
+  const absoluteLeft = viewport.width - pos.right - containerDims.width
+  const absoluteTop = viewport.height - pos.bottom - containerDims.height
+
   return (
     absoluteLeft >= SAFE_MARGINS.left &&
     absoluteTop >= SAFE_MARGINS.top &&
@@ -142,22 +132,23 @@ export function isPositionSafe(pos: ContainerPosition): boolean {
  * Get preferred non-colliding positions in order of priority
  */
 export function getPreferredPositions(viewport: ViewportBounds): ContainerPosition[] {
+  const containerDims = getContainerDimensions()
   const centerX = viewport.width / 2
   const centerY = viewport.height / 2
-  
+
   return [
     // Bottom-right (default)
     { right: 100, bottom: 200 },
     // Bottom-left
-    { right: viewport.width - JUBEE_SIZE.width - 100, bottom: 200 },
+    { right: viewport.width - containerDims.width - 100, bottom: 200 },
     // Top-right
-    { right: 100, bottom: viewport.height - JUBEE_SIZE.height - 100 },
+    { right: 100, bottom: viewport.height - containerDims.height - 100 },
     // Top-left
-    { right: viewport.width - JUBEE_SIZE.width - 100, bottom: viewport.height - JUBEE_SIZE.height - 100 },
+    { right: viewport.width - containerDims.width - 100, bottom: viewport.height - containerDims.height - 100 },
     // Center-right
     { right: 100, bottom: centerY },
     // Center-left
-    { right: viewport.width - JUBEE_SIZE.width - 100, bottom: centerY },
+    { right: viewport.width - containerDims.width - 100, bottom: centerY },
   ].map(validateContainerPosition) // Validate all positions
 }
 

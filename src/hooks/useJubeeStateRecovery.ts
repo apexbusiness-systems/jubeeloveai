@@ -161,7 +161,9 @@ export function useJubeeStateRecovery() {
 
       case 'render':
         if (recoveryLevelRef.current < 2) {
-          restoreLastHealthyState() || fullReset()
+          if (!restoreLastHealthyState()) {
+            fullReset()
+          }
         } else {
           fullReset()
         }

@@ -94,7 +94,7 @@ export default function WritingCanvas() {
         variant: "destructive"
       });
     }
-  }, [currentCharacter, toast]);
+  }, [currentCharacter]);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     try {

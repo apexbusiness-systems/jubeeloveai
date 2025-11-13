@@ -129,7 +129,7 @@ export function useJubeePerformance() {
     }, PERFORMANCE_CHECK_INTERVAL)
 
     return () => clearInterval(intervalId)
-  }, [profile])
+  }, [profile, adjustQuality])
 
   return {
     profile,

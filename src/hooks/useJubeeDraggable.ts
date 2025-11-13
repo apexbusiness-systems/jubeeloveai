@@ -1,12 +1,13 @@
 /**
  * Jubee Draggable Hook
- * 
+ *
  * Enables dragging the Jubee container around the screen
  * with smooth animations and position persistence.
  */
 
 import { useCallback, useRef, useEffect } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { getContainerDimensions } from '@/core/jubee/JubeeDom'
 
 interface DragState {
   isDragging: boolean
@@ -18,8 +19,6 @@ interface DragState {
 
 // Enhanced boundary constants for defensive position management
 const SAFE_MARGIN = 50 // Margin to prevent edge clipping during drag
-const CONTAINER_WIDTH = 450
-const CONTAINER_HEIGHT = 500
 
 export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>) {
   const { containerPosition, setContainerPosition, setIsDragging } = useJubeeStore()
@@ -62,14 +61,15 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
   const validateBoundaries = useCallback((bottom: number, right: number): { bottom: number; right: number } => {
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
-    
+    const containerDims = getContainerDimensions()
+
     // Calculate absolute maximum right that keeps container fully visible
-    const absoluteMaxRight = viewportWidth - CONTAINER_WIDTH - SAFE_MARGIN
-    
+    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+
     // Enhanced boundary calculation with generous minimums
     const minBottom = 180 // Ensure above bottom navigation
     const minRight = 100 // Minimum distance from right edge
-    const maxBottom = Math.max(minBottom, viewportHeight - CONTAINER_HEIGHT - SAFE_MARGIN)
+    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
     const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300)) // Cap at 300px from right edge
     
     // Additional NaN/Infinity guards
@@ -91,8 +91,8 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const deltaY = e.clientY - dragStateRef.current.startY
     
     // Calculate new position (in bottom/right coordinates)
-    let newBottom = dragStateRef.current.startBottom - deltaY
-    let newRight = dragStateRef.current.startRight - deltaX
+    const newBottom = dragStateRef.current.startBottom - deltaY
+    const newRight = dragStateRef.current.startRight - deltaX
     
     // Apply defensive boundary validation
     const validated = validateBoundaries(newBottom, newRight)
@@ -109,8 +109,8 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
     
-    let finalBottom = viewportHeight - rect.bottom
-    let finalRight = viewportWidth - rect.right
+    const finalBottom = viewportHeight - rect.bottom
+    const finalRight = viewportWidth - rect.right
     
     // Apply final boundary validation before persisting
     const validated = validateBoundaries(finalBottom, finalRight)
@@ -158,8 +158,8 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const deltaX = touch.clientX - dragStateRef.current.startX
     const deltaY = touch.clientY - dragStateRef.current.startY
     
-    let newBottom = dragStateRef.current.startBottom - deltaY
-    let newRight = dragStateRef.current.startRight - deltaX
+    const newBottom = dragStateRef.current.startBottom - deltaY
+    const newRight = dragStateRef.current.startRight - deltaX
     
     // Apply defensive boundary validation
     const validated = validateBoundaries(newBottom, newRight)
@@ -175,8 +175,8 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
     
-    let finalBottom = viewportHeight - rect.bottom
-    let finalRight = viewportWidth - rect.right
+    const finalBottom = viewportHeight - rect.bottom
+    const finalRight = viewportWidth - rect.right
     
     // Apply final boundary validation before persisting
     const validated = validateBoundaries(finalBottom, finalRight)

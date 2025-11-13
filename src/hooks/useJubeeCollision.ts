@@ -1,12 +1,13 @@
 /**
  * Jubee Collision Detection Hook
- * 
+ *
  * Detects overlaps between Jubee and UI elements (cards, buttons, header)
  * and automatically repositions Jubee to avoid overlapping.
  */
 
 import { useEffect, useCallback, useRef } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { getContainerDimensions } from '@/core/jubee/JubeeDom'
 
 interface CollisionRect {
   top: number
@@ -28,8 +29,6 @@ const COLLISION_SELECTORS = [
 ]
 
 const COLLISION_PADDING = 20 // pixels
-const CONTAINER_WIDTH = 450
-const CONTAINER_HEIGHT = 500
 const SAFE_MARGIN = 50 // Margin to prevent edge clipping
 
 export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>) {
@@ -60,16 +59,17 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
   const validatePosition = useCallback((pos: { bottom: number; right: number }): { bottom: number; right: number } => {
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    
+    const containerDims = getContainerDimensions()
+
     // Calculate absolute maximum right that keeps container fully visible
     // right value is distance from right edge, so we need to ensure:
-    // viewportWidth - right - CONTAINER_WIDTH >= 0 (left edge is on screen)
-    const absoluteMaxRight = viewportWidth - CONTAINER_WIDTH - SAFE_MARGIN
-    
+    // viewportWidth - right - containerDims.width >= 0 (left edge is on screen)
+    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+
     // Enhanced boundary calculation with generous minimums to prevent clipping
     const minBottom = 180 // Ensure above bottom navigation
     const minRight = 100 // Minimum distance from right edge
-    const maxBottom = Math.max(minBottom, viewportHeight - CONTAINER_HEIGHT - SAFE_MARGIN)
+    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
     const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300)) // Cap at 300px from right edge
     
     // Validate with defensive boundaries
@@ -91,19 +91,20 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
   ): { bottom: number; right: number } | null => {
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    
+    const containerDims = getContainerDimensions()
+
     // Dynamic safe zone calculation based on viewport size
     const cornerMargin = Math.max(SAFE_MARGIN, Math.min(100, viewportWidth * 0.05))
-    const centerOffset = Math.max(CONTAINER_WIDTH / 2, Math.min(200, viewportWidth * 0.1))
-    
+    const centerOffset = Math.max(containerDims.width / 2, Math.min(200, viewportWidth * 0.1))
+
     // Try positions in order of preference with dynamic zones
     const positions = [
       { bottom: 200, right: 100 }, // Default safe position
       { bottom: cornerMargin, right: cornerMargin }, // Bottom-right corner
-      { bottom: cornerMargin, right: viewportWidth - CONTAINER_WIDTH - cornerMargin }, // Bottom-left corner
-      { bottom: viewportHeight - CONTAINER_HEIGHT - cornerMargin, right: cornerMargin }, // Top-right corner
-      { bottom: viewportHeight - CONTAINER_HEIGHT - cornerMargin, right: viewportWidth - CONTAINER_WIDTH - cornerMargin }, // Top-left corner
-      { bottom: viewportHeight / 2 - CONTAINER_HEIGHT / 2, right: cornerMargin }, // Middle-right
+      { bottom: cornerMargin, right: viewportWidth - containerDims.width - cornerMargin }, // Bottom-left corner
+      { bottom: viewportHeight - containerDims.height - cornerMargin, right: cornerMargin }, // Top-right corner
+      { bottom: viewportHeight - containerDims.height - cornerMargin, right: viewportWidth - containerDims.width - cornerMargin }, // Top-left corner
+      { bottom: viewportHeight / 2 - containerDims.height / 2, right: cornerMargin }, // Middle-right
       { bottom: cornerMargin, right: viewportWidth / 2 - centerOffset } // Bottom-center
     ]
 

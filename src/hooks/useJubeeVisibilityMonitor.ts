@@ -1,12 +1,13 @@
 /**
  * Jubee Visibility Monitor Hook
- * 
+ *
  * Monitors whether Jubee is actually visible on screen and renders properly.
  * Provides failsafe recovery when Jubee disappears or fails to render.
  */
 
 import { useEffect, useRef, useState } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { getContainerDimensions } from '@/core/jubee/JubeeDom'
 
 interface VisibilityState {
   isActuallyVisible: boolean
@@ -17,8 +18,6 @@ interface VisibilityState {
 const VISIBILITY_CHECK_INTERVAL = 2000 // Check every 2 seconds
 const INVISIBILITY_THRESHOLD = 5000 // Consider lost after 5 seconds
 const RECOVERY_ATTEMPTS_MAX = 3
-const CONTAINER_WIDTH = 450
-const CONTAINER_HEIGHT = 500
 const SAFE_MARGIN = 50 // Margin to prevent edge clipping
 
 export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivElement>) {
@@ -111,16 +110,17 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     // Enhanced recovery strategy with defensive boundaries
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
-    
+    const containerDims = getContainerDimensions()
+
     // Calculate absolute maximum right that keeps container fully visible
-    const absoluteMaxRight = viewportWidth - CONTAINER_WIDTH - SAFE_MARGIN
-    
+    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+
     // Calculate minimum safe positions to ensure full visibility
     const minBottom = 180
     const minRight = 100
-    
+
     // Calculate maximum safe boundaries
-    const maxBottom = Math.max(minBottom, viewportHeight - CONTAINER_HEIGHT - SAFE_MARGIN)
+    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
     const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300))
     
     // Calculate a safe position that's definitely visible with proper bounds
@@ -148,16 +148,17 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     // Enhanced reset with defensive boundaries
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
-    
+    const containerDims = getContainerDimensions()
+
     // Calculate absolute maximum right that keeps container fully visible
-    const absoluteMaxRight = viewportWidth - CONTAINER_WIDTH - SAFE_MARGIN
-    
+    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+
     // Calculate minimum safe positions
     const minBottom = 180
     const minRight = 100
-    
+
     // Calculate maximum safe boundaries
-    const maxBottom = Math.max(minBottom, viewportHeight - CONTAINER_HEIGHT - SAFE_MARGIN)
+    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
     const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300))
     
     // Ensure position is safe and visible with proper boundary enforcement
@@ -196,12 +197,12 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     setTimeout(checkVisibility, 500)
 
     return () => clearInterval(intervalId)
-  }, [isVisible, containerRef])
+  }, [isVisible, containerRef, checkVisibility])
 
   // Check on position changes
   useEffect(() => {
     setTimeout(checkVisibility, 300)
-  }, [containerPosition])
+  }, [containerPosition, checkVisibility])
 
   return {
     needsRecovery,

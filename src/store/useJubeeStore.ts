@@ -1,11 +1,27 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
-import { validatePosition, getSafeDefaultPosition } from '@/core/jubee/JubeePositionValidator'
+import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 
-// Cleanup timers map
-const timers = new Map<string, NodeJS.Timeout>()
+// Extend Window interface for i18next properties
+declare global {
+  interface Window {
+    i18next?: {
+      language: string
+      on: (event: string, callback: (language: string) => void) => void
+    }
+    i18nextLanguage?: string
+  }
+}
+
+// Timer entry type for position update throttling
+interface TimerEntry {
+  time: number
+}
+
+// Cleanup timers map - can store either Timeout or TimerEntry
+const timers = new Map<string, NodeJS.Timeout | TimerEntry>()
 let currentAudio: HTMLAudioElement | null = null
 
 export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
@@ -24,7 +40,7 @@ interface JubeeState {
   isVisible: boolean
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
-  updatePosition: (position: any) => void
+  updatePosition: (position: Position3D | null | undefined) => void
   setContainerPosition: (position: { bottom: number, right: number }) => void
   setIsDragging: (isDragging: boolean) => void
   triggerAnimation: (animation: string) => void
@@ -75,10 +91,11 @@ export const useJubeeStore = create<JubeeState>()(
 
       updatePosition: (position) => {
         const now = Date.now()
-        const lastUpdate = (timers.get('positionUpdate') as any)?.time || 0
+        const timerEntry = timers.get('positionUpdate')
+        const lastUpdate = (timerEntry && 'time' in timerEntry) ? timerEntry.time : 0
         if (now - lastUpdate < 100) return
         
-        timers.set('positionUpdate', { time: now } as any)
+        timers.set('positionUpdate', { time: now })
         
         set((state) => {
           if (position) {
@@ -169,7 +186,7 @@ export const useJubeeStore = create<JubeeState>()(
       const gender = get().gender
       const voice = get().voice
       // Get current language from i18n if available
-      const language = (window as any).i18nextLanguage || 'en'
+      const language = window.i18nextLanguage || 'en'
       set((state) => { 
         state.speechText = text
         state.lastError = null
@@ -239,7 +256,7 @@ export const useJubeeStore = create<JubeeState>()(
       // All retries failed, use browser speech fallback
       console.warn('TTS service unavailable, using browser fallback')
       set((state) => { state.lastError = 'TTS_FALLBACK' })
-      useBrowserSpeech(text, gender, mood)
+      browserSpeech(text, gender, mood)
       const timer = setTimeout(() => {
         set((state) => { state.speechText = '' })
         timers.delete('speech')
@@ -260,7 +277,7 @@ export const useJubeeStore = create<JubeeState>()(
         state.lastError = null
       })
 
-      const language = (window as any).i18nextLanguage || 'en'
+      const language = window.i18nextLanguage || 'en'
       const maxRetries = 2
       let retryCount = 0
 
@@ -355,7 +372,12 @@ export const useJubeeStore = create<JubeeState>()(
 
       cleanup: () => {
         console.log('[Jubee] Cleanup called')
-        timers.forEach((timer) => clearTimeout(timer))
+        timers.forEach((timer) => {
+          // Only clear actual timeout timers, not TimerEntry objects
+          if (!('time' in timer)) {
+            clearTimeout(timer as NodeJS.Timeout)
+          }
+        })
         timers.clear()
         
         if (currentAudio) {
@@ -405,12 +427,12 @@ if (typeof window !== 'undefined') {
 }
 
 // Browser speech fallback helper with mood support
-function useBrowserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
+function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
   if ('speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text)
     
     // Set language based on i18n
-    const language = (window as any).i18nextLanguage || 'en'
+    const language = window.i18nextLanguage || 'en'
     const langMap: Record<string, string> = {
       'en': 'en-US',
       'es': 'es-ES',
@@ -450,15 +472,15 @@ function useBrowserSpeech(text: string, gender: 'male' | 'female', mood: string 
 // Expose language for the store
 if (typeof window !== 'undefined') {
   const updateI18nLanguage = () => {
-    const i18n = (window as any).i18next
+    const i18n = window.i18next
     if (i18n) {
-      (window as any).i18nextLanguage = i18n.language
+      window.i18nextLanguage = i18n.language
     }
   }
   
   // Update on language change
-  if ((window as any).i18next) {
-    (window as any).i18next.on('languageChanged', updateI18nLanguage)
+  if (window.i18next) {
+    window.i18next.on('languageChanged', updateI18nLanguage)
     updateI18nLanguage()
   } else {
     // Retry after a short delay if i18next isn't loaded yet
