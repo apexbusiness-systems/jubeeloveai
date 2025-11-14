@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { Button } from '@/components/ui/button'
+import { useAudioEffects } from '@/hooks/useAudioEffects'
 
 interface Props {
   onClose: () => void
@@ -10,6 +11,7 @@ interface Props {
 export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
   const { gender, setGender, speak, triggerAnimation } = useJubeeStore()
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
+  const { playSuccessSound } = useAudioEffects()
 
   const handleSave = () => {
     setGender(selectedGender)
@@ -40,7 +42,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <button
-            onClick={() => setSelectedGender('male')}
+            onClick={() => {
+              playSuccessSound()
+              setSelectedGender('male')
+            }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
               background: 'var(--gradient-boy)',
@@ -61,7 +66,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
           </button>
 
           <button
-            onClick={() => setSelectedGender('female')}
+            onClick={() => {
+              playSuccessSound()
+              setSelectedGender('female')
+            }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
               background: 'var(--gradient-girl)',
