@@ -11,9 +11,10 @@ interface Props {
 export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
   const { gender, setGender, speak, triggerAnimation } = useJubeeStore()
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
-  const { playSuccessSound } = useAudioEffects()
+  const { playSuccessSound, playClearSound } = useAudioEffects()
 
   const handleSave = () => {
+    playSuccessSound()
     setGender(selectedGender)
     triggerAnimation('celebrate')
     speak(selectedGender === 'male' ? "I'm a boy bee! Buzz buzz!" : "I'm a girl bee! Buzz buzz!")
@@ -106,7 +107,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
 
         <div className="flex gap-4 justify-center">
           <button
-            onClick={onClose}
+            onClick={() => {
+              playClearSound()
+              onClose()
+            }}
             className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-white border-3 border-purple-400"
             style={{
               background: 'linear-gradient(135deg, hsl(270, 70%, 60%), hsl(280, 65%, 50%))',
