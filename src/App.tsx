@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Canvas } from '@react-three/fiber';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -161,50 +162,53 @@ export default function App() {
               </div>
             </header>
 
-            {isVisible && (
-              <div 
+            {/* Jubee rendered via Portal at document.body level for global viewport freedom */}
+            {isVisible && createPortal(
+              <div
                 ref={jubeeContainerRef}
-                className="jubee-container" 
+                className="jubee-container"
                 aria-hidden="true"
                 style={{
+                  position: 'fixed',
                   bottom: `${containerPosition.bottom}px`,
                   right: `${containerPosition.right}px`,
+                  zIndex: 9999,
                   transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease'
                 }}
               >
                 <JubeeErrorBoundary>
-                  <Canvas 
+                  <Canvas
                     key={`jubee-canvas-${isVisible}`}
                     camera={{ position: [0, 0, 6], fov: 45 }}
                     shadows
                     style={{ background: 'transparent' }}
-                    gl={{ 
+                    gl={{
                       antialias: true,
                       alpha: true,
                       powerPreference: "high-performance"
                     }}
                     onCreated={({ gl }) => {
-                      console.log('[Jubee] Canvas created');
+                      console.log('[Jubee] Canvas created via Portal');
                       gl.setClearColor('#000000', 0);
                     }}
                   >
                     <ambientLight intensity={1.2} />
-                    <directionalLight 
-                      position={[5, 5, 5]} 
+                    <directionalLight
+                      position={[5, 5, 5]}
                       intensity={1.5}
                       castShadow
                       shadow-mapSize-width={2048}
                       shadow-mapSize-height={2048}
                     />
-                    <directionalLight 
-                      position={[-5, 3, -5]} 
+                    <directionalLight
+                      position={[-5, 3, -5]}
                       intensity={0.8}
                       color="#ffd700"
                     />
-                    <hemisphereLight 
-                      color="#87CEEB" 
-                      groundColor="#FFD700" 
-                      intensity={0.6} 
+                    <hemisphereLight
+                      color="#87CEEB"
+                      groundColor="#FFD700"
+                      intensity={0.6}
                     />
                     <Suspense fallback={null}>
                       <JubeeMascot
@@ -214,7 +218,8 @@ export default function App() {
                     </Suspense>
                   </Canvas>
                 </JubeeErrorBoundary>
-              </div>
+              </div>,
+              document.body
             )}
 
             <main className="main-content" role="main" style={{ paddingTop: '80px' }}>

@@ -10,6 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from './indexedDB'
+import type { Json } from '@/integrations/supabase/types'
 
 /**
  * Result of a sync operation
@@ -320,7 +321,7 @@ class SyncService {
               age: item.age,
               gender: item.gender,
               avatar_url: item.avatarUrl,
-              settings: item.settings as any,
+              settings: (item.settings as Json) ?? null,
               updated_at: item.updatedAt,
             }])
 
