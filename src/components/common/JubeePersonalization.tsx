@@ -43,25 +43,20 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
             onClick={() => setSelectedGender('male')}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
-              background: selectedGender === 'male'
-                ? 'var(--gradient-boy)'
-                : 'var(--gradient-neutral)',
-              border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--border))',
+              background: 'var(--gradient-boy)',
+              border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--boy-primary) / 0.5)',
               boxShadow: selectedGender === 'male'
                 ? '0 8px 20px hsl(var(--boy-primary) / 0.4)'
-                : '0 4px 10px hsl(var(--muted) / 0.3)'
+                : '0 4px 10px hsl(var(--boy-primary) / 0.2)',
+              opacity: selectedGender === 'male' ? 1 : 0.7
             }}
           >
             <div className="text-8xl mb-4">👦</div>
-            <h3 className="text-3xl font-bold" style={{
-              color: selectedGender === 'male' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
-            }}>
+            <h3 className="text-3xl font-bold text-white">
               Boy
             </h3>
-            <p className="text-xl mt-2 opacity-90" style={{
-              color: selectedGender === 'male' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
-            }}>
-              Blue accents
+            <p className="text-xl mt-2 opacity-90 text-white">
+              Male Voice
             </p>
           </button>
 
@@ -69,25 +64,20 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
             onClick={() => setSelectedGender('female')}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
             style={{
-              background: selectedGender === 'female'
-                ? 'var(--gradient-girl)'
-                : 'var(--gradient-neutral)',
-              border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--border))',
+              background: 'var(--gradient-girl)',
+              border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--girl-primary) / 0.5)',
               boxShadow: selectedGender === 'female'
                 ? '0 8px 20px hsl(var(--girl-primary) / 0.4)'
-                : '0 4px 10px hsl(var(--muted) / 0.3)'
+                : '0 4px 10px hsl(var(--girl-primary) / 0.2)',
+              opacity: selectedGender === 'female' ? 1 : 0.7
             }}
           >
             <div className="text-8xl mb-4">👧</div>
-            <h3 className="text-3xl font-bold" style={{
-              color: selectedGender === 'female' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
-            }}>
+            <h3 className="text-3xl font-bold text-white">
               Girl
             </h3>
-            <p className="text-xl mt-2 opacity-90" style={{
-              color: selectedGender === 'female' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
-            }}>
-              Pink accents
+            <p className="text-xl mt-2 opacity-90 text-white">
+              Female Voice
             </p>
           </button>
         </div>
