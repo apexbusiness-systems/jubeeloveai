@@ -175,10 +175,9 @@ All colors MUST be HSL.
 
 /* Jubee Love App Styles */
 .jubee-container {
-  position: fixed;
+  /* Position and z-index now set inline via Portal for guaranteed global positioning */
   width: 400px;
   height: 450px;
-  z-index: 30;
   pointer-events: auto;
   overflow: visible;
   filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));
@@ -188,14 +187,19 @@ All colors MUST be HSL.
   touch-action: none;
   isolation: isolate; /* Create stacking context */
   will-change: transform; /* Optimize for animations */
+  cursor: grab; /* Default grab cursor for drag */
   /* Debug border - uncomment to see container bounds */
   /* border: 2px dashed rgba(255, 0, 0, 0.5); */
 }
 
 .jubee-container:hover {
-  filter: drop-shadow(0 0 50px hsl(var(--jubee-body) / 0.8)) 
+  filter: drop-shadow(0 0 50px hsl(var(--jubee-body) / 0.8))
           drop-shadow(0 0 80px hsl(var(--jubee-body-glow) / 0.4));
   transform: scale(1.08);
+}
+
+.jubee-container:active {
+  cursor: grabbing; /* Show grabbing cursor during drag */
 }
 
 .jubee-container canvas {
