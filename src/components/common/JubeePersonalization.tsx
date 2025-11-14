@@ -107,10 +107,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
         <div className="flex gap-4 justify-center">
           <button
             onClick={onClose}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-game-neutral border-3 border-border"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-white border-3 border-purple-400"
             style={{
-              background: 'var(--gradient-neutral)',
-              boxShadow: '0 4px 10px hsl(var(--muted) / 0.3)'
+              background: 'linear-gradient(135deg, hsl(270, 70%, 60%), hsl(280, 65%, 50%))',
+              boxShadow: '0 4px 10px hsl(270, 70%, 40% / 0.4)'
             }}
           >
             Cancel
@@ -118,10 +118,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
 
           <button
             onClick={handleSave}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-white border-3 border-yellow-400"
             style={{
-              background: 'var(--gradient-warm)',
-              boxShadow: 'var(--shadow-game)'
+              background: 'linear-gradient(135deg, hsl(45, 90%, 55%), hsl(35, 95%, 50%))',
+              boxShadow: '0 6px 15px hsl(40, 90%, 50% / 0.5)'
             }}
           >
             Save Changes
