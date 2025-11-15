@@ -78,6 +78,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
   const { camera } = useThree()
   const [isHovered, setIsHovered] = useState(false)
   const [blinkTime, setBlinkTime] = useState(0)
+  const [showClickFeedback, setShowClickFeedback] = useState(false)
   const { gender, speechText, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
 
   // Memoize current colors from design system
@@ -97,6 +98,10 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
     const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
     speak(randomGreeting)
     triggerAnimation('celebrate')
+    
+    // Show click feedback tooltip
+    setShowClickFeedback(true)
+    setTimeout(() => setShowClickFeedback(false), 2000)
   }
 
   useFrame((state) => {
@@ -517,6 +522,38 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
             font="/fonts/Inter-Bold.woff"
           >
             {speechText}
+          </Text>
+        </group>
+      )}
+
+      {/* Click Feedback Tooltip */}
+      {showClickFeedback && (
+        <group position={[0, 2.2, 0]}>
+          {/* Animated heart indicator */}
+          <mesh 
+            position={[0, Math.sin(Date.now() * 0.005) * 0.1, 0]}
+            scale={[1 + Math.sin(Date.now() * 0.008) * 0.1, 1 + Math.sin(Date.now() * 0.008) * 0.1, 1]}
+          >
+            <sphereGeometry args={[0.15, 16, 16]} />
+            <meshStandardMaterial
+              color={currentColors.accent}
+              emissive={currentColors.accent}
+              emissiveIntensity={0.5}
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
+          <Text
+            position={[0, -0.3, 0]}
+            fontSize={0.14}
+            color={currentColors.accent}
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.02}
+            outlineColor="#FFFFFF"
+            font="/fonts/Inter-Bold.woff"
+          >
+            Great job! 🎉
           </Text>
         </group>
       )}
