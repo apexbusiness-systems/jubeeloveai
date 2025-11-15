@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { Button } from '@/components/ui/button'
 import { useAudioEffects } from '@/hooks/useAudioEffects'
@@ -28,7 +29,15 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       onClick={onClose}
     >
-      <div
+      <motion.div
+        initial={{ scale: 0, y: 100 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{
+          type: 'spring',
+          stiffness: 260,
+          damping: 20,
+          duration: 0.6
+        }}
         className="bg-card rounded-3xl p-8 max-w-2xl w-full mx-4 border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
@@ -131,7 +140,7 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
             Save Changes
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
