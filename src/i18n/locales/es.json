@@ -9,7 +9,8 @@
     "shapes": "Formas",
     "progress": "Progreso",
     "stickers": "Pegatinas",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "music": "Música"
   },
   "home": {
     "welcome": "¡Bienvenido al Mundo de Jubee!",
@@ -25,7 +26,9 @@
     "myProgress": "Mi Progreso",
     "progressDesc": "Ve tus puntuaciones, logros y estadísticas de aprendizaje",
     "stickerCollection": "Colección de Pegatinas",
-    "stickerDesc": "Colecciona y desbloquea pegatinas coloridas y recompensas"
+    "stickerDesc": "Colecciona y desbloquea pegatinas coloridas y recompensas",
+    "musicLibrary": "Biblioteca de Música",
+    "musicDesc": "Escucha canciones divertidas y canciones de cuna"
   },
   "header": {
     "points": "puntos",
@@ -180,6 +183,16 @@
     "medium": "Medio",
     "hard": "Difícil",
     "close": "Cerrar"
+  },
+  "music": {
+    "title": "Biblioteca de Música",
+    "subtitle": "¡Disfruta de 20 canciones gratis! ¡Escucha, baila y aprende!",
+    "allGenres": "Todas las Canciones",
+    "educational": "Educativo",
+    "lullaby": "Canción de Cuna",
+    "playful": "Juguetón",
+    "classical": "Clásico",
+    "nowPlaying": "Reproduciendo Ahora"
   },
   "parental": {
     "title": "Controles Parentales",

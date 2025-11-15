@@ -9,7 +9,8 @@
     "shapes": "Shapes",
     "progress": "Progress",
     "stickers": "Stickers",
-    "settings": "Settings"
+    "settings": "Settings",
+    "music": "Music"
   },
   "home": {
     "welcome": "Welcome to Jubee's World!",
@@ -25,7 +26,9 @@
     "myProgress": "My Progress",
     "progressDesc": "See your scores, achievements, and learning stats",
     "stickerCollection": "Sticker Collection",
-    "stickerDesc": "Collect and unlock colorful stickers and rewards"
+    "stickerDesc": "Collect and unlock colorful stickers and rewards",
+    "musicLibrary": "Music Library",
+    "musicDesc": "Listen to fun songs and lullabies"
   },
   "header": {
     "points": "points",
@@ -180,6 +183,16 @@
     "medium": "Medium",
     "hard": "Hard",
     "close": "Close"
+  },
+  "music": {
+    "title": "Music Library",
+    "subtitle": "Enjoy 20 free songs! Listen, dance, and learn!",
+    "allGenres": "All Songs",
+    "educational": "Educational",
+    "lullaby": "Lullaby",
+    "playful": "Playful",
+    "classical": "Classical",
+    "nowPlaying": "Now Playing"
   },
   "parental": {
     "title": "Parental Controls",

@@ -38,6 +38,7 @@ const PuzzleGame = lazy(() => import('./modules/games/PuzzleGame'));
 const ProgressPage = lazy(() => import('./pages/Progress'));
 const StickersPage = lazy(() => import('./pages/Stickers'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
+const MusicPage = lazy(() => import('./pages/Music'));
 const Gallery = lazy(() => import('./pages/Gallery'));
 const InstallPage = lazy(() => import('./pages/Install'));
 const ParentalControls = lazy(() => import('./pages/ParentalControls'));
@@ -240,6 +241,7 @@ export default function App() {
                     <Route path="/games/puzzle" element={<PuzzleGame />} />
                     <Route path="/progress" element={<ProgressPage />} />
                     <Route path="/stickers" element={<StickersPage />} />
+                    <Route path="/music" element={<MusicPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/install" element={<InstallPage />} />
                     <Route path="/parental-controls" element={<ParentalControls />} />
@@ -352,6 +354,12 @@ function HomePage() {
             icon="🎁"
             path="/stickers"
             description="Collect and unlock colorful stickers and rewards"
+          />
+          <GameCard
+            title="Music Library"
+            icon="🎵"
+            path="/music"
+            description="Listen to fun songs and lullabies"
           />
         </div>
       </div>

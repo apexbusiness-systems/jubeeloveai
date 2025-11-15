@@ -9,7 +9,8 @@
     "shapes": "形状",
     "progress": "进度",
     "stickers": "贴纸",
-    "settings": "设置"
+    "settings": "设置",
+    "music": "音乐"
   },
   "home": {
     "welcome": "欢迎来到Jubee的世界！",
@@ -25,7 +26,9 @@
     "myProgress": "我的进度",
     "progressDesc": "查看你的分数、成就和学习统计",
     "stickerCollection": "贴纸收藏",
-    "stickerDesc": "收集和解锁彩色贴纸和奖励"
+    "stickerDesc": "收集和解锁彩色贴纸和奖励",
+    "musicLibrary": "音乐库",
+    "musicDesc": "听有趣的歌曲和摇篮曲"
   },
   "header": {
     "points": "分",
@@ -180,6 +183,16 @@
     "medium": "中等",
     "hard": "困难",
     "close": "关闭"
+  },
+  "music": {
+    "title": "音乐库",
+    "subtitle": "享受20首免费歌曲！聆听、跳舞和学习！",
+    "allGenres": "所有歌曲",
+    "educational": "教育",
+    "lullaby": "摇篮曲",
+    "playful": "欢快",
+    "classical": "古典",
+    "nowPlaying": "正在播放"
   },
   "parental": {
     "title": "家长控制",
