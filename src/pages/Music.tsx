@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { SEO } from '@/components/SEO';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,59 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Memoized song item component for better performance
+const SongItem = memo(({ 
+  song, 
+  isCurrentSong, 
+  isPlaying, 
+  onPlay,
+  getGenreColor 
+}: { 
+  song: Song; 
+  isCurrentSong: boolean; 
+  isPlaying: boolean; 
+  onPlay: (song: Song) => void;
+  getGenreColor: (genre: string) => string;
+}) => {
+  const { t } = useTranslation();
+  
+  return (
+    <Card 
+      className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+        isCurrentSong 
+          ? 'border-primary bg-primary/5' 
+          : 'border-border hover:border-primary/50'
+      }`}
+      onClick={() => onPlay(song)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="text-4xl">{song.emoji}</div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-lg truncate">{song.title}</h3>
+            <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="outline" className={getGenreColor(song.genre)}>
+                {t(`music.${song.genre}`)}
+              </Badge>
+              <span className="text-xs text-muted-foreground">{song.duration}</span>
+            </div>
+          </div>
+          {isCurrentSong && isPlaying && (
+            <div className="flex items-center">
+              <div className="w-1 h-4 bg-primary animate-pulse mx-0.5"></div>
+              <div className="w-1 h-6 bg-primary animate-pulse mx-0.5" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-1 h-4 bg-primary animate-pulse mx-0.5" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+SongItem.displayName = 'SongItem';
 
 export default function MusicPage() {
   const { t } = useTranslation();
@@ -16,56 +69,98 @@ export default function MusicPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.7);
-  const [selectedGenre, setSelectedGenre] = useState<string>('all');
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('jubee-music-volume');
+    return saved ? parseFloat(saved) : 0.7;
+  });
+  const [selectedGenre, setSelectedGenre] = useState<string>(() => {
+    return localStorage.getItem('jubee-music-genre') || 'all';
+  });
   const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
-  const [karaokeMode, setKaraokeMode] = useState(false);
-  const [sleepTimer, setSleepTimer] = useState<number | null>(null); // in seconds
+  const [karaokeMode, setKaraokeMode] = useState(() => {
+    return localStorage.getItem('jubee-karaoke-mode') === 'true';
+  });
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const sleepTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const genres = ['all', 'educational', 'lullaby', 'playful', 'classical'];
+  const genres = useMemo(() => ['all', 'educational', 'lullaby', 'playful', 'classical'], []);
 
-  const filteredSongs = selectedGenre === 'all' 
-    ? musicLibrary 
-    : musicLibrary.filter(song => song.genre === selectedGenre);
+  // Memoize filtered songs to avoid recalculation on every render
+  const filteredSongs = useMemo(() => 
+    selectedGenre === 'all' 
+      ? musicLibrary 
+      : musicLibrary.filter(song => song.genre === selectedGenre),
+    [selectedGenre]
+  );
+
+  // Persist volume changes
+  useEffect(() => {
+    localStorage.setItem('jubee-music-volume', volume.toString());
+  }, [volume]);
+
+  // Persist genre selection
+  useEffect(() => {
+    localStorage.setItem('jubee-music-genre', selectedGenre);
+  }, [selectedGenre]);
+
+  // Persist karaoke mode
+  useEffect(() => {
+    localStorage.setItem('jubee-karaoke-mode', karaokeMode.toString());
+  }, [karaokeMode]);
+
+  // Optimized audio event handlers with useCallback
+  const handleTimeUpdate = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    setCurrentTime(audio.currentTime);
+    
+    // Update current lyric based on time
+    if (currentSong?.lyrics) {
+      const currentIndex = currentSong.lyrics.findIndex((lyric, idx) => {
+        const nextLyric = currentSong.lyrics![idx + 1];
+        return audio.currentTime >= lyric.time && (!nextLyric || audio.currentTime < nextLyric.time);
+      });
+      if (currentIndex !== -1) {
+        setCurrentLyricIndex(currentIndex);
+      }
+    }
+  }, [currentSong?.lyrics]);
+
+  const handleLoadedMetadata = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleEnded = useCallback(() => {
+    setIsPlaying(false);
+    playNext();
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => {
-      setCurrentTime(audio.currentTime);
-      
-      // Update current lyric based on time
-      if (currentSong?.lyrics) {
-        const currentIndex = currentSong.lyrics.findIndex((lyric, idx) => {
-          const nextLyric = currentSong.lyrics![idx + 1];
-          return audio.currentTime >= lyric.time && (!nextLyric || audio.currentTime < nextLyric.time);
-        });
-        if (currentIndex !== -1 && currentIndex !== currentLyricIndex) {
-          setCurrentLyricIndex(currentIndex);
-        }
-      }
-    };
-    
-    const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => {
-      setIsPlaying(false);
-      playNext();
-    };
-
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('loadstart', () => setIsLoading(true));
+    audio.addEventListener('canplay', () => setIsLoading(false));
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('loadstart', () => setIsLoading(true));
+      audio.removeEventListener('canplay', () => setIsLoading(false));
     };
-  }, [currentSong, currentLyricIndex]);
+  }, [handleTimeUpdate, handleLoadedMetadata, handleEnded]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -104,63 +199,75 @@ export default function MusicPage() {
     };
   }, [sleepTimer, isPlaying]);
 
-  const playSong = (song: Song) => {
+  const playSong = useCallback((song: Song) => {
     if (currentSong?.id === song.id) {
       togglePlayPause();
     } else {
+      setIsLoading(true);
       setCurrentSong(song);
       setCurrentLyricIndex(0);
+      setCurrentTime(0);
       setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 0);
+      setTimeout(() => {
+        audioRef.current?.play().catch(err => {
+          console.error('Playback failed:', err);
+          setIsPlaying(false);
+          setIsLoading(false);
+        });
+      }, 0);
     }
-  };
+  }, [currentSong?.id]);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     if (!audioRef.current) return;
     
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      audioRef.current.play().catch(err => {
+        console.error('Playback failed:', err);
+        setIsPlaying(false);
+      });
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
-  };
+  }, [isPlaying]);
 
-  const playNext = () => {
+  const playNext = useCallback(() => {
     if (!currentSong) return;
     const currentIndex = filteredSongs.findIndex(s => s.id === currentSong.id);
     const nextSong = filteredSongs[(currentIndex + 1) % filteredSongs.length];
     playSong(nextSong);
-  };
+  }, [currentSong, filteredSongs, playSong]);
 
-  const playPrevious = () => {
+  const playPrevious = useCallback(() => {
     if (!currentSong) return;
     const currentIndex = filteredSongs.findIndex(s => s.id === currentSong.id);
     const prevSong = filteredSongs[(currentIndex - 1 + filteredSongs.length) % filteredSongs.length];
     playSong(prevSong);
-  };
+  }, [currentSong, filteredSongs, playSong]);
 
-  const handleSeek = (value: number[]) => {
+  const handleSeek = useCallback((value: number[]) => {
     if (audioRef.current) {
       audioRef.current.currentTime = value[0];
       setCurrentTime(value[0]);
     }
-  };
+  }, []);
 
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00';
+  const formatTime = useCallback((time: number) => {
+    if (isNaN(time) || !isFinite(time)) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const formatSleepTimer = (seconds: number) => {
+  const formatSleepTimer = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const setSleepTimerMinutes = (minutes: number | null) => {
+  const setSleepTimerMinutes = useCallback((minutes: number | null) => {
     if (minutes === null) {
       setSleepTimer(null);
       setSleepTimerRemaining(null);
@@ -170,9 +277,9 @@ export default function MusicPage() {
     } else {
       setSleepTimer(minutes * 60);
     }
-  };
+  }, []);
 
-  const getGenreColor = (genre: string) => {
+  const getGenreColor = useCallback((genre: string) => {
     switch (genre) {
       case 'educational': return 'bg-blue-500/20 text-blue-700 border-blue-300';
       case 'lullaby': return 'bg-purple-500/20 text-purple-700 border-purple-300';
@@ -180,7 +287,7 @@ export default function MusicPage() {
       case 'classical': return 'bg-amber-500/20 text-amber-700 border-amber-300';
       default: return 'bg-gray-500/20 text-gray-700 border-gray-300';
     }
-  };
+  }, []);
 
   return (
     <>
@@ -216,40 +323,37 @@ export default function MusicPage() {
 
         {/* Song List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredSongs.map((song) => (
-            <Card 
-              key={song.id}
-              className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
-                currentSong?.id === song.id 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50'
-              }`}
-              onClick={() => playSong(song)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-4xl">{song.emoji}</div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg truncate">{song.title}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline" className={getGenreColor(song.genre)}>
-                        {t(`music.${song.genre}`)}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">{song.duration}</span>
+          {isLoading && filteredSongs.length === 0 ? (
+            // Loading skeletons
+            Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="border-2">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="w-16 h-16 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <div className="flex gap-2 mt-2">
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-4 w-12" />
+                      </div>
                     </div>
                   </div>
-                  {currentSong?.id === song.id && isPlaying && (
-                    <div className="flex items-center">
-                      <div className="w-1 h-4 bg-primary animate-pulse mx-0.5"></div>
-                      <div className="w-1 h-6 bg-primary animate-pulse mx-0.5" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-1 h-4 bg-primary animate-pulse mx-0.5" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            filteredSongs.map((song) => (
+              <SongItem
+                key={song.id}
+                song={song}
+                isCurrentSong={currentSong?.id === song.id}
+                isPlaying={isPlaying}
+                onPlay={playSong}
+                getGenreColor={getGenreColor}
+              />
+            ))
+          )}
         </div>
 
         {/* Player Controls */}
