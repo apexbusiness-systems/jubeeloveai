@@ -22,6 +22,7 @@ import { ChildSelector } from './components/ChildSelector';
 import { useAchievementTracker } from './hooks/useAchievementTracker';
 import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { ConflictResolutionDialog } from './components/ConflictResolutionDialog';
 import { useJubeeCollision } from './hooks/useJubeeCollision';
 import { useJubeeDraggable } from './hooks/useJubeeDraggable';
 import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
@@ -270,6 +271,7 @@ export default function App() {
             <SessionMonitor />
             <VoiceCommandButton />
             <OfflineIndicator />
+            <ConflictResolutionDialog />
           </div>
           
           {/* Recovery button when Jubee disappears */}

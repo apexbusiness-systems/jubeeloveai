@@ -11,6 +11,7 @@
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from './indexedDB'
 import { syncQueue } from './syncQueue'
+import { conflictResolver } from './conflictResolver'
 import type { Json } from '@/integrations/supabase/types'
 
 /**
@@ -416,6 +417,32 @@ class SyncService {
         .single()
 
       if (gameProgress) {
+        // Check for conflicts with local data
+        const localData = await jubeeDB.get('gameProgress', gameProgress.id)
+        
+        if (localData && !localData.synced) {
+          const conflict = conflictResolver.detectConflicts(
+            'gameProgress',
+            gameProgress.id,
+            localData,
+            {
+              ...gameProgress,
+              score: gameProgress.score,
+              activitiesCompleted: gameProgress.activities_completed,
+              currentTheme: gameProgress.current_theme,
+              lastActivity: gameProgress.last_activity,
+              updatedAt: gameProgress.updated_at,
+            },
+            'Game Progress'
+          )
+          
+          if (conflict) {
+            conflictResolver.addConflict(conflict)
+            console.log('Conflict detected for game progress')
+            return // Don't overwrite, let user resolve
+          }
+        }
+        
         await jubeeDB.put('gameProgress', {
           id: gameProgress.id,
           score: gameProgress.score,
