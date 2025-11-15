@@ -7,6 +7,7 @@ import { musicLibrary, Song } from '@/data/musicLibrary';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Music as MusicIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function MusicPage() {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ export default function MusicPage() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [selectedGenre, setSelectedGenre] = useState<string>('all');
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const genres = ['all', 'educational', 'lullaby', 'playful', 'classical'];
@@ -28,7 +30,21 @@ export default function MusicPage() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+      
+      // Update current lyric based on time
+      if (currentSong?.lyrics) {
+        const currentIndex = currentSong.lyrics.findIndex((lyric, idx) => {
+          const nextLyric = currentSong.lyrics![idx + 1];
+          return audio.currentTime >= lyric.time && (!nextLyric || audio.currentTime < nextLyric.time);
+        });
+        if (currentIndex !== -1 && currentIndex !== currentLyricIndex) {
+          setCurrentLyricIndex(currentIndex);
+        }
+      }
+    };
+    
     const updateDuration = () => setDuration(audio.duration);
     const handleEnded = () => {
       setIsPlaying(false);
@@ -44,7 +60,7 @@ export default function MusicPage() {
       audio.removeEventListener('loadedmetadata', updateDuration);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentSong]);
+  }, [currentSong, currentLyricIndex]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -57,6 +73,7 @@ export default function MusicPage() {
       togglePlayPause();
     } else {
       setCurrentSong(song);
+      setCurrentLyricIndex(0);
       setIsPlaying(true);
       setTimeout(() => audioRef.current?.play(), 0);
     }
@@ -185,7 +202,34 @@ export default function MusicPage() {
         {currentSong && (
           <Card className="fixed bottom-20 left-0 right-0 mx-auto max-w-4xl border-4 border-primary/30 bg-background/95 backdrop-blur shadow-2xl">
             <CardContent className="p-4">
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Lyrics Panel */}
+                {currentSong.lyrics && currentSong.lyrics.length > 0 && (
+                  <div className="md:w-64 flex-shrink-0">
+                    <h4 className="text-sm font-semibold mb-2 text-muted-foreground">🎤 Sing Along</h4>
+                    <ScrollArea className="h-32 md:h-full rounded-lg border-2 border-primary/20 bg-primary/5 p-3">
+                      <div className="space-y-2">
+                        {currentSong.lyrics.map((lyric, idx) => (
+                          <p
+                            key={idx}
+                            className={`text-sm transition-all duration-300 ${
+                              idx === currentLyricIndex
+                                ? 'text-primary font-bold text-lg scale-105'
+                                : idx < currentLyricIndex
+                                ? 'text-muted-foreground/50'
+                                : 'text-foreground/70'
+                            }`}
+                          >
+                            {lyric.text}
+                          </p>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+
+                {/* Player Controls */}
+                <div className="flex-1 flex flex-col gap-4">
                 {/* Now Playing Info */}
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">{currentSong.emoji}</div>
@@ -254,6 +298,7 @@ export default function MusicPage() {
                   </div>
 
                   <div className="flex-1"></div>
+                </div>
                 </div>
               </div>
             </CardContent>
