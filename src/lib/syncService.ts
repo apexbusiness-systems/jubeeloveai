@@ -10,6 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from './indexedDB'
+import { syncQueue } from './syncQueue'
 import type { Json } from '@/integrations/supabase/types'
 
 /**
@@ -132,7 +133,7 @@ class SyncService {
             .from('game_progress')
             .upsert({
               user_id: user.id,
-              child_profile_id: null, // Will be updated when child profiles are implemented
+              child_profile_id: null,
               score: item.score,
               activities_completed: item.activitiesCompleted,
               current_theme: item.currentTheme,
@@ -151,6 +152,14 @@ class SyncService {
           console.error('Failed to sync game progress item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Add to retry queue
+          syncQueue.add({
+            storeName: 'gameProgress',
+            operation: 'sync',
+            data: item,
+            priority: 5
+          })
         }
       }
     } catch (error) {
@@ -196,6 +205,14 @@ class SyncService {
           console.error('Failed to sync achievement item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Add to retry queue
+          syncQueue.add({
+            storeName: 'achievements',
+            operation: 'sync',
+            data: item,
+            priority: 4
+          })
         }
       }
     } catch (error) {
@@ -241,6 +258,14 @@ class SyncService {
           console.error('Failed to sync drawing item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Add to retry queue
+          syncQueue.add({
+            storeName: 'drawings',
+            operation: 'sync',
+            data: item,
+            priority: 3
+          })
         }
       }
     } catch (error) {
@@ -286,6 +311,14 @@ class SyncService {
           console.error('Failed to sync sticker item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Add to retry queue
+          syncQueue.add({
+            storeName: 'stickers',
+            operation: 'sync',
+            data: item,
+            priority: 2
+          })
         }
       }
     } catch (error) {
@@ -333,6 +366,14 @@ class SyncService {
           console.error('Failed to sync children profile item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Add to retry queue
+          syncQueue.add({
+            storeName: 'childrenProfiles',
+            operation: 'sync',
+            data: item,
+            priority: 1
+          })
         }
       }
     } catch (error) {
@@ -422,6 +463,93 @@ class SyncService {
     } catch (error) {
       console.error('pullFromSupabase error:', error)
     }
+  }
+
+  /**
+   * Process the sync queue with retry logic
+   * Attempts to sync all queued operations
+   */
+  async processQueue(): Promise<{ processed: number; failed: number; remaining: number }> {
+    if (!this.isOnline()) {
+      return { processed: 0, failed: 0, remaining: syncQueue.size() }
+    }
+
+    return await syncQueue.processQueue(async (operation) => {
+      const { storeName, data } = operation
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('No authenticated user')
+
+      // Re-attempt the sync operation based on store name
+      switch (storeName) {
+        case 'gameProgress':
+          await supabase.from('game_progress').upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            score: data.score,
+            activities_completed: data.activitiesCompleted,
+            current_theme: data.currentTheme,
+            last_activity: data.lastActivity,
+            updated_at: data.updatedAt,
+          }, { onConflict: 'user_id,child_profile_id' })
+          break
+
+        case 'achievements':
+          await supabase.from('achievements').upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            achievement_id: data.achievementId,
+            unlocked_at: data.unlockedAt,
+          }, { onConflict: 'user_id,child_profile_id,achievement_id' })
+          break
+
+        case 'drawings':
+          await supabase.from('drawings').insert({
+            user_id: user.id,
+            child_profile_id: null,
+            title: data.title,
+            image_data: data.imageData,
+            created_at: data.createdAt,
+            updated_at: data.updatedAt,
+          })
+          break
+
+        case 'stickers':
+          await supabase.from('stickers').upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            sticker_id: data.stickerId,
+            unlocked_at: data.unlockedAt,
+          }, { onConflict: 'user_id,child_profile_id,sticker_id' })
+          break
+
+        case 'childrenProfiles':
+          await supabase.from('children_profiles').upsert([{
+            id: data.id,
+            parent_user_id: user.id,
+            name: data.name,
+            age: data.age,
+            gender: data.gender,
+            avatar_url: data.avatarUrl,
+            settings: (data.settings as Json) ?? null,
+            updated_at: data.updatedAt,
+          }])
+          break
+
+        default:
+          throw new Error(`Unknown store: ${storeName}`)
+      }
+
+      // Mark as synced in IndexedDB
+      await jubeeDB.put(storeName as any, { ...data, synced: true })
+    })
+  }
+
+  /**
+   * Get queue statistics
+   */
+  getQueueStats() {
+    return syncQueue.getStats()
   }
 }
 

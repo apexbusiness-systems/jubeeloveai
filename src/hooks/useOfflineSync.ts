@@ -9,20 +9,37 @@ import { useToast } from '@/hooks/use-toast'
 export function useOfflineSync() {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [queueSize, setQueueSize] = useState(0)
   const { toast } = useToast()
 
   useEffect(() => {
     const handleOnline = async () => {
       setIsOnline(true)
+      
+      const stats = syncService.getQueueStats()
+      const hasQueue = stats.total > 0
+      
       toast({
         title: "Back Online",
-        description: "Syncing your data...",
+        description: hasQueue 
+          ? `Syncing your data... (${stats.total} pending operations)`
+          : "Syncing your data...",
       })
 
       try {
         setIsSyncing(true)
+        
+        // Process any queued operations first
+        if (hasQueue) {
+          const queueResult = await syncService.processQueue()
+          console.log('Queue processed:', queueResult)
+        }
+        
+        // Then perform regular sync
         await syncService.syncAll()
         await syncService.pullFromSupabase()
+        
+        setQueueSize(syncService.getQueueStats().total)
         
         toast({
           title: "Sync Complete",
@@ -56,10 +73,16 @@ export function useOfflineSync() {
       syncService.startAutoSync()
     }
 
+    // Update queue size periodically
+    const queueInterval = setInterval(() => {
+      setQueueSize(syncService.getQueueStats().total)
+    }, 5000)
+
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
       syncService.stopAutoSync()
+      clearInterval(queueInterval)
     }
   }, [toast, isOnline])
 
@@ -75,8 +98,17 @@ export function useOfflineSync() {
 
     try {
       setIsSyncing(true)
+      
+      // Process queue first
+      const stats = syncService.getQueueStats()
+      if (stats.total > 0) {
+        await syncService.processQueue()
+      }
+      
       await syncService.syncAll()
       await syncService.pullFromSupabase()
+      
+      setQueueSize(syncService.getQueueStats().total)
       
       toast({
         title: "Sync Complete",
@@ -97,6 +129,7 @@ export function useOfflineSync() {
   return {
     isOnline,
     isSyncing,
+    queueSize,
     manualSync,
   }
 }
