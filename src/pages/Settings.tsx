@@ -24,9 +24,7 @@ export default function SettingsPage() {
 
   const themes = [
     { name: 'morning', icon: Sunrise, label: 'Morning' },
-    { name: 'afternoon', icon: Sun, label: 'Afternoon' },
     { name: 'evening', icon: Sunset, label: 'Evening' },
-    { name: 'night', icon: Moon, label: 'Night' },
   ] as const;
 
   const voiceOptions = [
