@@ -31,10 +31,10 @@ const SAFE_MARGINS = {
   left: 20,
 }
 
-// 3D Canvas bounds
+// 3D Canvas bounds - relaxed for better visibility
 const CANVAS_BOUNDS = {
   x: { min: -5.5, max: 5.5 },
-  y: { min: -3.5, max: 1.2 }, // Keep antenna visible
+  y: { min: -4, max: 3 }, // Allow full range of movement
   z: { min: -2, max: 2 }
 } as const
 

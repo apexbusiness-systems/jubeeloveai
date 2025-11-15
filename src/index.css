@@ -187,7 +187,7 @@ All colors MUST be HSL.
   width: 400px;
   height: 450px;
   pointer-events: auto;
-  overflow: visible;
+  overflow: visible !important; /* Critical: allow Jubee to render fully */
   filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));
   transition: var(--transition-smooth);
   user-select: none;
@@ -214,7 +214,8 @@ All colors MUST be HSL.
   width: 100% !important;
   height: 100% !important;
   display: block; /* Prevent inline spacing issues */
-  overflow: visible;
+  overflow: visible !important; /* Allow 3D elements to extend beyond canvas */
+  transform-style: preserve-3d; /* Preserve 3D transforms */
 }
 
 .main-content {
