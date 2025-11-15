@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { musicLibrary, Song } from '@/data/musicLibrary';
-import { Play, Pause, SkipForward, SkipBack, Volume2, Music as MusicIcon, Mic } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, Music as MusicIcon, Mic, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,7 +20,10 @@ export default function MusicPage() {
   const [selectedGenre, setSelectedGenre] = useState<string>('all');
   const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
   const [karaokeMode, setKaraokeMode] = useState(false);
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null); // in seconds
+  const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const sleepTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const genres = ['all', 'educational', 'lullaby', 'playful', 'classical'];
 
@@ -70,6 +73,37 @@ export default function MusicPage() {
     }
   }, [volume]);
 
+  // Sleep timer effect
+  useEffect(() => {
+    if (sleepTimer !== null) {
+      setSleepTimerRemaining(sleepTimer);
+      
+      sleepTimerRef.current = setInterval(() => {
+        setSleepTimerRemaining((prev) => {
+          if (prev === null || prev <= 1) {
+            // Timer finished
+            if (audioRef.current && isPlaying) {
+              audioRef.current.pause();
+              setIsPlaying(false);
+            }
+            setSleepTimer(null);
+            if (sleepTimerRef.current) {
+              clearInterval(sleepTimerRef.current);
+            }
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (sleepTimerRef.current) {
+        clearInterval(sleepTimerRef.current);
+      }
+    };
+  }, [sleepTimer, isPlaying]);
+
   const playSong = (song: Song) => {
     if (currentSong?.id === song.id) {
       togglePlayPause();
@@ -118,6 +152,24 @@ export default function MusicPage() {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatSleepTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const setSleepTimerMinutes = (minutes: number | null) => {
+    if (minutes === null) {
+      setSleepTimer(null);
+      setSleepTimerRemaining(null);
+      if (sleepTimerRef.current) {
+        clearInterval(sleepTimerRef.current);
+      }
+    } else {
+      setSleepTimer(minutes * 60);
+    }
   };
 
   const getGenreColor = (genre: string) => {
@@ -319,7 +371,40 @@ export default function MusicPage() {
                     </Button>
                   </div>
 
-                  <div className="flex-1"></div>
+                  <div className="flex-1 flex justify-end items-center gap-2">
+                    <Moon className={`w-4 h-4 ${sleepTimer ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <div className="flex gap-1">
+                      <Button
+                        variant={sleepTimer === 15 * 60 ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSleepTimerMinutes(sleepTimer === 15 * 60 ? null : 15)}
+                        className="h-8 px-2 text-xs"
+                      >
+                        15m
+                      </Button>
+                      <Button
+                        variant={sleepTimer === 30 * 60 ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSleepTimerMinutes(sleepTimer === 30 * 60 ? null : 30)}
+                        className="h-8 px-2 text-xs"
+                      >
+                        30m
+                      </Button>
+                      <Button
+                        variant={sleepTimer === 60 * 60 ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSleepTimerMinutes(sleepTimer === 60 * 60 ? null : 60)}
+                        className="h-8 px-2 text-xs"
+                      >
+                        60m
+                      </Button>
+                    </div>
+                    {sleepTimerRemaining !== null && (
+                      <span className="text-xs text-primary font-mono ml-1">
+                        {formatSleepTimer(sleepTimerRemaining)}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 </div>
               </div>
