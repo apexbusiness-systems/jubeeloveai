@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import confetti from 'canvas-confetti'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { Button } from '@/components/ui/button'
 import { useAudioEffects } from '@/hooks/useAudioEffects'
@@ -19,6 +20,17 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
     setGender(selectedGender)
     triggerAnimation('celebrate')
     speak(selectedGender === 'male' ? "I'm a boy bee! Buzz buzz!" : "I'm a girl bee! Buzz buzz!")
+    
+    // Trigger confetti celebration
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: selectedGender === 'male' 
+        ? ['#3b82f6', '#60a5fa', '#93c5fd', '#fbbf24', '#fcd34d'] 
+        : ['#ec4899', '#f472b6', '#fbcfe8', '#fbbf24', '#fcd34d']
+    })
+    
     setTimeout(() => {
       onClose()
     }, 1500)
