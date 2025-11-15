@@ -137,6 +137,88 @@ class ConflictResolver {
       throw new Error('Conflict not found')
     }
 
+    const resolvedData = this.resolveConflictData(conflict, choice)
+
+    // Remove from conflicts
+    this.conflicts = this.conflicts.filter(c => c.id !== conflictId)
+    this.notifyListeners()
+    this.saveConflicts()
+
+    return resolvedData
+  }
+
+  /**
+   * Resolve multiple conflicts with the same choice
+   */
+  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<any[]> {
+    const resolvedDataArray: any[] = []
+    const errors: Array<{ id: string; error: string }> = []
+
+    // Process in chunks to avoid blocking
+    const chunkSize = 10
+    for (let i = 0; i < conflictIds.length; i += chunkSize) {
+      const chunk = conflictIds.slice(i, i + chunkSize)
+      
+      // Process chunk
+      for (const conflictId of chunk) {
+        try {
+          const conflict = this.conflicts.find(c => c.id === conflictId)
+          if (!conflict) {
+            errors.push({ id: conflictId, error: 'Conflict not found' })
+            continue
+          }
+
+          const resolvedData = this.resolveConflictData(conflict, choice)
+          resolvedDataArray.push(resolvedData)
+        } catch (error) {
+          errors.push({ 
+            id: conflictId, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          })
+        }
+      }
+
+      // Remove resolved conflicts
+      this.conflicts = this.conflicts.filter(c => !conflictIds.includes(c.id))
+      
+      // Allow UI to breathe between chunks
+      if (i + chunkSize < conflictIds.length) {
+        await new Promise(resolve => setTimeout(resolve, 0))
+      }
+    }
+
+    this.notifyListeners()
+    this.saveConflicts()
+
+    if (errors.length > 0) {
+      console.warn('Batch resolution errors:', errors)
+    }
+
+    return resolvedDataArray
+  }
+
+  /**
+   * Resolve all conflicts with the same choice
+   */
+  async resolveAll(choice: ResolutionChoice): Promise<any[]> {
+    const allIds = this.conflicts.map(c => c.id)
+    return this.resolveBatch(allIds, choice)
+  }
+
+  /**
+   * Resolve conflicts by store with the same choice
+   */
+  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<any[]> {
+    const storeConflictIds = this.conflicts
+      .filter(c => c.storeName === storeName)
+      .map(c => c.id)
+    return this.resolveBatch(storeConflictIds, choice)
+  }
+
+  /**
+   * Helper to resolve conflict data based on choice
+   */
+  private resolveConflictData(conflict: ConflictGroup, choice: ResolutionChoice): any {
     let resolvedData: any
 
     switch (choice) {
@@ -160,12 +242,67 @@ class ConflictResolver {
         break
     }
 
-    // Remove from conflicts
-    this.conflicts = this.conflicts.filter(c => c.id !== conflictId)
-    this.notifyListeners()
-    this.saveConflicts()
-
     return resolvedData
+  }
+
+  /**
+   * Automated diagnosis: recommend resolution strategy
+   */
+  diagnoseConflict(conflictId: string): ResolutionChoice {
+    const conflict = this.conflicts.find(c => c.id === conflictId)
+    if (!conflict) {
+      return 'merge'
+    }
+
+    return this.diagnoseConflictGroup(conflict)
+  }
+
+  /**
+   * Diagnose a conflict group and recommend strategy
+   */
+  private diagnoseConflictGroup(conflict: ConflictGroup): ResolutionChoice {
+    let localNewer = 0
+    let serverNewer = 0
+    let equal = 0
+
+    for (const fieldConflict of conflict.conflicts) {
+      const localTime = new Date(fieldConflict.localTimestamp).getTime()
+      const serverTime = new Date(fieldConflict.serverTimestamp).getTime()
+
+      if (localTime > serverTime) {
+        localNewer++
+      } else if (serverTime > localTime) {
+        serverNewer++
+      } else {
+        equal++
+      }
+    }
+
+    // If most fields are newer locally, suggest local
+    if (localNewer > serverNewer && localNewer > equal) {
+      return 'local'
+    }
+
+    // If most fields are newer on server, suggest server
+    if (serverNewer > localNewer && serverNewer > equal) {
+      return 'server'
+    }
+
+    // Default to merge for mixed or equal timestamps
+    return 'merge'
+  }
+
+  /**
+   * Get diagnosis for all conflicts
+   */
+  getDiagnosis(): Record<string, ResolutionChoice> {
+    const diagnosis: Record<string, ResolutionChoice> = {}
+    
+    for (const conflict of this.conflicts) {
+      diagnosis[conflict.id] = this.diagnoseConflictGroup(conflict)
+    }
+
+    return diagnosis
   }
 
   /**

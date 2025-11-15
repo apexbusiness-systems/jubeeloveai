@@ -22,15 +22,20 @@ export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
   const [currentConflict, setCurrentConflict] = useState<ConflictGroup | null>(null)
   const [isResolving, setIsResolving] = useState(false)
+  const [showBatchOptions, setShowBatchOptions] = useState(false)
+  const [diagnosis, setDiagnosis] = useState<Record<string, ResolutionChoice>>({})
   const { toast } = useToast()
 
   useEffect(() => {
     // Load initial conflicts
-    setConflicts(conflictResolver.getConflicts())
+    const initialConflicts = conflictResolver.getConflicts()
+    setConflicts(initialConflicts)
+    setDiagnosis(conflictResolver.getDiagnosis())
     
     // Subscribe to changes
     const unsubscribe = conflictResolver.subscribe((newConflicts) => {
       setConflicts(newConflicts)
+      setDiagnosis(conflictResolver.getDiagnosis())
       if (newConflicts.length > 0 && !currentConflict) {
         setCurrentConflict(newConflicts[0])
       } else if (newConflicts.length === 0) {
@@ -78,6 +83,122 @@ export function ConflictResolutionDialog() {
       toast({
         title: "Resolution Failed",
         description: "Could not resolve conflict. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResolving(false)
+    }
+  }
+
+  const handleBatchResolve = async (choice: ResolutionChoice, scope: 'all' | 'store' = 'all') => {
+    if (conflicts.length === 0) return
+
+    setIsResolving(true)
+    try {
+      let resolvedDataArray: any[]
+      
+      if (scope === 'all') {
+        resolvedDataArray = await conflictResolver.resolveAll(choice)
+      } else if (currentConflict) {
+        resolvedDataArray = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
+      } else {
+        return
+      }
+
+      // Sync to server in batches
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && (choice === 'local' || choice === 'merge')) {
+        const syncPromises = resolvedDataArray.map((data, index) => {
+          const conflict = conflicts[index]
+          if (conflict) {
+            return syncToServer(conflict.storeName, data, user.id)
+          }
+        })
+        await Promise.all(syncPromises.filter(Boolean))
+      }
+
+      // Update local database in batches
+      for (let i = 0; i < resolvedDataArray.length; i++) {
+        const data = resolvedDataArray[i]
+        const conflict = conflicts[i]
+        if (conflict) {
+          await jubeeDB.put(conflict.storeName as any, data)
+        }
+      }
+
+      toast({
+        title: "Conflicts Resolved",
+        description: `${resolvedDataArray.length} conflict(s) resolved using ${choice} strategy`,
+      })
+
+      setCurrentConflict(null)
+      setShowBatchOptions(false)
+    } catch (error) {
+      console.error('Failed to resolve conflicts:', error)
+      toast({
+        title: "Batch Resolution Failed",
+        description: "Some conflicts could not be resolved. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResolving(false)
+    }
+  }
+
+  const handleAutoDiagnose = async () => {
+    if (conflicts.length === 0) return
+
+    setIsResolving(true)
+    try {
+      const diagnosis = conflictResolver.getDiagnosis()
+      const resolvedDataArray: any[] = []
+
+      // Group conflicts by recommended strategy
+      const byStrategy: Record<ResolutionChoice, string[]> = {
+        local: [],
+        server: [],
+        merge: []
+      }
+
+      Object.entries(diagnosis).forEach(([id, strategy]) => {
+        byStrategy[strategy].push(id)
+      })
+
+      // Resolve each group
+      for (const [strategy, ids] of Object.entries(byStrategy) as [ResolutionChoice, string[]][]) {
+        if (ids.length > 0) {
+          const resolved = await conflictResolver.resolveBatch(ids, strategy)
+          resolvedDataArray.push(...resolved)
+        }
+      }
+
+      // Sync to server
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        for (let i = 0; i < resolvedDataArray.length; i++) {
+          const data = resolvedDataArray[i]
+          const conflict = conflicts[i]
+          if (conflict) {
+            await jubeeDB.put(conflict.storeName as any, data)
+            
+            if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
+              await syncToServer(conflict.storeName, data, user.id)
+            }
+          }
+        }
+      }
+
+      toast({
+        title: "Auto-Diagnosis Complete",
+        description: `${resolvedDataArray.length} conflict(s) automatically resolved`,
+      })
+
+      setCurrentConflict(null)
+    } catch (error) {
+      console.error('Failed to auto-diagnose:', error)
+      toast({
+        title: "Auto-Diagnosis Failed",
+        description: "Could not automatically resolve conflicts.",
         variant: "destructive",
       })
     } finally {
@@ -138,10 +259,10 @@ export function ConflictResolutionDialog() {
         <DialogHeader>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-warning" />
-            <DialogTitle>Data Conflict Detected</DialogTitle>
+            <DialogTitle>Data Conflict{conflicts.length > 1 ? 's' : ''} Detected</DialogTitle>
           </div>
           <DialogDescription>
-            Your local data differs from the server. Choose which version to keep.
+            Your local data differs from the server. {conflicts.length > 1 ? 'Review and resolve conflicts individually or use batch options.' : 'Choose which version to keep.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -204,6 +325,87 @@ export function ConflictResolutionDialog() {
 
           <Separator />
 
+          {/* Batch options */}
+          {conflicts.length > 1 && (
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowBatchOptions(!showBatchOptions)}
+                disabled={isResolving}
+                className="w-full"
+              >
+                {showBatchOptions ? 'Hide' : 'Show'} Batch Options ({conflicts.length} conflicts)
+              </Button>
+
+              {showBatchOptions && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-4 border rounded-lg bg-muted/50">
+                  <Button
+                    variant="secondary"
+                    onClick={handleAutoDiagnose}
+                    disabled={isResolving}
+                    className="w-full"
+                  >
+                    🤖 Auto-Diagnose & Resolve All
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => handleBatchResolve('local', 'all')}
+                    disabled={isResolving}
+                    className="w-full"
+                  >
+                    <Laptop className="h-4 w-4 mr-2" />
+                    All → Local
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => handleBatchResolve('server', 'all')}
+                    disabled={isResolving}
+                    className="w-full"
+                  >
+                    <Database className="h-4 w-4 mr-2" />
+                    All → Server
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => handleBatchResolve('merge', 'all')}
+                    disabled={isResolving}
+                    className="w-full"
+                  >
+                    All → Merge
+                  </Button>
+
+                  {currentConflict && (
+                    <>
+                      <Separator className="col-span-full" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBatchResolve('local', 'store')}
+                        disabled={isResolving}
+                        className="w-full"
+                      >
+                        {getStoreName(currentConflict.storeName)} → Local
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleBatchResolve('server', 'store')}
+                        disabled={isResolving}
+                        className="w-full"
+                      >
+                        {getStoreName(currentConflict.storeName)} → Server
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
@@ -212,7 +414,7 @@ export function ConflictResolutionDialog() {
               className="w-full sm:w-auto"
             >
               <Database className="h-4 w-4 mr-2" />
-              Keep Server Version
+              Keep Server
             </Button>
             
             <Button
@@ -221,7 +423,7 @@ export function ConflictResolutionDialog() {
               disabled={isResolving}
               className="w-full sm:w-auto"
             >
-              Merge Both (Newer Wins)
+              Merge {currentConflict && diagnosis[currentConflict.id] === 'merge' && '(Recommended)'}
             </Button>
             
             <Button
@@ -230,7 +432,7 @@ export function ConflictResolutionDialog() {
               className="w-full sm:w-auto"
             >
               <Laptop className="h-4 w-4 mr-2" />
-              Keep Local Version
+              Keep Local {currentConflict && diagnosis[currentConflict.id] === 'local' && '✓'}
             </Button>
           </DialogFooter>
         </div>
