@@ -230,5 +230,33 @@
     "next": "下一个",
     "start": "开始",
     "finish": "完成"
+  },
+  "onboarding": {
+    "getStarted": "开始使用！",
+    "skip": "跳过教程",
+    "welcome": {
+      "title": "欢迎来到Jubee Love！🎉",
+      "description": "让我带你看看吧！我是Jubee，你友好的学习伙伴。我在这里帮助你学习、玩耍和享受乐趣！"
+    },
+    "jubee-interaction": {
+      "title": "认识Jubee！👋",
+      "description": "你可以在屏幕上拖动我，点击我听我说话，或者只是打个招呼！我会陪伴你的每一次冒险。"
+    },
+    "writing-practice": {
+      "title": "练习写字 ✏️",
+      "description": "画字母、数字和形状！我会为你加油，帮助你提高写字技能。"
+    },
+    "shapes-game": {
+      "title": "学习形状 🔷",
+      "description": "分类形状，学习它们的名字，玩有趣的配对游戏！这是一个很好的学习方式，同时也很有趣。"
+    },
+    "reading-stories": {
+      "title": "阅读与聆听 📚",
+      "description": "探索精彩的故事，练习阅读！我可以读给你听，或者你可以读给我听。"
+    },
+    "collect-stickers": {
+      "title": "收集贴纸！⭐",
+      "description": "通过完成活动赚取贴纸！你学得越多，你的收藏就会有越多的贴纸。"
+    }
   }
 }

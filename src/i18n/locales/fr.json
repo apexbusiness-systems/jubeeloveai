@@ -230,5 +230,33 @@
     "next": "Suivant",
     "start": "Commencer",
     "finish": "Terminer"
+  },
+  "onboarding": {
+    "getStarted": "Commencer !",
+    "skip": "Passer le Tutoriel",
+    "welcome": {
+      "title": "Bienvenue sur Jubee Love ! 🎉",
+      "description": "Laisse-moi te montrer ! Je suis Jubee, ton compagnon d'apprentissage. Je suis là pour t'aider à apprendre, jouer et t'amuser !"
+    },
+    "jubee-interaction": {
+      "title": "Rencontre Jubee ! 👋",
+      "description": "Tu peux me faire glisser sur l'écran, me toucher pour m'entendre parler, ou simplement dire bonjour ! Je serai avec toi à chaque aventure."
+    },
+    "writing-practice": {
+      "title": "Pratique l'Écriture ✏️",
+      "description": "Dessine des lettres, des chiffres et des formes ! Je t'encouragerai et t'aiderai à améliorer tes compétences en écriture."
+    },
+    "shapes-game": {
+      "title": "Apprends les Formes 🔷",
+      "description": "Trie les formes, apprends leurs noms et joue à des jeux amusants ! C'est une excellente façon d'apprendre en s'amusant."
+    },
+    "reading-stories": {
+      "title": "Lis et Écoute 📚",
+      "description": "Explore de merveilleuses histoires et pratique la lecture ! Je peux te lire ou tu peux me lire."
+    },
+    "collect-stickers": {
+      "title": "Collectionne des Autocollants ! ⭐",
+      "description": "Gagne des autocollants en complétant des activités ! Plus tu apprends, plus tu obtiendras d'autocollants pour ta collection."
+    }
   }
 }

@@ -26,6 +26,8 @@ import { ConflictResolutionDialog } from './components/ConflictResolutionDialog'
 import { useJubeeCollision } from './hooks/useJubeeCollision';
 import { useJubeeDraggable } from './hooks/useJubeeDraggable';
 import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
+import { OnboardingTutorial } from './components/OnboardingTutorial';
+import { useOnboardingStore } from './store/useOnboardingStore';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -78,6 +80,17 @@ export default function App() {
   const [canvasError, setCanvasError] = useState(false);
   const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
+  const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
+
+  // Start onboarding for first-time users
+  useEffect(() => {
+    if (!hasCompletedOnboarding) {
+      const timer = setTimeout(() => {
+        startOnboarding();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasCompletedOnboarding, startOnboarding]);
   const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
 
@@ -284,6 +297,7 @@ export default function App() {
             <VoiceCommandButton />
             <OfflineIndicator />
             <ConflictResolutionDialog />
+            <OnboardingTutorial />
           </div>
           
           {/* Recovery button when Jubee disappears */}
