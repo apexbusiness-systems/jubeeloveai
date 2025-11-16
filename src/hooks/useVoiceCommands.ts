@@ -38,7 +38,7 @@ export function useVoiceCommands(options: VoiceCommandOptions = {}) {
       'settings': '/settings',
       'gallery': '/gallery',
       'my gallery': '/gallery',
-      'parental controls': '/parent/controls',
+      'parental controls': '/parental-controls',
     }
 
     for (const [command, route] of Object.entries(commandMap)) {

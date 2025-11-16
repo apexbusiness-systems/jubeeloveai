@@ -568,7 +568,7 @@ class SyncService {
       }
 
       // Mark as synced in IndexedDB
-      await jubeeDB.put(storeName as any, { ...data, synced: true })
+      await jubeeDB.put(storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', { ...data, synced: true })
     })
   }
 

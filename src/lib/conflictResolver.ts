@@ -8,8 +8,8 @@ export interface DataConflict {
   id: string
   storeName: string
   field: string
-  localValue: any
-  serverValue: any
+  localValue: unknown
+  serverValue: unknown
   localTimestamp: string
   serverTimestamp: string
   recordId: string
@@ -21,8 +21,8 @@ export interface ConflictGroup {
   recordId: string
   recordName?: string
   conflicts: DataConflict[]
-  localData: any
-  serverData: any
+  localData: Record<string, unknown>
+  serverData: Record<string, unknown>
   createdAt: Date
 }
 
@@ -38,8 +38,8 @@ class ConflictResolver {
   detectConflicts(
     storeName: string,
     recordId: string,
-    localData: any,
-    serverData: any,
+    localData: Record<string, unknown>,
+    serverData: Record<string, unknown>,
     recordName?: string
   ): ConflictGroup | null {
     const conflicts: DataConflict[] = []
@@ -131,7 +131,7 @@ class ConflictResolver {
   /**
    * Resolve a conflict
    */
-  resolveConflict(conflictId: string, choice: ResolutionChoice): any {
+  resolveConflict(conflictId: string, choice: ResolutionChoice): Record<string, unknown> {
     const conflict = this.conflicts.find(c => c.id === conflictId)
     if (!conflict) {
       throw new Error('Conflict not found')
@@ -150,8 +150,8 @@ class ConflictResolver {
   /**
    * Resolve multiple conflicts with the same choice
    */
-  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<any[]> {
-    const resolvedDataArray: any[] = []
+  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
+    const resolvedDataArray: Record<string, unknown>[] = []
     const errors: Array<{ id: string; error: string }> = []
 
     // Process in chunks to avoid blocking
@@ -200,7 +200,7 @@ class ConflictResolver {
   /**
    * Resolve all conflicts with the same choice
    */
-  async resolveAll(choice: ResolutionChoice): Promise<any[]> {
+  async resolveAll(choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const allIds = this.conflicts.map(c => c.id)
     return this.resolveBatch(allIds, choice)
   }
@@ -208,7 +208,7 @@ class ConflictResolver {
   /**
    * Resolve conflicts by store with the same choice
    */
-  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<any[]> {
+  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const storeConflictIds = this.conflicts
       .filter(c => c.storeName === storeName)
       .map(c => c.id)
@@ -218,8 +218,8 @@ class ConflictResolver {
   /**
    * Helper to resolve conflict data based on choice
    */
-  private resolveConflictData(conflict: ConflictGroup, choice: ResolutionChoice): any {
-    let resolvedData: any
+  private resolveConflictData(conflict: ConflictGroup, choice: ResolutionChoice): Record<string, unknown> {
+    let resolvedData: Record<string, unknown>
 
     switch (choice) {
       case 'local':

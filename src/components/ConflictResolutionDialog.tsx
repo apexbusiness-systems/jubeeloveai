@@ -58,9 +58,9 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const resolvedData = conflictResolver.resolveConflict(currentConflict.id, choice)
-      
+
       // Update local database
-      await jubeeDB.put(currentConflict.storeName as any, resolvedData)
+      await jubeeDB.put(currentConflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', resolvedData)
       
       // If keeping local or merge, sync to server
       if (choice === 'local' || choice === 'merge') {
@@ -95,8 +95,8 @@ export function ConflictResolutionDialog() {
 
     setIsResolving(true)
     try {
-      let resolvedDataArray: any[]
-      
+      let resolvedDataArray: Record<string, unknown>[]
+
       if (scope === 'all') {
         resolvedDataArray = await conflictResolver.resolveAll(choice)
       } else if (currentConflict) {
@@ -122,7 +122,7 @@ export function ConflictResolutionDialog() {
         const data = resolvedDataArray[i]
         const conflict = conflicts[i]
         if (conflict) {
-          await jubeeDB.put(conflict.storeName as any, data)
+          await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data)
         }
       }
 
@@ -151,7 +151,7 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const diagnosis = conflictResolver.getDiagnosis()
-      const resolvedDataArray: any[] = []
+      const resolvedDataArray: Record<string, unknown>[] = []
 
       // Group conflicts by recommended strategy
       const byStrategy: Record<ResolutionChoice, string[]> = {
@@ -179,8 +179,8 @@ export function ConflictResolutionDialog() {
           const data = resolvedDataArray[i]
           const conflict = conflicts[i]
           if (conflict) {
-            await jubeeDB.put(conflict.storeName as any, data)
-            
+            await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data)
+
             if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
               await syncToServer(conflict.storeName, data, user.id)
             }
@@ -206,7 +206,7 @@ export function ConflictResolutionDialog() {
     }
   }
 
-  const syncToServer = async (storeName: string, data: any, userId: string) => {
+  const syncToServer = async (storeName: string, data: Record<string, unknown>, userId: string) => {
     switch (storeName) {
       case 'gameProgress':
         await supabase.from('game_progress').upsert({
@@ -233,7 +233,7 @@ export function ConflictResolutionDialog() {
     }
   }
 
-  const formatValue = (value: any): string => {
+  const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'Not set'
     if (typeof value === 'object') return JSON.stringify(value, null, 2)
     if (typeof value === 'boolean') return value ? 'Yes' : 'No'

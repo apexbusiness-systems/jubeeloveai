@@ -38,7 +38,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return []
   }
   unobserve() {}
-} as any
+}
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -46,7 +46,7 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any
+}
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -71,7 +71,7 @@ global.SpeechRecognition = class SpeechRecognition {
   onresult = null
   onerror = null
   onend = null
-} as any
+}
 
 global.webkitSpeechRecognition = global.SpeechRecognition
 
@@ -88,4 +88,4 @@ global.AudioContext = class AudioContext {
     frequency: { value: 440 },
   }))
   destination = {}
-} as any
+}

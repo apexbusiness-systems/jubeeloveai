@@ -11,7 +11,7 @@ export interface QueuedOperation {
   id: string
   storeName: string
   operation: 'sync' | 'pull'
-  data: any
+  data: Record<string, unknown>
   attempts: number
   lastAttempt: Date
   error?: string

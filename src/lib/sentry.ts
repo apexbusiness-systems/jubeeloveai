@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import type { Json } from '@/integrations/supabase/types';
 
 /**
  * Initialize Sentry for error tracking
@@ -61,7 +62,7 @@ export function initSentry() {
 /**
  * Capture an exception with additional context
  */
-export function captureException(error: Error, context?: Record<string, any>) {
+export function captureException(error: Error, context?: Record<string, Json>) {
   if (context) {
     Sentry.setContext('additional', context);
   }

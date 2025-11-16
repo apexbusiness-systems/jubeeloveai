@@ -11,8 +11,6 @@ import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { JubeeErrorBoundary } from './components/JubeeErrorBoundary';
-import { SentryErrorBoundary } from './components/SentryErrorBoundary';
-import { FeedbackWidget } from './components/FeedbackWidget';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
@@ -32,6 +30,8 @@ import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { useAuth } from './hooks/useAuth';
+import { LogOut, LogIn } from 'lucide-react';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -52,7 +52,6 @@ const InstallPage = lazy(() => import('./pages/Install'));
 const ParentalControls = lazy(() => import('./pages/ParentalControls'));
 const PerformanceMonitor = lazy(() => import('./pages/PerformanceMonitor'));
 const AuthPage = lazy(() => import('./pages/Auth'));
-const ParentHub = lazy(() => import('./pages/ParentHub'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +86,7 @@ export default function App() {
   const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
+  const { user, signOut, isAuthenticated } = useAuth();
 
   // Start onboarding for first-time users
   useEffect(() => {
@@ -128,10 +128,9 @@ export default function App() {
   }, [children.length, activeChildId]);
 
   return (
-    <SentryErrorBoundary>
-      <ErrorBoundary>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
           <AchievementTracker />
           <SEO />
           <div className="app" data-theme={currentTheme}>
@@ -144,6 +143,27 @@ export default function App() {
 
               {/* Action buttons */}
               <div className="flex gap-3">
+                {isAuthenticated ? (
+                  <Button
+                    onClick={signOut}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-2xl font-bold border-2 border-primary-foreground/60 bg-card/40 backdrop-blur-sm shadow-lg hover:scale-110 transition-all"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => window.location.href = '/auth'}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-2xl font-bold border-2 border-primary-foreground/60 bg-card/40 backdrop-blur-sm shadow-lg hover:scale-110 transition-all"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Login
+                  </Button>
+                )}
                 <button
                   onClick={toggleVisibility}
                   className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
@@ -257,35 +277,32 @@ export default function App() {
 
             <main className="main-content" role="main" style={{ paddingTop: '80px' }}>
               <Suspense fallback={<LoadingScreen message="Loading activity" />}>
-                 <PageTransition>
+                <PageTransition>
                   <Routes>
                     {/* Public route */}
                     <Route path="/auth" element={<AuthPage />} />
                     
-                    {/* Kids app - All public, no auth required */}
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/write" element={<WritingCanvas />} />
-                    <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/shapes" element={<ShapeSorter />} />
-                    <Route path="/stories" element={<StoryTime />} />
-                    <Route path="/reading" element={<ReadingPractice />} />
-                    <Route path="/games" element={<GamesMenu />} />
-                    <Route path="/games/memory" element={<MemoryGame />} />
-                    <Route path="/games/pattern" element={<PatternGame />} />
-                    <Route path="/games/numbers" element={<NumberGame />} />
-                    <Route path="/games/alphabet" element={<AlphabetGame />} />
-                    <Route path="/games/colors" element={<ColorGame />} />
-                    <Route path="/games/puzzle" element={<PuzzleGame />} />
-                    <Route path="/progress" element={<ProgressPage />} />
-                    <Route path="/stickers" element={<StickersPage />} />
-                    <Route path="/music" element={<MusicPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/install" element={<InstallPage />} />
-                    <Route path="/performance-monitor" element={<PerformanceMonitor />} />
-                    
-                    {/* Parent Hub - Protected with authentication */}
-                    <Route path="/parent" element={<ProtectedRoute><ParentHub /></ProtectedRoute>} />
-                    <Route path="/parent/controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
+                    {/* Protected routes */}
+                    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                    <Route path="/write" element={<ProtectedRoute><WritingCanvas /></ProtectedRoute>} />
+                    <Route path="/gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
+                    <Route path="/shapes" element={<ProtectedRoute><ShapeSorter /></ProtectedRoute>} />
+                    <Route path="/stories" element={<ProtectedRoute><StoryTime /></ProtectedRoute>} />
+                    <Route path="/reading" element={<ProtectedRoute><ReadingPractice /></ProtectedRoute>} />
+                    <Route path="/games" element={<ProtectedRoute><GamesMenu /></ProtectedRoute>} />
+                    <Route path="/games/memory" element={<ProtectedRoute><MemoryGame /></ProtectedRoute>} />
+                    <Route path="/games/pattern" element={<ProtectedRoute><PatternGame /></ProtectedRoute>} />
+                    <Route path="/games/numbers" element={<ProtectedRoute><NumberGame /></ProtectedRoute>} />
+                    <Route path="/games/alphabet" element={<ProtectedRoute><AlphabetGame /></ProtectedRoute>} />
+                    <Route path="/games/colors" element={<ProtectedRoute><ColorGame /></ProtectedRoute>} />
+                    <Route path="/games/puzzle" element={<ProtectedRoute><PuzzleGame /></ProtectedRoute>} />
+                    <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+                    <Route path="/stickers" element={<ProtectedRoute><StickersPage /></ProtectedRoute>} />
+                    <Route path="/music" element={<ProtectedRoute><MusicPage /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                    <Route path="/install" element={<ProtectedRoute><InstallPage /></ProtectedRoute>} />
+                    <Route path="/parental-controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
+                    <Route path="/performance-monitor" element={<ProtectedRoute><PerformanceMonitor /></ProtectedRoute>} />
                   </Routes>
                 </PageTransition>
               </Suspense>
@@ -340,11 +357,9 @@ export default function App() {
           )}
           
           <Toaster />
-          <FeedbackWidget />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
-    </SentryErrorBoundary>
   );
 }
 

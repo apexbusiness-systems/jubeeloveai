@@ -17,8 +17,8 @@ interface DragState {
   startRight: number
 }
 
-// Enhanced boundary constants for defensive position management
-const SAFE_MARGIN = 50 // Margin to prevent edge clipping during drag
+// Boundary constants to prevent edge clipping while allowing full viewport access
+const SAFE_MARGIN = 10 // Small margin to prevent edge clipping (reduced from 50 for better corner access)
 
 export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>) {
   const { containerPosition, setContainerPosition, setIsDragging } = useJubeeStore()
@@ -63,19 +63,18 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const viewportWidth = window.innerWidth
     const containerDims = getContainerDimensions()
 
-    // Calculate absolute maximum right that keeps container fully visible
-    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+    // Calculate bounds to keep container fully visible within viewport
+    // Allow dragging to all edges with SAFE_MARGIN to prevent clipping
+    const minBottom = SAFE_MARGIN // Allow dragging to top of screen
+    const minRight = SAFE_MARGIN // Allow dragging to left edge
+    const maxBottom = viewportHeight - containerDims.height - SAFE_MARGIN // Prevent bottom overflow
+    const maxRight = viewportWidth - containerDims.width - SAFE_MARGIN // Prevent right overflow
 
-    // Enhanced boundary calculation with generous minimums
-    const minBottom = 180 // Ensure above bottom navigation
-    const minRight = 100 // Minimum distance from right edge
-    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
-    const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300)) // Cap at 300px from right edge
-    
-    // Additional NaN/Infinity guards
+    // Additional NaN/Infinity guards with safe defaults
     const safeBottom = Number.isFinite(bottom) ? bottom : 200
     const safeRight = Number.isFinite(right) ? right : 100
-    
+
+    // Clamp to viewport bounds - allowing FULL viewport dragging
     return {
       bottom: Math.max(minBottom, Math.min(maxBottom, safeBottom)),
       right: Math.max(minRight, Math.min(maxRight, safeRight))

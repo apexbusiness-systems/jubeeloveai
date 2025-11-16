@@ -23,7 +23,7 @@ describe('useAuth', () => {
     vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({
       data: { session: mockSession },
       error: null,
-    } as any)
+    })
 
     const { result } = renderHook(() => useAuth())
 

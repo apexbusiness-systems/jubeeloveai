@@ -107,30 +107,6 @@ export default function SettingsPage() {
           </CardHeader>
         </Card>
 
-        {/* Parent Hub Access */}
-        <Card className="border-4 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardHeader>
-            <CardTitle className="text-primary flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Parent Hub
-            </CardTitle>
-            <CardDescription className="text-primary">
-              Access parental controls, view progress reports, and manage children profiles
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button 
-              onClick={() => navigate('/parent')}
-              variant="default"
-              size="lg"
-              className="w-full"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Open Parent Hub
-            </Button>
-          </CardContent>
-        </Card>
-
         {/* Language Selection */}
         <LanguageSelector />
 
@@ -290,6 +266,29 @@ export default function SettingsPage() {
             />
           </CardContent>
         </Card>
+
+        {/* Parental Controls Link */}
+        {children.length > 0 && (
+          <Card className="border-4 border-primary/30">
+            <CardHeader>
+              <CardTitle className="text-primary flex items-center gap-2">
+                <Shield className="w-6 h-6" />
+                {t('settings.parentalControls')}
+              </CardTitle>
+              <CardDescription className="text-primary">{t('settings.manageProfiles')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate('/parental-controls')}
+                variant="default"
+                size="lg"
+                className="w-full"
+              >
+                {t('settings.manageProfiles')}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Install App */}
         <Card className="border-4 border-primary/30">

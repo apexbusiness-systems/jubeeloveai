@@ -39,7 +39,7 @@ export function ChildSelector({ open, onOpenChange }: ChildSelectorProps) {
             <Button
               onClick={() => {
                 onOpenChange(false);
-                navigate('/parent/controls');
+                navigate('/parental-controls');
               }}
               variant="outline"
             >
@@ -89,7 +89,7 @@ export function ChildSelector({ open, onOpenChange }: ChildSelectorProps) {
           <Button
             onClick={() => {
               onOpenChange(false);
-              navigate('/parent/controls');
+              navigate('/parental-controls');
             }}
             variant="secondary"
             className="flex-1"
