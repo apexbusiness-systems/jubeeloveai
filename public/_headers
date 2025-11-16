@@ -1,0 +1,71 @@
+# Security Headers for Jubee Love PWA
+# These headers enhance security for production deployment
+# Compatible with Netlify, Vercel, and other modern hosting platforms
+
+/*
+  # Security Headers
+
+  # Content Security Policy - Protect against XSS attacks
+  # Note: This is a permissive CSP that allows the app to function
+  # Adjust based on your specific needs
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;
+
+  # Prevent clickjacking
+  X-Frame-Options: DENY
+
+  # Prevent MIME type sniffing
+  X-Content-Type-Options: nosniff
+
+  # Enable browser XSS protection
+  X-XSS-Protection: 1; mode=block
+
+  # Referrer Policy - Control referrer information
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Permissions Policy - Control which features can be used
+  Permissions-Policy: camera=(), microphone=(self), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+
+  # Strict Transport Security - Force HTTPS (only enable if using HTTPS)
+  # Uncomment the line below only if your site is served over HTTPS
+  # Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+  # Cache Control for HTML
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Service Worker
+/sw.js
+  # Don't cache the service worker
+  Cache-Control: public, max-age=0, must-revalidate
+
+/workbox-*.js
+  # Cache workbox files for 1 year
+  Cache-Control: public, max-age=31536000, immutable
+
+# Static Assets
+/assets/*
+  # Cache static assets for 1 year (they have hashed filenames)
+  Cache-Control: public, max-age=31536000, immutable
+
+# PWA Manifest
+/manifest.webmanifest
+  # Cache manifest for 1 day
+  Cache-Control: public, max-age=86400
+
+# Images
+*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+*.ico
+  Cache-Control: public, max-age=31536000, immutable

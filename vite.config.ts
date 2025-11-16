@@ -10,12 +10,48 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    // Production build optimizations
+    target: 'es2015',
+    minify: 'esbuild', // Using esbuild for faster builds
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        // Manual chunk splitting for better caching
+        manualChunks: {
+          // React core
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // UI components
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+          ],
+          // 3D rendering
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          // Supabase and data
+          'supabase-vendor': ['@supabase/supabase-js', '@tanstack/react-query'],
+          // Utilities
+          'utils-vendor': ['date-fns', 'zustand', 'framer-motion', 'zod'],
+        },
+        // Ensure consistent chunk names for better caching
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
+    // Source maps for production debugging (can be disabled for smaller builds)
+    sourcemap: mode !== 'production',
+  },
   plugins: [
-    react(), 
+    react(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'assets/**'],
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'assets/**'],
       manifest: {
         name: 'Jubee Love - Educational Learning for Kids',
         short_name: 'Jubee Love',
@@ -50,12 +86,20 @@ export default defineConfig(({ mode }) => ({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
+          },
+          {
+            src: '/apple-touch-icon.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
           }
         ],
         categories: ['education', 'kids', 'entertainment']
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp}'],
+        // Increase max size for caching large assets
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -86,13 +130,13 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /\/api\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
+              cacheName: 'supabase-api-cache',
               networkTimeoutSeconds: 10,
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 5 // 5 minutes
               },
               cacheableResponse: {
@@ -124,5 +168,15 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      '@tanstack/react-query',
+    ],
   },
 }));

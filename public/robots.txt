@@ -1,14 +1,16 @@
-User-agent: Googlebot
-Allow: /
+# Robots.txt for Jubee Love Educational App
+# Production-ready configuration
 
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Allow all crawlers
 User-agent: *
 Allow: /
+
+# Disallow admin/private paths
+Disallow: /parental-controls
+Disallow: /performance-monitor
+
+# Sitemap
+Sitemap: https://jubeelove.com/sitemap.xml
+
+# Crawl delay (be respectful to crawlers)
+Crawl-delay: 1
