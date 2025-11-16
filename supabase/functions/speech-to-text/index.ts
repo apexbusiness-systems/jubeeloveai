@@ -6,6 +6,48 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// RATE LIMITING: IP-based protection against abuse
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute per IP (stricter for audio processing)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function getRateLimitKey(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  const realIp = req.headers.get('x-real-ip');
+  const cfConnecting = req.headers.get('cf-connecting-ip');
+  
+  return forwarded?.split(',')[0].trim() || 
+         realIp || 
+         cfConnecting || 
+         'unknown';
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (rateLimitMap.size > 10000) {
+    for (const [key, value] of rateLimitMap.entries()) {
+      if (value.resetAt < now) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  if (!record || record.resetAt < now) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return { allowed: true };
+  }
+
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  record.count++;
+  return { allowed: true };
+}
+
 // SECURITY: Input validation constants
 const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB max (Whisper API limit)
 const MIN_AUDIO_SIZE = 100; // Minimum reasonable audio size
@@ -62,6 +104,29 @@ function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Arra
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // RATE LIMITING: Check before processing
+  const clientIp = getRateLimitKey(req);
+  const rateLimit = checkRateLimit(clientIp);
+  
+  if (!rateLimit.allowed) {
+    console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+    return new Response(
+      JSON.stringify({ 
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: 'Too many requests. Please try again later.',
+        retryAfter: rateLimit.retryAfter 
+      }),
+      {
+        status: 429,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Retry-After': rateLimit.retryAfter?.toString() || '60'
+        },
+      }
+    );
   }
 
   try {
