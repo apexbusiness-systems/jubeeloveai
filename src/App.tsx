@@ -11,6 +11,8 @@ import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { JubeeErrorBoundary } from './components/JubeeErrorBoundary';
+import { SentryErrorBoundary } from './components/SentryErrorBoundary';
+import { FeedbackWidget } from './components/FeedbackWidget';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
@@ -126,9 +128,10 @@ export default function App() {
   }, [children.length, activeChildId]);
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+    <SentryErrorBoundary>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
           <AchievementTracker />
           <SEO />
           <div className="app" data-theme={currentTheme}>
@@ -337,9 +340,11 @@ export default function App() {
           )}
           
           <Toaster />
+          <FeedbackWidget />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
+    </SentryErrorBoundary>
   );
 }
 

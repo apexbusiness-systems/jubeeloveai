@@ -2,6 +2,28 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n/config";
+import { initSentry } from "./lib/sentry";
+import { validateEnv, logEnvConfig } from "./lib/envValidation";
+
+// Validate environment configuration on startup
+try {
+  const config = validateEnv();
+  
+  if (import.meta.env.DEV) {
+    logEnvConfig(config);
+  }
+
+  // Initialize Sentry if configured
+  initSentry();
+} catch (error) {
+  console.error('❌ Environment Configuration Error:', error);
+  if (import.meta.env.DEV) {
+    alert(
+      'Environment configuration error. Please check console for details.\n\n' +
+      'Make sure you have copied .env.example to .env and filled in the required values.'
+    );
+  }
+}
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
