@@ -19,7 +19,8 @@ interface TimerEntry {
 
 // Cleanup timers map - can store either Timeout or TimerEntry
 const timers = new Map<string, NodeJS.Timeout | TimerEntry>()
-let currentAudio: HTMLAudioElement | null = null
+
+import { audioManager } from '@/lib/audioManager'
 
 export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
 
@@ -169,85 +170,40 @@ export const useJubeeStore = create<JubeeState>()(
 
     speak: async (text, mood = 'happy') => {
       // Stop any currently playing audio
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio = null
-      }
-      
-      // Clear existing speech timer
-      const existingTimer = timers.get('speech')
-      if (existingTimer && typeof existingTimer !== 'object') {
-        clearTimeout(existingTimer)
-      }
+      audioManager.stopCurrentAudio()
       
       const gender = get().gender
       const voice = get().voice
-      // Get current language from i18n if available
       const language = window.i18nextLanguage || 'en'
+      
       set((state) => { 
         state.speechText = text
         state.lastError = null
       })
       
-      // Retry logic with exponential backoff
-      const maxRetries = 2
-      let retryCount = 0
-      let retryDelay = 1000
+      // Single TTS request with timeout
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
 
-      const attemptTTS = async (): Promise<boolean> => {
-        try {
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, gender, language, mood, voice }),
+          signal: controller.signal,
+        })
 
-          const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text, gender, language, mood, voice }),
-            signal: controller.signal,
-          })
+        clearTimeout(timeoutId)
 
-          clearTimeout(timeoutId)
-
-          if (response.ok) {
-            const audioBlob = await response.blob()
-            const audioUrl = URL.createObjectURL(audioBlob)
-            const audio = new Audio(audioUrl)
-            currentAudio = audio
-            
-            audio.onended = () => {
-              URL.revokeObjectURL(audioUrl)
-              currentAudio = null
-              set((state) => { state.speechText = '' })
-            }
-            
-            audio.onerror = () => {
-              URL.revokeObjectURL(audioUrl)
-              currentAudio = null
-              set((state) => { state.speechText = '' })
-            }
-            
-            await audio.play()
-            return true
-          }
-          return false
-        } catch (error) {
-          console.error(`TTS attempt ${retryCount + 1} failed:`, error)
-          return false
+        if (response.ok) {
+          const audioBlob = await response.blob()
+          
+          await audioManager.playAudio(audioBlob)
+          set((state) => { state.speechText = '' })
+          return
         }
-      }
-
-      // Try TTS with retries
-      while (retryCount <= maxRetries) {
-        const success = await attemptTTS()
-        if (success) return
-
-        retryCount++
-        if (retryCount <= maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
-          retryDelay *= 2 // Exponential backoff
-        }
+      } catch (error) {
+        console.error('TTS failed:', error)
       }
 
       // All retries failed, use browser speech fallback
@@ -377,10 +333,7 @@ export const useJubeeStore = create<JubeeState>()(
         })
         timers.clear()
         
-        if (currentAudio) {
-          currentAudio.pause()
-          currentAudio = null
-        }
+        audioManager.cleanup()
         
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel()

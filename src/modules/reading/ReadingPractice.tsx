@@ -108,20 +108,8 @@ export default function ReadingPractice() {
 
   // Speak the word using text-to-speech
   const speakWord = async (text: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('text-to-speech', {
-        body: { text, language: 'en' }
-      });
-
-      if (error) throw error;
-
-      if (data?.audioUrl) {
-        const audio = new Audio(data.audioUrl);
-        audio.play();
-      }
-    } catch (error) {
-      console.error('Text-to-speech error:', error);
-    }
+    const { speak } = useJubeeStore.getState();
+    await speak(text, 'happy');
   };
 
   // Start recording
