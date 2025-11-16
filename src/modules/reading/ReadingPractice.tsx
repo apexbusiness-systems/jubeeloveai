@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { sanitizeVoiceInput, checkPronunciation } from '@/lib/voiceInputSanitizer';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { Mic, Volume2, ArrowLeft, Trophy, Star } from 'lucide-react';
+import { triggerHaptic } from '@/lib/hapticFeedback';
 import { 
   getRandomWords, 
   categoryLabels, 
@@ -108,6 +109,7 @@ export default function ReadingPractice() {
 
   // Speak the word using text-to-speech
   const speakWord = async (text: string) => {
+    triggerHaptic('light');
     const { speak } = useJubeeStore.getState();
     await speak(text, 'happy');
   };
@@ -138,6 +140,7 @@ export default function ReadingPractice() {
 
       mediaRecorder.start();
       setIsRecording(true);
+      triggerHaptic('medium');
 
       // Auto-stop after 3 seconds
       setTimeout(() => {
@@ -161,6 +164,7 @@ export default function ReadingPractice() {
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      triggerHaptic('medium');
     }
   };
 
@@ -217,6 +221,7 @@ export default function ReadingPractice() {
       newStats.correct += 1;
       newStats.streak += 1;
 
+      triggerHaptic('success');
       updatePosition({ x: Math.random() * 6 - 3, y: Math.random() * 4 - 2, z: 0 });
 
       const encouragement = [
@@ -239,6 +244,7 @@ export default function ReadingPractice() {
       // Incorrect pronunciation
       newStats.streak = 0;
 
+      triggerHaptic('error');
       const correction = `You said "${spokenText}". Let's try "${currentWord.word}" again. ${currentWord.hint ? currentWord.hint : ''}`;
       await speakWord(correction);
 
