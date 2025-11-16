@@ -175,8 +175,12 @@ export default function App() {
                   position: 'fixed',
                   bottom: `${containerPosition.bottom}px`,
                   right: `${containerPosition.right}px`,
+                  width: '400px',
+                  height: '450px',
                   zIndex: 9999,
-                  transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease'
+                  transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease',
+                  touchAction: 'none',
+                  pointerEvents: 'auto'
                 }}
               >
                 <JubeeErrorBoundary>
@@ -184,15 +188,21 @@ export default function App() {
                     key={`jubee-canvas-${isVisible}`}
                     camera={{ position: [0, 0, 6], fov: 45 }}
                     shadows
-                    style={{ background: 'transparent' }}
+                    style={{ 
+                      background: 'transparent',
+                      width: '100%',
+                      height: '100%',
+                      display: 'block'
+                    }}
                     gl={{
                       antialias: true,
                       alpha: true,
                       powerPreference: "high-performance"
                     }}
                     onCreated={({ gl }) => {
-                      console.log('[Jubee] Canvas created via Portal');
+                      console.log('[Jubee] Canvas created via Portal with dimensions: 400x450');
                       gl.setClearColor('#000000', 0);
+                      gl.setSize(400, 450);
                     }}
                   >
                     <ambientLight intensity={1.2} />

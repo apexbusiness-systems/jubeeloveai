@@ -97,7 +97,7 @@ export default function StoryTime() {
     speak("Let's read a story together!")
   }
 
-  const handleNextPage = (e: React.MouseEvent) => {
+  const handleNextPage = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
@@ -157,10 +157,12 @@ export default function StoryTime() {
             <button
               key={story.id}
               onClick={() => handleStorySelect(story)}
-              className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent"
+              className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95"
               style={{
                 background: 'var(--gradient-warm)',
-                boxShadow: 'var(--shadow-game)'
+                boxShadow: 'var(--shadow-game)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               <div className="text-8xl mb-4">{story.pages[0].illustration}</div>
@@ -197,11 +199,17 @@ export default function StoryTime() {
       </div>
 
       <div
-        className="story-page p-12 rounded-3xl mb-8 bg-card border-4 border-game-accent flex flex-col items-center justify-center"
+        className="story-page p-12 rounded-3xl mb-8 bg-card border-4 border-game-accent flex flex-col items-center justify-center cursor-pointer active:scale-98 transition-transform"
         style={{
           boxShadow: 'var(--shadow-accent)',
-          minHeight: '400px'
+          minHeight: '400px',
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent'
         }}
+        onClick={handleNextPage}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleNextPage(e as any)}
       >
         <div className="illustration text-9xl mb-8">{page.illustration}</div>
         <p className="text-3xl text-card-foreground text-center leading-relaxed">{page.text}</p>
@@ -211,10 +219,12 @@ export default function StoryTime() {
         <button
           onClick={handlePrevPage}
           disabled={currentPage === 0}
-          className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+          className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
           style={{
             background: currentPage === 0 ? 'var(--gradient-neutral)' : 'var(--gradient-warm)',
-            boxShadow: 'var(--shadow-game)'
+            boxShadow: 'var(--shadow-game)',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent'
           }}
         >
           ⬅️ Previous
@@ -222,10 +232,12 @@ export default function StoryTime() {
 
         <button
           onClick={handleReadAloud}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
           style={{
             background: 'var(--gradient-game)',
-            boxShadow: 'var(--shadow-accent)'
+            boxShadow: 'var(--shadow-accent)',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent'
           }}
         >
           🔊 Read Aloud
@@ -233,10 +245,12 @@ export default function StoryTime() {
 
         <button
           onClick={handleNextPage}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
           style={{
             background: 'var(--gradient-cool)',
-            boxShadow: 'var(--shadow-game)'
+            boxShadow: 'var(--shadow-game)',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent'
           }}
         >
           {currentPage === selectedStory.pages.length - 1 ? '✓ Finish' : 'Next ➡️'}

@@ -338,12 +338,14 @@ export default function ReadingPractice() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center items-center">
+        <div className="flex gap-4 justify-center items-center flex-wrap">
           <Button
             size="lg"
             variant="outline"
             onClick={() => speakWord(`The word is ${currentWord.word}. ${currentWord.pronunciation}`)}
             disabled={isRecording || isProcessing}
+            className="min-h-[60px] min-w-[160px] text-lg active:scale-95 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
             <Volume2 className="mr-2 h-5 w-5" />
             Hear Word
@@ -353,7 +355,8 @@ export default function ReadingPractice() {
             size="lg"
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isProcessing}
-            className={isRecording ? 'bg-red-500 hover:bg-red-600' : ''}
+            className={`min-h-[60px] min-w-[160px] text-lg active:scale-95 transition-transform ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+            style={{ touchAction: 'manipulation' }}
           >
             <Mic className="mr-2 h-5 w-5" />
             {isRecording ? 'Recording...' : isProcessing ? 'Processing...' : 'Say the Word'}
@@ -364,6 +367,8 @@ export default function ReadingPractice() {
             variant="secondary"
             onClick={nextWord}
             disabled={isRecording || isProcessing}
+            className="min-h-[60px] min-w-[140px] text-lg active:scale-95 transition-transform"
+            style={{ touchAction: 'manipulation' }}
           >
             Skip Word
           </Button>

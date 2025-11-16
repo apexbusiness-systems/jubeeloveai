@@ -99,6 +99,7 @@ export default function WritingCanvas() {
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     try {
       e.preventDefault();
+      e.stopPropagation();
       setIsDrawing(true);
       playDrawSound();
       
@@ -356,6 +357,12 @@ export default function WritingCanvas() {
           onTouchEnd={stopDrawing}
           aria-label={`Writing canvas for tracing ${mode} ${currentCharacter}`}
           role="img"
+          style={{
+            touchAction: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}
         />
 
         <div className="flex gap-4 justify-center mt-6 flex-wrap" role="group" aria-label="Canvas controls">
