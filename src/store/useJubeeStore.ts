@@ -169,9 +169,6 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
     speak: async (text, mood = 'happy') => {
-      // Stop any currently playing audio
-      audioManager.stopCurrentAudio()
-      
       const gender = get().gender
       const voice = get().voice
       const language = window.i18nextLanguage || 'en'
@@ -180,6 +177,14 @@ export const useJubeeStore = create<JubeeState>()(
         state.speechText = text
         state.lastError = null
       })
+
+      // Check cache first for instant playback
+      const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
+      if (cachedAudio) {
+        await audioManager.playAudio(cachedAudio)
+        set((state) => { state.speechText = '' })
+        return
+      }
       
       // Single TTS request with timeout
       try {
@@ -197,6 +202,9 @@ export const useJubeeStore = create<JubeeState>()(
 
         if (response.ok) {
           const audioBlob = await response.blob()
+          
+          // Cache for future use
+          audioManager.cacheAudio(text, audioBlob, voice, mood)
           
           await audioManager.playAudio(audioBlob)
           set((state) => { state.speechText = '' })

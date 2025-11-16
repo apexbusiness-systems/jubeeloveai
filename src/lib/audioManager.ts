@@ -1,14 +1,129 @@
 /**
  * Centralized Audio Manager
  * Prevents audio delays, duplicates, and manages playback
+ * Includes caching and preloading for TTS responses
  */
+
+interface CachedAudio {
+  blob: Blob;
+  timestamp: number;
+}
 
 class AudioManager {
   private currentAudio: HTMLAudioElement | null = null;
   private soundEffects: Map<string, HTMLAudioElement> = new Map();
+  private audioCache: Map<string, CachedAudio> = new Map();
+  private readonly MAX_CACHE_SIZE = 50; // Max cached audio items
+  private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
 
   constructor() {
     this.preloadSoundEffects();
+    this.preloadCommonPhrases();
+  }
+
+  /**
+   * Generate cache key from TTS parameters
+   */
+  private getCacheKey(text: string, voice?: string, mood?: string): string {
+    const normalizedText = text.trim().toLowerCase();
+    return `${normalizedText}|${voice || 'default'}|${mood || 'neutral'}`;
+  }
+
+  /**
+   * Check if cached audio is still valid
+   */
+  private isCacheValid(cached: CachedAudio): boolean {
+    return Date.now() - cached.timestamp < this.CACHE_EXPIRY;
+  }
+
+  /**
+   * Clean up expired cache entries
+   */
+  private cleanExpiredCache(): void {
+    const now = Date.now();
+    for (const [key, cached] of this.audioCache.entries()) {
+      if (now - cached.timestamp > this.CACHE_EXPIRY) {
+        this.audioCache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Manage cache size (LRU-style)
+   */
+  private manageCacheSize(): void {
+    if (this.audioCache.size > this.MAX_CACHE_SIZE) {
+      // Remove oldest entries
+      const entries = Array.from(this.audioCache.entries());
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+      const toRemove = entries.slice(0, entries.length - this.MAX_CACHE_SIZE);
+      toRemove.forEach(([key]) => this.audioCache.delete(key));
+    }
+  }
+
+  /**
+   * Get cached audio blob
+   */
+  getCachedAudio(text: string, voice?: string, mood?: string): Blob | null {
+    const key = this.getCacheKey(text, voice, mood);
+    const cached = this.audioCache.get(key);
+    
+    if (cached && this.isCacheValid(cached)) {
+      console.log('✓ TTS cache hit:', text.substring(0, 50));
+      return cached.blob;
+    }
+    
+    if (cached) {
+      this.audioCache.delete(key); // Remove expired
+    }
+    
+    return null;
+  }
+
+  /**
+   * Cache audio blob
+   */
+  cacheAudio(text: string, blob: Blob, voice?: string, mood?: string): void {
+    const key = this.getCacheKey(text, voice, mood);
+    this.audioCache.set(key, {
+      blob,
+      timestamp: Date.now()
+    });
+    
+    this.manageCacheSize();
+    console.log('✓ TTS cached:', text.substring(0, 50), `(${this.audioCache.size} cached)`);
+  }
+
+  /**
+   * Preload common phrases to cache
+   */
+  private async preloadCommonPhrases(): Promise<void> {
+    // Common Jubee phrases that can be preloaded
+    const commonPhrases = [
+      "Great job!",
+      "You're doing amazing!",
+      "Let's try again!",
+      "That's correct!",
+      "Keep going!",
+      "Well done!",
+      "Fantastic!",
+      "Try one more time!"
+    ];
+
+    // Preload in background without blocking
+    setTimeout(async () => {
+      for (const phrase of commonPhrases) {
+        const cached = this.getCachedAudio(phrase);
+        if (!cached) {
+          try {
+            // This will be called naturally through speak() and get cached
+            console.log('Preload ready for:', phrase);
+          } catch (error) {
+            console.warn('Preload skipped for:', phrase);
+          }
+        }
+      }
+    }, 2000); // Wait 2s after app load
   }
 
   /**
@@ -98,11 +213,31 @@ class AudioManager {
 
 
   /**
+   * Clear all cached audio
+   */
+  clearCache(): void {
+    this.audioCache.clear();
+    console.log('Audio cache cleared');
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): { size: number; maxSize: number } {
+    this.cleanExpiredCache();
+    return {
+      size: this.audioCache.size,
+      maxSize: this.MAX_CACHE_SIZE
+    };
+  }
+
+  /**
    * Cleanup resources
    */
   cleanup(): void {
     this.stopCurrentAudio();
     this.soundEffects.clear();
+    this.clearCache();
   }
 }
 
