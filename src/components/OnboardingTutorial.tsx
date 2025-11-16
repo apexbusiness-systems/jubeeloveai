@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/store/useOnboardingStore'
+import { useJubeeStore } from '@/store/useJubeeStore'
 import { useTranslatedContent } from '@/i18n/useTranslatedContent'
 import { Button } from '@/components/ui/button'
 import { X, ArrowRight, ArrowLeft, Sparkles, Hand, BookOpen, Shapes, Pen, Star } from 'lucide-react'
@@ -47,12 +48,21 @@ const tutorialSteps = [
 
 export function OnboardingTutorial() {
   const { isActive, currentStep, nextStep, previousStep, completeOnboarding, skipOnboarding } = useOnboardingStore()
+  const { interactionCount } = useJubeeStore()
   const { t } = useTranslatedContent()
   const highlightRef = useRef<HTMLDivElement>(null)
 
   const currentTutorialStep = tutorialSteps[currentStep]
   const isLastStep = currentStep === tutorialSteps.length - 1
   const isFirstStep = currentStep === 0
+
+  // Auto-complete onboarding after first Jubee interaction
+  useEffect(() => {
+    if (isActive && interactionCount > 0) {
+      console.log('[Onboarding] Auto-completing after first Jubee interaction')
+      completeOnboarding()
+    }
+  }, [isActive, interactionCount, completeOnboarding])
 
   useEffect(() => {
     if (!isActive || !currentTutorialStep) return

@@ -36,6 +36,7 @@ interface JubeeState {
   isProcessing: boolean
   lastError: string | null
   isVisible: boolean
+  interactionCount: number
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: Position3D | null | undefined) => void
@@ -76,6 +77,7 @@ export const useJubeeStore = create<JubeeState>()(
       isProcessing: false,
       lastError: null,
       isVisible: true,
+      interactionCount: 0,
 
       setGender: (gender) => {
         console.log('[Jubee] Gender changed:', gender)
@@ -176,6 +178,7 @@ export const useJubeeStore = create<JubeeState>()(
       set((state) => { 
         state.speechText = text
         state.lastError = null
+        state.interactionCount += 1
       })
 
       // Check cache first for instant playback
