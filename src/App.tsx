@@ -279,30 +279,27 @@ export default function App() {
               <Suspense fallback={<LoadingScreen message="Loading activity" />}>
                 <PageTransition>
                   <Routes>
-                    {/* Public route */}
                     <Route path="/auth" element={<AuthPage />} />
-                    
-                    {/* Protected routes */}
-                    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-                    <Route path="/write" element={<ProtectedRoute><WritingCanvas /></ProtectedRoute>} />
-                    <Route path="/gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
-                    <Route path="/shapes" element={<ProtectedRoute><ShapeSorter /></ProtectedRoute>} />
-                    <Route path="/stories" element={<ProtectedRoute><StoryTime /></ProtectedRoute>} />
-                    <Route path="/reading" element={<ProtectedRoute><ReadingPractice /></ProtectedRoute>} />
-                    <Route path="/games" element={<ProtectedRoute><GamesMenu /></ProtectedRoute>} />
-                    <Route path="/games/memory" element={<ProtectedRoute><MemoryGame /></ProtectedRoute>} />
-                    <Route path="/games/pattern" element={<ProtectedRoute><PatternGame /></ProtectedRoute>} />
-                    <Route path="/games/numbers" element={<ProtectedRoute><NumberGame /></ProtectedRoute>} />
-                    <Route path="/games/alphabet" element={<ProtectedRoute><AlphabetGame /></ProtectedRoute>} />
-                    <Route path="/games/colors" element={<ProtectedRoute><ColorGame /></ProtectedRoute>} />
-                    <Route path="/games/puzzle" element={<ProtectedRoute><PuzzleGame /></ProtectedRoute>} />
-                    <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-                    <Route path="/stickers" element={<ProtectedRoute><StickersPage /></ProtectedRoute>} />
-                    <Route path="/music" element={<ProtectedRoute><MusicPage /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                    <Route path="/install" element={<ProtectedRoute><InstallPage /></ProtectedRoute>} />
-                    <Route path="/parental-controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
-                    <Route path="/performance-monitor" element={<ProtectedRoute><PerformanceMonitor /></ProtectedRoute>} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/write" element={<WritingCanvas />} />
+                    <Route path="/gallery" element={<Gallery />} />
+                    <Route path="/shapes" element={<ShapeSorter />} />
+                    <Route path="/stories" element={<StoryTime />} />
+                    <Route path="/reading" element={<ReadingPractice />} />
+                    <Route path="/games" element={<GamesMenu />} />
+                    <Route path="/games/memory" element={<MemoryGame />} />
+                    <Route path="/games/pattern" element={<PatternGame />} />
+                    <Route path="/games/numbers" element={<NumberGame />} />
+                    <Route path="/games/alphabet" element={<AlphabetGame />} />
+                    <Route path="/games/colors" element={<ColorGame />} />
+                    <Route path="/games/puzzle" element={<PuzzleGame />} />
+                    <Route path="/progress" element={<ProgressPage />} />
+                    <Route path="/stickers" element={<StickersPage />} />
+                    <Route path="/music" element={<MusicPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/install" element={<InstallPage />} />
+                    <Route path="/parental-controls" element={<ParentalControls />} />
+                    <Route path="/performance-monitor" element={<PerformanceMonitor />} />
                   </Routes>
                 </PageTransition>
               </Suspense>
