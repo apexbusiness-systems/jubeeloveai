@@ -24,6 +24,7 @@ import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ConflictResolutionDialog } from './components/ConflictResolutionDialog';
 import { JubeeContainer } from './core/jubee/JubeeContainer';
+import { PerformanceOverlay } from './components/debug/PerformanceOverlay';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -214,6 +215,8 @@ export default function App() {
             <ConflictResolutionDialog />
           </div>
           
+          <JubeeContainer />
+          <PerformanceOverlay />
           <Toaster />
         </BrowserRouter>
       </QueryClientProvider>
