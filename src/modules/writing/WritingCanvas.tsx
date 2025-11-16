@@ -26,6 +26,7 @@ import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'luci
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 import { saveDrawing } from '@/types/drawing';
 import confetti from 'canvas-confetti';
+import { triggerHaptic } from '@/lib/hapticFeedback';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -100,6 +101,7 @@ export default function WritingCanvas() {
     try {
       e.preventDefault();
       e.stopPropagation();
+      triggerHaptic('light');
       setIsDrawing(true);
       playDrawSound();
       
@@ -170,6 +172,7 @@ export default function WritingCanvas() {
       ctx.textBaseline = 'middle';
       ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
 
+      triggerHaptic('light');
       toast({
         title: "Canvas cleared",
         description: "Try tracing the letter again!",
@@ -208,6 +211,7 @@ export default function WritingCanvas() {
         description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
       });
 
+      triggerHaptic('success');
       addScore(20);
       triggerAnimation('celebrate');
       confetti({
@@ -288,6 +292,7 @@ export default function WritingCanvas() {
       speak(`Fantastic! Now let's try ${nextNumberValue}!`);
     }
     
+    triggerHaptic('medium');
     triggerAnimation('excited');
     addScore(10);
     clearCanvas();

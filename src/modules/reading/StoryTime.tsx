@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { triggerHaptic } from '@/lib/hapticFeedback'
 
 interface StoryPage {
   id: number
@@ -93,6 +94,7 @@ export default function StoryTime() {
   const handleStorySelect = (story: typeof stories[0]) => {
     setSelectedStory(story)
     setCurrentPage(0)
+    triggerHaptic('light')
     triggerAnimation('excited')
     speak("Let's read a story together!")
   }
@@ -120,24 +122,26 @@ export default function StoryTime() {
     }
   }
 
-  const handlePrevPage = (e: React.MouseEvent) => {
+  const handlePrevPage = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
     if (currentPage > 0) {
       setCurrentPage(prev => prev - 1)
       const prevPage = selectedStory!.pages[currentPage - 1]
+      triggerHaptic('light')
       speak(prevPage.narration)
       triggerAnimation('excited')
     }
   }
 
-  const handleReadAloud = (e: React.MouseEvent) => {
+  const handleReadAloud = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault()
     e.stopPropagation()
     
     if (!selectedStory) return
     const page = selectedStory.pages[currentPage]
+    triggerHaptic('light')
     speak(page.narration)
     triggerAnimation('excited')
   }
