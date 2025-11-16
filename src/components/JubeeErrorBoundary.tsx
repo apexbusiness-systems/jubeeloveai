@@ -21,8 +21,8 @@ interface State {
   recoveryAttempts: number
 }
 
-const MAX_RECOVERY_ATTEMPTS = 3
-const RECOVERY_DELAY = 2000
+const MAX_RECOVERY_ATTEMPTS = 2 // Reduced from 3 to prevent excessive retries
+const RECOVERY_DELAY = 1500 // Faster recovery
 
 export class JubeeErrorBoundary extends Component<Props, State> {
   private recoveryTimeoutId: NodeJS.Timeout | null = null
@@ -63,16 +63,16 @@ export class JubeeErrorBoundary extends Component<Props, State> {
   }
 
   attemptRecovery = async () => {
-    if (this.state.recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
+    const newAttempts = this.state.recoveryAttempts + 1
+    
+    if (newAttempts > MAX_RECOVERY_ATTEMPTS) {
       console.error('[Jubee Error Boundary] Max recovery attempts reached')
       return
     }
 
-    this.setState((prev) => ({
-      recoveryAttempts: prev.recoveryAttempts + 1
-    }))
+    this.setState({ recoveryAttempts: newAttempts })
 
-    console.log(`[Jubee Error Boundary] Recovery attempt ${this.state.recoveryAttempts + 1}`)
+    console.log(`[Jubee Error Boundary] Recovery attempt ${newAttempts}/${MAX_RECOVERY_ATTEMPTS}`)
 
     try {
       // Try to restore from backup

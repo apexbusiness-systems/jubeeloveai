@@ -14,13 +14,15 @@ export function JubeeContainer() {
   const containerRef = useRef<HTMLDivElement>(null)
   const { containerPosition, isVisible, position, currentAnimation } = useJubeeStore()
   const { features, safeMode } = useJubeeConfiguration()
+  
+  // Early return if not visible to prevent unnecessary hook calls
+  if (!isVisible) return null
+  
   const { isDragging, healthStatus } = useJubee(containerRef, {
     enableDragging: features.draggable && !safeMode,
     enableCollisionDetection: features.collisionDetection && !safeMode,
     enableHealthMonitoring: features.autoRecovery,
   })
-
-  if (!isVisible) return null
 
   return (
     <div
