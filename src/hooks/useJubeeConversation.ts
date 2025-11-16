@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { sanitizeVoiceInput, sanitizeAIResponse } from '@/lib/voiceInputSanitizer'
 
 /**
  * Hook for conversing with Jubee AI
@@ -21,9 +22,18 @@ export function useJubeeConversation() {
       return null
     }
 
+    // Sanitize conversation input
+    const sanitized = sanitizeVoiceInput(message, 'conversation')
+    
+    if (!sanitized.isValid) {
+      console.warn('Invalid conversation input:', sanitized.reason)
+      return "Let's talk about something fun!"
+    }
+
     try {
-      const response = await converse(message, options)
-      return response
+      const response = await converse(sanitized.sanitized, options)
+      // Sanitize AI response before returning
+      return sanitizeAIResponse(response || "Let's try that again!")
     } catch (error) {
       console.error('Conversation failed:', error)
       return null

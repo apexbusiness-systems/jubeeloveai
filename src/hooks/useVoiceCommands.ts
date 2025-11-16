@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '@/hooks/use-toast'
+import { sanitizeVoiceInput } from '@/lib/voiceInputSanitizer'
 
 interface VoiceCommandOptions {
   onTranscription?: (text: string) => void
@@ -39,6 +40,9 @@ export function useVoiceCommands(options: VoiceCommandOptions = {}) {
       'gallery': '/gallery',
       'my gallery': '/gallery',
       'parental controls': '/parental-controls',
+      'reading': '/reading',
+      'reading practice': '/reading',
+      'learn to read': '/reading',
     }
 
     for (const [command, route] of Object.entries(commandMap)) {
@@ -51,12 +55,24 @@ export function useVoiceCommands(options: VoiceCommandOptions = {}) {
   }, [])
 
   const processTranscription = useCallback(async (text: string) => {
-    options.onTranscription?.(text)
+    // Sanitize voice input for security
+    const sanitized = sanitizeVoiceInput(text, 'navigation')
     
-    const route = parseCommand(text)
+    if (!sanitized.isValid) {
+      toast({
+        title: "Voice Command",
+        description: sanitized.reason || "Command not recognized",
+        variant: "destructive"
+      })
+      return
+    }
+
+    options.onTranscription?.(sanitized.sanitized)
+    
+    const route = parseCommand(sanitized.sanitized)
     
     if (route) {
-      options.onCommand?.(text)
+      options.onCommand?.(sanitized.sanitized)
       navigate(route)
       toast({
         title: "Voice Command",

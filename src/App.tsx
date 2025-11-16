@@ -30,6 +30,7 @@ import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
 const StoryTime = lazy(() => import('./modules/reading/StoryTime'));
+const ReadingPractice = lazy(() => import('./modules/reading/ReadingPractice'));
 const MemoryGame = lazy(() => import('./modules/games/MemoryGame'));
 const PatternGame = lazy(() => import('./modules/games/PatternGame'));
 const NumberGame = lazy(() => import('./modules/games/NumberGame'));
@@ -233,6 +234,7 @@ export default function App() {
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/shapes" element={<ShapeSorter />} />
                     <Route path="/stories" element={<StoryTime />} />
+                    <Route path="/reading" element={<ReadingPractice />} />
                     <Route path="/games" element={<GamesMenu />} />
                     <Route path="/games/memory" element={<MemoryGame />} />
                     <Route path="/games/pattern" element={<PatternGame />} />
@@ -362,6 +364,12 @@ function HomePage() {
             icon="🎵"
             path="/music"
             description="Listen to fun songs and lullabies"
+          />
+          <GameCard
+            title="Reading Practice"
+            icon="📚"
+            path="/reading"
+            description="Learn to read with Jubee's pronunciation help"
           />
         </div>
       </div>
