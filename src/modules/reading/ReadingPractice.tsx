@@ -68,7 +68,7 @@ export default function ReadingPractice() {
         context,
         {
           activity: 'reading-practice',
-          mood: isCorrect ? 'happy' : 'encouraging',
+          mood: isCorrect ? 'happy' : 'curious',
           childName: 'friend'
         }
       )
