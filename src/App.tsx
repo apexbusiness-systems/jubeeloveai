@@ -4,6 +4,7 @@ import { Canvas } from '@react-three/fiber';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
+import { JubeeMascot } from './core/jubee/JubeeMascot';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
@@ -22,8 +23,9 @@ import { useAchievementTracker } from './hooks/useAchievementTracker';
 import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ConflictResolutionDialog } from './components/ConflictResolutionDialog';
-import { JubeeContainer } from './core/jubee/JubeeContainer';
-import { PerformanceOverlay } from './components/debug/PerformanceOverlay';
+import { useJubeeCollision } from './hooks/useJubeeCollision';
+import { useJubeeDraggable } from './hooks/useJubeeDraggable';
+import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -74,9 +76,15 @@ export default function App() {
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
   const [canvasError, setCanvasError] = useState(false);
+  const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
-  const { isVisible, toggleVisibility } = useJubeeStore();
+  const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
+
+  // Enable collision detection, dragging, and visibility monitoring
+  useJubeeCollision(jubeeContainerRef);
+  useJubeeDraggable(jubeeContainerRef);
+  const { needsRecovery, forceReset } = useJubeeVisibilityMonitor(jubeeContainerRef);
 
   useEffect(() => {
     const updateThemeBasedOnTime = () => {
@@ -157,9 +165,63 @@ export default function App() {
               </div>
             </header>
 
-            {/* Jubee Mascot - Unified container */}
+            {/* Jubee rendered via Portal at document.body level for global viewport freedom */}
             {isVisible && createPortal(
-              <JubeeContainer />,
+              <div
+                ref={jubeeContainerRef}
+                className="jubee-container"
+                aria-hidden="true"
+                style={{
+                  position: 'fixed',
+                  bottom: `${containerPosition.bottom}px`,
+                  right: `${containerPosition.right}px`,
+                  zIndex: 9999,
+                  transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease'
+                }}
+              >
+                <JubeeErrorBoundary>
+                  <Canvas
+                    key={`jubee-canvas-${isVisible}`}
+                    camera={{ position: [0, 0, 6], fov: 45 }}
+                    shadows
+                    style={{ background: 'transparent' }}
+                    gl={{
+                      antialias: true,
+                      alpha: true,
+                      powerPreference: "high-performance"
+                    }}
+                    onCreated={({ gl }) => {
+                      console.log('[Jubee] Canvas created via Portal');
+                      gl.setClearColor('#000000', 0);
+                    }}
+                  >
+                    <ambientLight intensity={1.2} />
+                    <directionalLight
+                      position={[5, 5, 5]}
+                      intensity={1.5}
+                      castShadow
+                      shadow-mapSize-width={2048}
+                      shadow-mapSize-height={2048}
+                    />
+                    <directionalLight
+                      position={[-5, 3, -5]}
+                      intensity={0.8}
+                      color="#ffd700"
+                    />
+                    <hemisphereLight
+                      color="#87CEEB"
+                      groundColor="#FFD700"
+                      intensity={0.6}
+                    />
+                    <Suspense fallback={null}>
+                      <JubeeMascot
+                        position={[jubeePosition.x, jubeePosition.y, jubeePosition.z]}
+                        animation={jubeeAnimation}
+                      />
+                    </Suspense>
+                  </Canvas>
+                </JubeeErrorBoundary>
+              </div>,
               document.body
             )}
 
@@ -214,10 +276,31 @@ export default function App() {
             <ConflictResolutionDialog />
           </div>
           
-          <JubeeErrorBoundary>
-            <JubeeContainer />
-          </JubeeErrorBoundary>
-          <PerformanceOverlay />
+          {/* Recovery button when Jubee disappears */}
+          {needsRecovery && (
+            <button
+              onClick={forceReset}
+              className="fixed top-4 right-4 z-[100] bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg hover:opacity-90 transition-opacity flex items-center gap-2 animate-fade-in"
+              aria-label="Reset Jubee position"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
+              Reset Jubee
+            </button>
+          )}
+          
           <Toaster />
         </BrowserRouter>
       </QueryClientProvider>
