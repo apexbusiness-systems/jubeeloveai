@@ -143,27 +143,6 @@ export default function App() {
 
               {/* Action buttons */}
               <div className="flex gap-3">
-                {isAuthenticated ? (
-                  <Button
-                    onClick={signOut}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-2xl font-bold border-2 border-primary-foreground/60 bg-card/40 backdrop-blur-sm shadow-lg hover:scale-110 transition-all"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => window.location.href = '/auth'}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-2xl font-bold border-2 border-primary-foreground/60 bg-card/40 backdrop-blur-sm shadow-lg hover:scale-110 transition-all"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Login
-                  </Button>
-                )}
                 <button
                   onClick={toggleVisibility}
                   className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
@@ -190,18 +169,35 @@ export default function App() {
                     🐝 <span className="font-extrabold">Customize</span>
                   </span>
                 </button>
-                <button
-                  onClick={() => setShowStickerBook(true)}
-                  className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                  }}
-                  aria-label="View Sticker Collection"
-                >
-                  <span className="flex items-center gap-2">
-                    📚 <span className="font-extrabold">Stickers</span>
-                  </span>
-                </button>
+                {isAuthenticated ? (
+                  <button
+                    onClick={signOut}
+                    className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
+                    }}
+                    aria-label="Logout"
+                  >
+                    <span className="flex items-center gap-2">
+                      <LogOut className="w-5 h-5" />
+                      <span className="font-extrabold">Logout</span>
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => window.location.href = '/auth'}
+                    className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
+                    }}
+                    aria-label="Login"
+                  >
+                    <span className="flex items-center gap-2">
+                      <LogIn className="w-5 h-5" />
+                      <span className="font-extrabold">Login</span>
+                    </span>
+                  </button>
+                )}
               </div>
             </header>
 
