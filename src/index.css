@@ -93,8 +93,8 @@ All colors MUST be HSL.
     --jubee-wing-glow: 195 53% 79%;
 
     /* Jubee container dimensions (canonical tokens for JS fallback) */
-    --jubee-container-width: 400;
-    --jubee-container-height: 450;
+    --jubee-container-width: clamp(320px, 40vw, 520px);
+    --jubee-container-height: clamp(360px, 45vh, 560px);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -190,8 +190,8 @@ All colors MUST be HSL.
 /* Jubee Love App Styles */
 .jubee-container {
   /* Position and z-index now set inline via Portal for guaranteed global positioning */
-  width: 400px;
-  height: 450px;
+  width: var(--jubee-container-width);
+  height: var(--jubee-container-height);
   pointer-events: auto;
   overflow: visible !important; /* Critical: allow Jubee to render fully */
   filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));

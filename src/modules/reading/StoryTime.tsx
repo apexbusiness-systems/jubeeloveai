@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 import { triggerHaptic } from '@/lib/hapticFeedback'
+import { jubeeNarrator } from '@/lib/jubeeNarrator'
 
 interface StoryPage {
   id: number
@@ -88,15 +89,21 @@ const stories = [
 export default function StoryTime() {
   const [selectedStory, setSelectedStory] = useState<typeof stories[0] | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
-  const { speak, triggerAnimation } = useJubeeStore()
+  const { triggerAnimation } = useJubeeStore()
   const { addScore } = useGameStore()
 
+  // StoryRunner voice consumer: handle narration for page playback
+  const speakStory = (text: string) => jubeeNarrator.speakOnce(text, { consumer: 'StoryRunner' })
+  // BookReader voice consumer: manual read-aloud per page
+  const speakBookPage = (text: string) => jubeeNarrator.speakOnce(text, { consumer: 'BookReader' })
+
   const handleStorySelect = (story: typeof stories[0]) => {
+    jubeeNarrator.stop()
     setSelectedStory(story)
     setCurrentPage(0)
     triggerHaptic('light')
     triggerAnimation('excited')
-    speak("Let's read a story together!")
+    speakStory("Let's read a story together!")
   }
 
   const handleNextPage = (e: React.MouseEvent | React.TouchEvent) => {
@@ -108,13 +115,13 @@ export default function StoryTime() {
     if (currentPage < selectedStory.pages.length - 1) {
       setCurrentPage(prev => prev + 1)
       const nextPage = selectedStory.pages[currentPage + 1]
-      speak(nextPage.narration)
+      speakStory(nextPage.narration)
       triggerAnimation('excited')
     } else {
       // Story completed
       addScore(50)
       triggerAnimation('celebrate')
-      speak("Great job reading the story! You earned 50 points!")
+      speakStory("Great job reading the story! You earned 50 points!")
       setTimeout(() => {
         setSelectedStory(null)
         setCurrentPage(0)
@@ -130,7 +137,7 @@ export default function StoryTime() {
       setCurrentPage(prev => prev - 1)
       const prevPage = selectedStory!.pages[currentPage - 1]
       triggerHaptic('light')
-      speak(prevPage.narration)
+      speakStory(prevPage.narration)
       triggerAnimation('excited')
     }
   }
@@ -142,9 +149,15 @@ export default function StoryTime() {
     if (!selectedStory) return
     const page = selectedStory.pages[currentPage]
     triggerHaptic('light')
-    speak(page.narration)
+    speakBookPage(page.narration)
     triggerAnimation('excited')
   }
+
+  useEffect(() => {
+    return () => {
+      jubeeNarrator.stop()
+    }
+  }, [])
 
   if (!selectedStory) {
     return (

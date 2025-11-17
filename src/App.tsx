@@ -215,8 +215,8 @@ export default function App() {
                   position: 'fixed',
                   bottom: `${containerPosition.bottom}px`,
                   right: `${containerPosition.right}px`,
-                  width: '400px',
-                  height: '450px',
+                  width: 'var(--jubee-container-width)',
+                  height: 'var(--jubee-container-height)',
                   zIndex: 9999,
                   transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease',
                   touchAction: 'none',
@@ -240,9 +240,12 @@ export default function App() {
                       powerPreference: "high-performance"
                     }}
                     onCreated={({ gl }) => {
-                      console.log('[Jubee] Canvas created via Portal with dimensions: 400x450');
+                      const container = jubeeContainerRef.current
+                      const width = container?.clientWidth ?? 400
+                      const height = container?.clientHeight ?? 450
+                      console.log(`[Jubee] Canvas created via Portal with dimensions: ${width}x${height}`);
                       gl.setClearColor('#000000', 0);
-                      gl.setSize(400, 450);
+                      gl.setSize(width, height);
                     }}
                   >
                     <ambientLight intensity={1.2} />

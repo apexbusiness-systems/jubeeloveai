@@ -21,8 +21,35 @@ interface TimerEntry {
 const timers = new Map<string, NodeJS.Timeout | TimerEntry>()
 
 import { audioManager } from '@/lib/audioManager'
+import { jubeeNarrator, type JubeeVoiceConsumer } from '@/lib/jubeeNarrator'
 
 export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
+
+const primaryVoiceConsumers: JubeeVoiceConsumer[] = ['BookReader', 'StoryRunner']
+
+const getSpeechProfile = (gender: 'male' | 'female', mood: string) => {
+  let rate = 1.1
+  let pitchMultiplier = gender === 'female' ? 1.3 : 1.0
+
+  if (mood === 'excited') {
+    rate = 1.3
+    pitchMultiplier = gender === 'female' ? 1.4 : 1.1
+  } else if (mood === 'happy') {
+    rate = 1.2
+    pitchMultiplier = gender === 'female' ? 1.3 : 1.0
+  } else if (mood === 'curious') {
+    rate = 1.1
+    pitchMultiplier = gender === 'female' ? 1.2 : 0.95
+  } else if (mood === 'frustrated') {
+    rate = 0.95
+    pitchMultiplier = gender === 'female' ? 1.1 : 0.85
+  } else if (mood === 'tired') {
+    rate = 0.9
+    pitchMultiplier = gender === 'female' ? 1.0 : 0.8
+  }
+
+  return { rate, pitchMultiplier }
+}
 
 interface JubeeState {
   gender: 'male' | 'female'
@@ -170,62 +197,38 @@ export const useJubeeStore = create<JubeeState>()(
         timers.set('transition', timer)
       },
 
-    speak: async (text, mood = 'happy') => {
+    speak: async (text, mood = 'happy', options?: { consumer?: JubeeVoiceConsumer }) => {
+      const consumer = options?.consumer
+      const isPrimaryVoice = consumer && primaryVoiceConsumers.includes(consumer)
+
+      if (!isPrimaryVoice) {
+        // Guard rail: only the primary voice consumers can trigger narration
+        set((state) => {
+          state.speechText = ''
+          state.lastError = null
+        })
+        console.debug('[Jubee] Voice request skipped for non-primary consumer')
+        return
+      }
+
       const gender = get().gender
-      const voice = get().voice
       const language = window.i18nextLanguage || 'en'
-      
-      set((state) => { 
+      const { pitchMultiplier, rate } = getSpeechProfile(gender, mood)
+
+      set((state) => {
         state.speechText = text
         state.lastError = null
         state.interactionCount += 1
       })
 
-      // Check cache first for instant playback
-      const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
-      if (cachedAudio) {
-        await audioManager.playAudio(cachedAudio)
-        set((state) => { state.speechText = '' })
-        return
-      }
-      
-      // Single TTS request with timeout
-      try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
+      jubeeNarrator.speakOnce(text, {
+        consumer,
+        lang: language,
+        pitch: pitchMultiplier,
+        rate
+      })
 
-        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, gender, language, mood, voice }),
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-
-        if (response.ok) {
-          const audioBlob = await response.blob()
-          
-          // Cache for future use
-          audioManager.cacheAudio(text, audioBlob, voice, mood)
-          
-          await audioManager.playAudio(audioBlob)
-          set((state) => { state.speechText = '' })
-          return
-        }
-      } catch (error) {
-        console.error('TTS failed:', error)
-      }
-
-      // All retries failed, use browser speech fallback
-      console.warn('TTS service unavailable, using browser fallback')
-      set((state) => { state.lastError = 'TTS_FALLBACK' })
-      browserSpeech(text, gender, mood)
-      const timer = setTimeout(() => {
-        set((state) => { state.speechText = '' })
-        timers.delete('speech')
-      }, 3000)
-      timers.set('speech', timer)
+      set((state) => { state.speechText = '' })
     },
 
     converse: async (message, context = {}) => {
