@@ -60,7 +60,7 @@ export function ConflictResolutionDialog() {
       const resolvedData = conflictResolver.resolveConflict(currentConflict.id, choice)
 
       // Update local database
-      await jubeeDB.put(currentConflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', resolvedData)
+      await jubeeDB.put(currentConflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', resolvedData as any)
       
       // If keeping local or merge, sync to server
       if (choice === 'local' || choice === 'merge') {
@@ -122,7 +122,7 @@ export function ConflictResolutionDialog() {
         const data = resolvedDataArray[i]
         const conflict = conflicts[i]
         if (conflict) {
-          await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data)
+          await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
         }
       }
 
@@ -179,7 +179,7 @@ export function ConflictResolutionDialog() {
           const data = resolvedDataArray[i]
           const conflict = conflicts[i]
           if (conflict) {
-            await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data)
+            await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
 
             if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
               await syncToServer(conflict.storeName, data, user.id)
@@ -209,26 +209,23 @@ export function ConflictResolutionDialog() {
   const syncToServer = async (storeName: string, data: Record<string, unknown>, userId: string) => {
     switch (storeName) {
       case 'gameProgress':
-        await supabase.from('game_progress').upsert({
-          user_id: userId,
+        await supabase.from('game_progress').upsert([{
           child_profile_id: null,
-          score: data.score,
-          activities_completed: data.activitiesCompleted,
-          current_theme: data.currentTheme,
-          last_activity: data.lastActivity,
-          updated_at: data.updatedAt,
-        }, { onConflict: 'user_id,child_profile_id' })
+          score: data.score as number,
+          activities_completed: data.activitiesCompleted as number,
+          current_theme: data.currentTheme as string,
+          last_activity: data.lastActivity as string,
+          updated_at: data.updatedAt as string,
+        }])
         break
       
       case 'drawings':
-        await supabase.from('drawings').upsert({
-          id: data.id,
-          user_id: userId,
+        await supabase.from('drawings').insert([{
           child_profile_id: null,
-          title: data.title,
-          image_data: data.imageData,
-          updated_at: data.updatedAt,
-        })
+          title: data.title as string,
+          image_data: data.imageData as string,
+          updated_at: data.updatedAt as string,
+        }])
         break
     }
   }

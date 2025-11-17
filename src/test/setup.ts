@@ -31,6 +31,10 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
+  root = null
+  rootMargin = ''
+  thresholds = []
+  
   constructor() {}
   disconnect() {}
   observe() {}
@@ -38,7 +42,7 @@ global.IntersectionObserver = class IntersectionObserver {
     return []
   }
   unobserve() {}
-}
+} as any
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -77,6 +81,13 @@ global.webkitSpeechRecognition = global.SpeechRecognition
 
 // Mock AudioContext
 global.AudioContext = class AudioContext {
+  baseLatency = 0
+  outputLatency = 0
+  sampleRate = 48000
+  currentTime = 0
+  state = 'running' as AudioContextState
+  destination = {} as any
+  
   createGain = vi.fn(() => ({
     connect: vi.fn(),
     gain: { value: 1 },
@@ -87,5 +98,11 @@ global.AudioContext = class AudioContext {
     stop: vi.fn(),
     frequency: { value: 440 },
   }))
-  destination = {}
-}
+  close = vi.fn()
+  resume = vi.fn()
+  suspend = vi.fn()
+  createBufferSource = vi.fn()
+  createMediaElementSource = vi.fn()
+  createMediaStreamDestination = vi.fn()
+  createMediaStreamSource = vi.fn()
+} as any

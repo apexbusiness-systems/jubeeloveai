@@ -18,10 +18,17 @@ describe('useAuth', () => {
 
   it('should handle successful session', async () => {
     const mockUser = { id: '123', email: 'test@example.com' }
-    const mockSession = { user: mockUser }
+    const mockSession = { 
+      user: mockUser,
+      access_token: 'mock-token',
+      refresh_token: 'mock-refresh',
+      expires_in: 3600,
+      token_type: 'bearer',
+      expires_at: Date.now() + 3600000
+    }
     
     vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({
-      data: { session: mockSession },
+      data: { session: mockSession as any },
       error: null,
     })
 

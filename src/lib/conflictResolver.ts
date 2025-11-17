@@ -82,8 +82,8 @@ class ConflictResolver {
           field: key,
           localValue,
           serverValue,
-          localTimestamp,
-          serverTimestamp,
+          localTimestamp: localTimestamp as string,
+          serverTimestamp: serverTimestamp as string,
           recordId
         })
       }
