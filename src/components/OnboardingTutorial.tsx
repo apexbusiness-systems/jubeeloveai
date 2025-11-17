@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useOnboardingStore } from '@/store/useOnboardingStore'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { useTranslatedContent } from '@/i18n/useTranslatedContent'
 import { Button } from '@/components/ui/button'
-import { X, ArrowRight, ArrowLeft, Sparkles, Hand, BookOpen, Shapes, Pen, Star } from 'lucide-react'
+import { X, ArrowRight, ArrowLeft, Sparkles, Hand, BookOpen, Shapes, Pen, Star, PartyPopper } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import confetti from 'canvas-confetti'
 
 const tutorialSteps = [
   {
@@ -51,6 +52,7 @@ export function OnboardingTutorial() {
   const { interactionCount } = useJubeeStore()
   const { t } = useTranslatedContent()
   const highlightRef = useRef<HTMLDivElement>(null)
+  const [showCelebration, setShowCelebration] = useState(false)
 
   const currentTutorialStep = tutorialSteps[currentStep]
   const isLastStep = currentStep === tutorialSteps.length - 1
@@ -60,7 +62,44 @@ export function OnboardingTutorial() {
   useEffect(() => {
     if (isActive && interactionCount > 0) {
       console.log('[Onboarding] Auto-completing after first Jubee interaction')
-      completeOnboarding()
+      setShowCelebration(true)
+      
+      // Trigger confetti
+      const duration = 2500
+      const end = Date.now() + duration
+      
+      const colors = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
+      
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: colors
+        })
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: colors
+        })
+        
+        if (Date.now() < end) {
+          requestAnimationFrame(frame)
+        }
+      }
+      
+      frame()
+      
+      // Hide celebration message and complete onboarding
+      const timer = setTimeout(() => {
+        setShowCelebration(false)
+        completeOnboarding()
+      }, 3000)
+      
+      return () => clearTimeout(timer)
     }
   }, [isActive, interactionCount, completeOnboarding])
 
@@ -130,12 +169,57 @@ export function OnboardingTutorial() {
     }
   }
 
-  if (!isActive) return null
+  if (!isActive && !showCelebration) return null
 
   const Icon = currentTutorialStep?.icon || Sparkles
 
   return (
     <AnimatePresence>
+      {/* Celebration overlay */}
+      {showCelebration && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-background/50 backdrop-blur-sm pointer-events-auto"
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.8, opacity: 0, y: -30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="text-center px-8"
+          >
+            <motion.div
+              animate={{
+                rotate: [0, 10, -10, 10, 0],
+                scale: [1, 1.1, 1, 1.1, 1]
+              }}
+              transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0.5 }}
+              className="inline-block mb-4"
+            >
+              <PartyPopper className="w-24 h-24 text-primary" />
+            </motion.div>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-5xl font-bold text-foreground mb-2"
+            >
+              {t('onboarding.celebration.title') || 'Great Job!'}
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-xl text-muted-foreground"
+            >
+              {t('onboarding.celebration.message') || 'You\'re all set! Have fun exploring!'}
+            </motion.p>
+          </motion.div>
+        </motion.div>
+      )}
+      
       <div className="fixed inset-0 z-[9999] pointer-events-none">
         {/* Overlay */}
         <motion.div
