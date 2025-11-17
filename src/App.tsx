@@ -135,66 +135,70 @@ export default function App() {
           <SEO />
           <div className="app" data-theme={currentTheme}>
             {/* Header with score and action buttons */}
-            <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-4" style={{ background: 'var(--gradient-warm)' }}>
+            <header className="fixed top-0 left-0 right-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 p-2 sm:p-4" style={{ background: 'var(--gradient-warm)' }}>
               {/* Score display */}
-              <div className="score-display px-6 py-3 rounded-full text-2xl font-bold text-primary-foreground bg-primary/20 border-3 border-primary-foreground shadow-lg">
+              <div className="score-display px-3 py-2 sm:px-6 sm:py-3 rounded-full text-base sm:text-xl md:text-2xl font-bold text-primary-foreground bg-primary/20 border-2 sm:border-3 border-primary-foreground shadow-lg">
                 ⭐ {score} points
               </div>
 
               {/* Action buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-1.5 sm:gap-2 md:gap-3">
                 <button
                   onClick={toggleVisibility}
-                  className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                  className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
                   }}
                   aria-label={isVisible ? "Hide Jubee" : "Show Jubee"}
                   title={isVisible ? "Hide Jubee" : "Show Jubee"}
                 >
-                  <span className="flex items-center gap-2">
-                    {isVisible ? '👁️' : '👁️‍🗨️'} 
-                    <span className="font-extrabold">{isVisible ? 'Hide' : 'Show'}</span>
+                  <span className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-base sm:text-lg">{isVisible ? '👁️' : '👁️‍🗨️'}</span>
+                    <span className="font-extrabold hidden sm:inline">{isVisible ? 'Hide' : 'Show'}</span>
                   </span>
                 </button>
                 <button
                   onClick={() => setShowPersonalization(true)}
-                  className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                  className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
                   style={{
                     background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
                   }}
                   aria-label="Customize Jubee"
+                  title="Customize Jubee"
                 >
-                  <span className="flex items-center gap-2">
-                    🐝 <span className="font-extrabold">Customize</span>
+                  <span className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-base sm:text-lg">🐝</span>
+                    <span className="font-extrabold hidden md:inline">Customize</span>
                   </span>
                 </button>
                 {isAuthenticated ? (
                   <button
                     onClick={signOut}
-                    className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                    className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
                     }}
                     aria-label="Logout"
+                    title="Logout"
                   >
-                    <span className="flex items-center gap-2">
-                      <LogOut className="w-5 h-5" />
-                      <span className="font-extrabold">Logout</span>
+                    <span className="flex items-center gap-1 sm:gap-2">
+                      <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-extrabold hidden md:inline">Logout</span>
                     </span>
                   </button>
                 ) : (
                   <button
                     onClick={() => window.location.href = '/auth'}
-                    className="action-button px-6 py-3 rounded-2xl text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
+                    className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
                     style={{
                       background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
                     }}
                     aria-label="Login"
+                    title="Login"
                   >
-                    <span className="flex items-center gap-2">
-                      <LogIn className="w-5 h-5" />
-                      <span className="font-extrabold">Login</span>
+                    <span className="flex items-center gap-1 sm:gap-2">
+                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-extrabold hidden md:inline">Login</span>
                     </span>
                   </button>
                 )}
