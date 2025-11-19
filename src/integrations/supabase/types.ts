@@ -235,6 +235,84 @@ export type Database = {
           },
         ]
       }
+      stories: {
+        Row: {
+          age_range: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          illustration_style: string | null
+          pages: Json
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          age_range?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          illustration_style?: string | null
+          pages: Json
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          age_range?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          illustration_style?: string | null
+          pages?: Json
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      story_completions: {
+        Row: {
+          child_profile_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          story_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          child_profile_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          story_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          child_profile_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          story_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_completions_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_completions_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
