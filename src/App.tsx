@@ -237,7 +237,7 @@ export default function App() {
                   right: isDragging ? containerPosition.right : springRight,
                   width: '400px',
                   height: '450px',
-                  zIndex: 9999,
+                  zIndex: 10001,
                   touchAction: 'none',
                   pointerEvents: 'auto'
                 }}
