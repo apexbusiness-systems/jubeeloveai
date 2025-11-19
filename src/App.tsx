@@ -54,6 +54,7 @@ const InstallPage = lazy(() => import('./pages/Install'));
 const ParentalControls = lazy(() => import('./pages/ParentalControls'));
 const PerformanceMonitor = lazy(() => import('./pages/PerformanceMonitor'));
 const AuthPage = lazy(() => import('./pages/Auth'));
+const ParentHub = lazy(() => import('./pages/ParentHub'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -322,6 +323,7 @@ export default function App() {
                     <Route path="/install" element={<InstallPage />} />
                     <Route path="/parental-controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
                     <Route path="/performance-monitor" element={<ProtectedRoute><PerformanceMonitor /></ProtectedRoute>} />
+                    <Route path="/parent" element={<ProtectedRoute><ParentHub /></ProtectedRoute>} />
                   </Routes>
                 </PageTransition>
               </Suspense>
