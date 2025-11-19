@@ -219,9 +219,10 @@ export default function App() {
                   width: '400px',
                   height: '450px',
                   zIndex: 9999,
-                  transition: isDragging ? 'none' : 'bottom 0.3s ease, right 0.3s ease',
+                  transition: isDragging ? 'none' : 'bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1), right 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   touchAction: 'none',
-                  pointerEvents: 'auto'
+                  pointerEvents: 'auto',
+                  willChange: isDragging ? 'bottom, right' : 'auto'
                 }}
               >
                 <JubeeErrorBoundary>

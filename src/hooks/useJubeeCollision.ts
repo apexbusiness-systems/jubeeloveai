@@ -171,38 +171,39 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
     }
   }, [containerRef, getElementRect, checkCollision, findSafePosition, setContainerPosition])
 
-  // Run collision detection frequently during initial page load
+  // Optimized collision detection with debouncing - reduce frequency significantly
   useEffect(() => {
-    // Run immediately
-    const timeoutId1 = setTimeout(detectAndResolveCollisions, 100)
+    // Only run collision detection on initial mount and after navigation
+    const timeoutId1 = setTimeout(detectAndResolveCollisions, 200)
+    const timeoutId2 = setTimeout(detectAndResolveCollisions, 1000)
     
-    // Run multiple times during initial load to catch late-rendering elements
-    const timeoutId2 = setTimeout(detectAndResolveCollisions, 500)
-    const timeoutId3 = setTimeout(detectAndResolveCollisions, 1000)
-    const timeoutId4 = setTimeout(detectAndResolveCollisions, 2000)
-
     return () => {
       clearTimeout(timeoutId1)
       clearTimeout(timeoutId2)
-      clearTimeout(timeoutId3)
-      clearTimeout(timeoutId4)
     }
   }, [detectAndResolveCollisions])
 
-  // Re-check on window resize
+  // Debounced resize handler
   useEffect(() => {
+    let resizeTimeout: ReturnType<typeof setTimeout>
     const handleResize = () => {
-      setTimeout(detectAndResolveCollisions, 150)
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(detectAndResolveCollisions, 300)
     }
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(resizeTimeout)
+    }
   }, [detectAndResolveCollisions])
 
-  // Re-check when new elements are added to DOM (mutation observer)
+  // Optimized mutation observer with heavy debouncing
   useEffect(() => {
+    let mutationTimeout: ReturnType<typeof setTimeout>
     const observer = new MutationObserver(() => {
-      setTimeout(detectAndResolveCollisions, 100)
+      clearTimeout(mutationTimeout)
+      mutationTimeout = setTimeout(detectAndResolveCollisions, 500) // Increased debounce
     })
 
     observer.observe(document.body, {
@@ -210,39 +211,14 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
       subtree: true
     })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      clearTimeout(mutationTimeout)
+    }
   }, [detectAndResolveCollisions])
 
-  // Continuous position validation - more frequent checks with throttling
-  useEffect(() => {
-    let lastValidationTime = 0
-    const VALIDATION_THROTTLE = 2000 // Throttle to every 2 seconds
-    
-    const sanityCheckInterval = setInterval(() => {
-      const now = Date.now()
-      if (now - lastValidationTime < VALIDATION_THROTTLE) return
-      
-      lastValidationTime = now
-      const { containerPosition, setContainerPosition, isDragging } = useJubeeStore.getState()
-      
-      // Skip validation during active dragging
-      if (isDragging) return
-      
-      const validatedPosition = validatePosition(containerPosition)
-      
-      // If position needed correction, apply it
-      const needsCorrection = 
-        Math.abs(validatedPosition.bottom - containerPosition.bottom) > 1 || 
-        Math.abs(validatedPosition.right - containerPosition.right) > 1
-      
-      if (needsCorrection) {
-        console.log('[Jubee Collision] Auto-correcting position:', { from: containerPosition, to: validatedPosition })
-        setContainerPosition(validatedPosition)
-      }
-    }, 1000)
-
-    return () => clearInterval(sanityCheckInterval)
-  }, [validatePosition])
+  // REMOVED: Continuous validation - was causing the feedback loop
+  // Position validation now only happens during specific events
 
   return { detectAndResolveCollisions }
 }

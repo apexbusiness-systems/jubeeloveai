@@ -15,19 +15,32 @@ interface DragState {
   startY: number
   startBottom: number
   startRight: number
+  velocityX: number
+  velocityY: number
+  lastX: number
+  lastY: number
+  lastTime: number
 }
 
 // Boundary constants to prevent edge clipping while allowing full viewport access
-const SAFE_MARGIN = 10 // Small margin to prevent edge clipping (reduced from 50 for better corner access)
+const SAFE_MARGIN = 10 // Small margin to prevent edge clipping
+const MOMENTUM_FACTOR = 0.92 // Damping factor for smooth momentum
+const VELOCITY_THRESHOLD = 0.5 // Minimum velocity to continue momentum
 
 export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>) {
   const { containerPosition, setContainerPosition, setIsDragging } = useJubeeStore()
+  const momentumAnimationRef = useRef<number | null>(null)
   const dragStateRef = useRef<DragState>({
     isDragging: false,
     startX: 0,
     startY: 0,
     startBottom: 0,
-    startRight: 0
+    startRight: 0,
+    velocityX: 0,
+    velocityY: 0,
+    lastX: 0,
+    lastY: 0,
+    lastTime: 0
   })
 
   const handleMouseDown = useCallback((e: MouseEvent) => {
@@ -39,23 +52,36 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
 
     e.preventDefault()
     
+    // Cancel any ongoing momentum animation
+    if (momentumAnimationRef.current) {
+      cancelAnimationFrame(momentumAnimationRef.current)
+      momentumAnimationRef.current = null
+    }
+    
     const rect = containerRef.current.getBoundingClientRect()
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
+    const now = performance.now()
     
     dragStateRef.current = {
       isDragging: true,
       startX: e.clientX,
       startY: e.clientY,
       startBottom: viewportHeight - rect.bottom,
-      startRight: viewportWidth - rect.right
+      startRight: viewportWidth - rect.right,
+      velocityX: 0,
+      velocityY: 0,
+      lastX: e.clientX,
+      lastY: e.clientY,
+      lastTime: now
     }
     
     setIsDragging(true)
     containerRef.current.style.cursor = 'grabbing'
+    containerRef.current.style.transition = 'none' // Disable transitions during drag
     document.body.style.userSelect = 'none'
     
-    console.log('[Jubee Drag] Started')
+    console.log('[Jubee Drag] Started with smooth momentum')
   }, [containerRef, setIsDragging])
 
   const validateBoundaries = useCallback((bottom: number, right: number): { bottom: number; right: number } => {
@@ -86,6 +112,19 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     
     e.preventDefault()
     
+    const now = performance.now()
+    const deltaTime = now - dragStateRef.current.lastTime
+    
+    // Calculate velocity for momentum
+    if (deltaTime > 0) {
+      dragStateRef.current.velocityX = (e.clientX - dragStateRef.current.lastX) / deltaTime * 16 // Normalize to 60fps
+      dragStateRef.current.velocityY = (e.clientY - dragStateRef.current.lastY) / deltaTime * 16
+    }
+    
+    dragStateRef.current.lastX = e.clientX
+    dragStateRef.current.lastY = e.clientY
+    dragStateRef.current.lastTime = now
+    
     const deltaX = e.clientX - dragStateRef.current.startX
     const deltaY = e.clientY - dragStateRef.current.startY
     
@@ -96,9 +135,10 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     // Apply defensive boundary validation
     const validated = validateBoundaries(newBottom, newRight)
     
-    // Apply position immediately for smooth dragging
+    // Apply position immediately for smooth dragging with GPU acceleration
     containerRef.current.style.bottom = `${validated.bottom}px`
     containerRef.current.style.right = `${validated.right}px`
+    containerRef.current.style.willChange = 'bottom, right'
   }, [containerRef, validateBoundaries])
 
   const handleMouseUp = useCallback(() => {
@@ -131,21 +171,37 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     const target = e.target as HTMLElement
     if (target.closest('button')) return
     
+    // Cancel any ongoing momentum animation
+    if (momentumAnimationRef.current) {
+      cancelAnimationFrame(momentumAnimationRef.current)
+      momentumAnimationRef.current = null
+    }
+    
     const touch = e.touches[0]
     const rect = containerRef.current.getBoundingClientRect()
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
+    const now = performance.now()
     
     dragStateRef.current = {
       isDragging: true,
       startX: touch.clientX,
       startY: touch.clientY,
       startBottom: viewportHeight - rect.bottom,
-      startRight: viewportWidth - rect.right
+      startRight: viewportWidth - rect.right,
+      velocityX: 0,
+      velocityY: 0,
+      lastX: touch.clientX,
+      lastY: touch.clientY,
+      lastTime: now
     }
     
     setIsDragging(true)
-    console.log('[Jubee Drag] Touch started')
+    containerRef.current.style.cursor = 'grabbing'
+    containerRef.current.style.transition = 'none'
+    document.body.style.userSelect = 'none'
+    
+    console.log('[Jubee Drag] Touch started with momentum')
   }, [containerRef, setIsDragging])
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
@@ -153,7 +209,20 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     
     e.preventDefault()
     
+    const now = performance.now()
     const touch = e.touches[0]
+    
+    // Calculate velocity for momentum
+    if (now - dragStateRef.current.lastTime > 0) {
+      const deltaTime = now - dragStateRef.current.lastTime
+      dragStateRef.current.velocityX = (touch.clientX - dragStateRef.current.lastX) / deltaTime * 16
+      dragStateRef.current.velocityY = (touch.clientY - dragStateRef.current.lastY) / deltaTime * 16
+    }
+    
+    dragStateRef.current.lastX = touch.clientX
+    dragStateRef.current.lastY = touch.clientY
+    dragStateRef.current.lastTime = now
+    
     const deltaX = touch.clientX - dragStateRef.current.startX
     const deltaY = touch.clientY - dragStateRef.current.startY
     
@@ -165,6 +234,7 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     
     containerRef.current.style.bottom = `${validated.bottom}px`
     containerRef.current.style.right = `${validated.right}px`
+    containerRef.current.style.willChange = 'bottom, right'
   }, [containerRef, validateBoundaries])
 
   const handleTouchEnd = useCallback(() => {

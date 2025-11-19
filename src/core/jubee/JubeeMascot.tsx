@@ -177,13 +177,17 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
       headRef.current.rotation.z = Math.sin(time * 1.5) * 0.1
     }
 
-    // Wing flapping - faster during page transition
+    // Wing flapping - smoother with easing and faster during page transition
     const wingSpeed = animation === 'pageTransition' ? 25 : animation === 'excited' ? 15 : animation === 'celebrate' ? 20 : 8
+    const targetFlapLeft = Math.sin(time * wingSpeed) * 0.5 + 0.3
+    const targetFlapRight = -Math.sin(time * wingSpeed) * 0.5 - 0.3
+    
     if (leftWingRef.current) {
-      leftWingRef.current.rotation.y = Math.sin(time * wingSpeed) * 0.5 + 0.3
+      // Smooth interpolation for natural wing movement
+      leftWingRef.current.rotation.y += (targetFlapLeft - leftWingRef.current.rotation.y) * 0.3
     }
     if (rightWingRef.current) {
-      rightWingRef.current.rotation.y = -Math.sin(time * wingSpeed) * 0.5 - 0.3
+      rightWingRef.current.rotation.y += (targetFlapRight - rightWingRef.current.rotation.y) * 0.3
     }
 
     // Celebration spin
