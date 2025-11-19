@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { JubeeMascot } from './core/jubee/JubeeMascot';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
@@ -31,7 +32,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
-import { LogOut, LogIn } from 'lucide-react';
+import { LogOut, LogIn, Download } from 'lucide-react';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -300,7 +301,7 @@ export default function App() {
                     <Route path="/stickers" element={<ProtectedRoute><StickersPage /></ProtectedRoute>} />
                     <Route path="/music" element={<ProtectedRoute><MusicPage /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                    <Route path="/install" element={<ProtectedRoute><InstallPage /></ProtectedRoute>} />
+                    <Route path="/install" element={<InstallPage />} />
                     <Route path="/parental-controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
                     <Route path="/performance-monitor" element={<ProtectedRoute><PerformanceMonitor /></ProtectedRoute>} />
                   </Routes>
@@ -364,6 +365,26 @@ export default function App() {
 }
 
 function HomePage() {
+  const navigate = useNavigate();
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    // Check if app is installed or user dismissed banner
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const dismissed = localStorage.getItem('install-banner-dismissed');
+    
+    if (!isStandalone && !dismissed) {
+      // Show banner after a short delay
+      const timer = setTimeout(() => setShowInstallBanner(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const dismissBanner = () => {
+    setShowInstallBanner(false);
+    localStorage.setItem('install-banner-dismissed', 'true');
+  };
+
   return (
     <>
       <SEO 
@@ -371,6 +392,38 @@ function HomePage() {
         description="Welcome to Jubee's World! Choose from writing practice, shape recognition, and more fun learning activities."
       />
       <div className="home-page">
+        {showInstallBanner && (
+          <div className="mx-4 mt-4 mb-2 animate-in slide-in-from-top duration-500">
+            <Card className="border-2 border-primary bg-gradient-to-r from-primary/10 to-accent/10">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <Download className="w-5 h-5 text-primary flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm md:text-base">Install Jubee Love for a better experience!</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Works offline, loads faster, and feels like a real app.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => navigate('/install')}
+                    size="sm"
+                    className="flex-shrink-0"
+                  >
+                    Install
+                  </Button>
+                  <Button
+                    onClick={dismissBanner}
+                    variant="ghost"
+                    size="sm"
+                    className="flex-shrink-0"
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         <h1 className="text-4xl md:text-5xl font-bold text-center mt-8 text-primary">
           Welcome to Jubee's World!
         </h1>
