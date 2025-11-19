@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { triggerHaptic } from '@/lib/hapticFeedback'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Volume2 } from 'lucide-react'
 import { premiumStories } from '@/data/storySeedData'
 import { initializeStories } from '@/lib/initializeStories'
 
@@ -31,6 +31,7 @@ export default function StoryTime() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [isNarrating, setIsNarrating] = useState(false)
   const { speak, triggerAnimation } = useJubeeStore()
   const { addScore } = useGameStore()
   const { user } = useAuth()
@@ -143,7 +144,12 @@ export default function StoryTime() {
     
     // Auto-play the first page's narration
     setTimeout(() => {
+      setIsNarrating(true)
       speak(story.pages[0].narration)
+      // Estimate narration duration (roughly 150 words per minute)
+      const words = story.pages[0].narration.split(' ').length
+      const duration = (words / 150) * 60 * 1000
+      setTimeout(() => setIsNarrating(false), duration)
     }, 1000)
   }
 
@@ -156,15 +162,22 @@ export default function StoryTime() {
     if (currentPage < selectedStory.pages.length - 1) {
       setCurrentPage(prev => prev + 1)
       const nextPage = selectedStory.pages[currentPage + 1]
+      setIsNarrating(true)
       speak(nextPage.narration)
       triggerAnimation('excited')
+      // Estimate narration duration
+      const words = nextPage.narration.split(' ').length
+      const duration = (words / 150) * 60 * 1000
+      setTimeout(() => setIsNarrating(false), duration)
     } else {
       // Story completed
       markStoryComplete(selectedStory.id)
       addScore(50)
       triggerAnimation('celebrate')
+      setIsNarrating(true)
       speak("Great job reading the story! You earned 50 points!")
       setTimeout(() => {
+        setIsNarrating(false)
         setSelectedStory(null)
         setCurrentPage(0)
       }, 3000)
@@ -179,8 +192,13 @@ export default function StoryTime() {
       setCurrentPage(prev => prev - 1)
       const prevPage = selectedStory!.pages[currentPage - 1]
       triggerHaptic('light')
+      setIsNarrating(true)
       speak(prevPage.narration)
       triggerAnimation('excited')
+      // Estimate narration duration
+      const words = prevPage.narration.split(' ').length
+      const duration = (words / 150) * 60 * 1000
+      setTimeout(() => setIsNarrating(false), duration)
     }
   }
 
@@ -191,8 +209,13 @@ export default function StoryTime() {
     if (!selectedStory) return
     const page = selectedStory.pages[currentPage]
     triggerHaptic('light')
+    setIsNarrating(true)
     speak(page.narration)
     triggerAnimation('excited')
+    // Estimate narration duration
+    const words = page.narration.split(' ').length
+    const duration = (words / 150) * 60 * 1000
+    setTimeout(() => setIsNarrating(false), duration)
   }
 
   if (!selectedStory) {
@@ -244,6 +267,21 @@ export default function StoryTime() {
 
   return (
     <div className="story-reader p-8 max-w-4xl mx-auto">
+      {/* Audio Narration Indicator */}
+      {isNarrating && (
+        <div className="fixed top-8 right-8 z-50 flex items-center gap-3 px-6 py-3 rounded-full bg-primary/90 backdrop-blur-sm shadow-lg animate-fade-in">
+          <Volume2 className="w-6 h-6 text-primary-foreground animate-pulse" />
+          <div className="flex gap-1 items-center">
+            <div className="w-1 bg-primary-foreground rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '12px', animationDelay: '0s' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '18px', animationDelay: '0.1s' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '24px', animationDelay: '0.2s' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '18px', animationDelay: '0.3s' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-[pulse_0.8s_ease-in-out_infinite]" style={{ height: '12px', animationDelay: '0.4s' }} />
+          </div>
+          <span className="text-sm font-medium text-primary-foreground">Jubee is reading...</span>
+        </div>
+      )}
+
       <div className="story-header mb-8">
         <h1 className="text-4xl font-bold text-center mb-4 text-game">
           {selectedStory.title}
