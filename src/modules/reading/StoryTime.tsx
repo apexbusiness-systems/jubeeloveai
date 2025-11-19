@@ -140,7 +140,11 @@ export default function StoryTime() {
     setCurrentPage(0)
     triggerHaptic('light')
     triggerAnimation('excited')
-    speak("Let's read a story together!")
+    
+    // Auto-play the first page's narration
+    setTimeout(() => {
+      speak(story.pages[0].narration)
+    }, 1000)
   }
 
   const handleNextPage = (e: React.MouseEvent | React.TouchEvent) => {
