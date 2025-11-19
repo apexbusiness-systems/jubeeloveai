@@ -24,8 +24,10 @@ interface DragState {
 
 // Boundary constants to prevent edge clipping while allowing full viewport access
 const SAFE_MARGIN = 10 // Small margin to prevent edge clipping
-const MOMENTUM_FACTOR = 0.92 // Damping factor for smooth momentum
-const VELOCITY_THRESHOLD = 0.5 // Minimum velocity to continue momentum
+const FRICTION = 0.94 // Friction coefficient for exponential decay (higher = less friction)
+const VELOCITY_THRESHOLD = 0.3 // Minimum velocity to continue momentum (px/frame)
+const MAX_VELOCITY = 50 // Cap maximum velocity to prevent extreme flicks
+const BOUNCE_DAMPING = 0.5 // Energy loss when bouncing off boundaries
 
 export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>) {
   const { containerPosition, setContainerPosition, setIsDragging } = useJubeeStore()
@@ -141,29 +143,137 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     containerRef.current.style.willChange = 'bottom, right'
   }, [containerRef, validateBoundaries])
 
-  const handleMouseUp = useCallback(() => {
-    if (!dragStateRef.current.isDragging || !containerRef.current) return
+  const applyMomentum = useCallback(() => {
+    if (!containerRef.current) return
     
+    const state = dragStateRef.current
+    
+    // Cap velocities to prevent extreme flicks
+    state.velocityX = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, state.velocityX))
+    state.velocityY = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, state.velocityY))
+    
+    // Calculate speed (magnitude of velocity vector)
+    const speed = Math.sqrt(state.velocityX ** 2 + state.velocityY ** 2)
+    
+    // Stop if below threshold
+    if (speed < VELOCITY_THRESHOLD) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
+      
+      const finalBottom = viewportHeight - rect.bottom
+      const finalRight = viewportWidth - rect.right
+      const validated = validateBoundaries(finalBottom, finalRight)
+      
+      // Re-enable transitions for final settle
+      containerRef.current.style.transition = 'bottom 0.2s cubic-bezier(0.4, 0, 0.2, 1), right 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+      containerRef.current.style.bottom = `${validated.bottom}px`
+      containerRef.current.style.right = `${validated.right}px`
+      containerRef.current.style.willChange = 'auto'
+      
+      setContainerPosition(validated)
+      momentumAnimationRef.current = null
+      
+      console.log('[Jubee Inertia] Settled at:', validated)
+      return
+    }
+    
+    // Get current position
     const rect = containerRef.current.getBoundingClientRect()
     const viewportHeight = window.innerHeight
     const viewportWidth = window.innerWidth
     
-    const finalBottom = viewportHeight - rect.bottom
-    const finalRight = viewportWidth - rect.right
+    let currentBottom = viewportHeight - rect.bottom
+    let currentRight = viewportWidth - rect.right
     
-    // Apply final boundary validation before persisting
-    const validated = validateBoundaries(finalBottom, finalRight)
+    // Apply velocity to position
+    const newBottom = currentBottom - state.velocityY
+    const newRight = currentRight - state.velocityX
+    
+    // Get boundaries
+    const containerDims = getContainerDimensions()
+    const minBottom = SAFE_MARGIN
+    const minRight = SAFE_MARGIN
+    const maxBottom = viewportHeight - containerDims.height - SAFE_MARGIN
+    const maxRight = viewportWidth - containerDims.width - SAFE_MARGIN
+    
+    let finalBottom = newBottom
+    let finalRight = newRight
+    let bounceX = false
+    let bounceY = false
+    
+    // Check boundaries and apply bounce effect
+    if (finalBottom < minBottom) {
+      finalBottom = minBottom
+      state.velocityY = -state.velocityY * BOUNCE_DAMPING
+      bounceY = true
+    } else if (finalBottom > maxBottom) {
+      finalBottom = maxBottom
+      state.velocityY = -state.velocityY * BOUNCE_DAMPING
+      bounceY = true
+    }
+    
+    if (finalRight < minRight) {
+      finalRight = minRight
+      state.velocityX = -state.velocityX * BOUNCE_DAMPING
+      bounceX = true
+    } else if (finalRight > maxRight) {
+      finalRight = maxRight
+      state.velocityX = -state.velocityX * BOUNCE_DAMPING
+      bounceX = true
+    }
+    
+    // Apply exponential friction decay (only if not bouncing)
+    if (!bounceX) state.velocityX *= FRICTION
+    if (!bounceY) state.velocityY *= FRICTION
+    
+    // Update position
+    containerRef.current.style.bottom = `${finalBottom}px`
+    containerRef.current.style.right = `${finalRight}px`
+    
+    // Continue animation
+    momentumAnimationRef.current = requestAnimationFrame(applyMomentum)
+  }, [containerRef, validateBoundaries, setContainerPosition])
+
+  const handleMouseUp = useCallback(() => {
+    if (!dragStateRef.current.isDragging || !containerRef.current) return
     
     dragStateRef.current.isDragging = false
     setIsDragging(false)
     containerRef.current.style.cursor = 'grab'
     document.body.style.userSelect = ''
     
-    // Save validated final position to store
-    setContainerPosition(validated)
+    // Check if velocity is significant enough for momentum
+    const speed = Math.sqrt(
+      dragStateRef.current.velocityX ** 2 + dragStateRef.current.velocityY ** 2
+    )
     
-    console.log('[Jubee Drag] Ended at validated position:', validated)
-  }, [containerRef, setIsDragging, setContainerPosition, validateBoundaries])
+    if (speed > VELOCITY_THRESHOLD) {
+      console.log('[Jubee Inertia] Starting flick with velocity:', {
+        vx: dragStateRef.current.velocityX.toFixed(2),
+        vy: dragStateRef.current.velocityY.toFixed(2),
+        speed: speed.toFixed(2)
+      })
+      
+      // Start momentum animation
+      applyMomentum()
+    } else {
+      // No momentum, just save position
+      const rect = containerRef.current.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
+      
+      const finalBottom = viewportHeight - rect.bottom
+      const finalRight = viewportWidth - rect.right
+      const validated = validateBoundaries(finalBottom, finalRight)
+      
+      containerRef.current.style.transition = 'bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1), right 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+      containerRef.current.style.willChange = 'auto'
+      
+      setContainerPosition(validated)
+      console.log('[Jubee Drag] Ended without momentum at:', validated)
+    }
+  }, [containerRef, setIsDragging, setContainerPosition, validateBoundaries, applyMomentum])
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (!containerRef.current) return
@@ -240,23 +350,40 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
   const handleTouchEnd = useCallback(() => {
     if (!dragStateRef.current.isDragging || !containerRef.current) return
     
-    const rect = containerRef.current.getBoundingClientRect()
-    const viewportHeight = window.innerHeight
-    const viewportWidth = window.innerWidth
-    
-    const finalBottom = viewportHeight - rect.bottom
-    const finalRight = viewportWidth - rect.right
-    
-    // Apply final boundary validation before persisting
-    const validated = validateBoundaries(finalBottom, finalRight)
-    
     dragStateRef.current.isDragging = false
     setIsDragging(false)
     
-    setContainerPosition(validated)
+    // Check if velocity is significant enough for momentum
+    const speed = Math.sqrt(
+      dragStateRef.current.velocityX ** 2 + dragStateRef.current.velocityY ** 2
+    )
     
-    console.log('[Jubee Drag] Touch ended at validated position:', validated)
-  }, [containerRef, setIsDragging, setContainerPosition, validateBoundaries])
+    if (speed > VELOCITY_THRESHOLD) {
+      console.log('[Jubee Inertia] Starting touch flick with velocity:', {
+        vx: dragStateRef.current.velocityX.toFixed(2),
+        vy: dragStateRef.current.velocityY.toFixed(2),
+        speed: speed.toFixed(2)
+      })
+      
+      // Start momentum animation
+      applyMomentum()
+    } else {
+      // No momentum, just save position
+      const rect = containerRef.current.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
+      
+      const finalBottom = viewportHeight - rect.bottom
+      const finalRight = viewportWidth - rect.right
+      const validated = validateBoundaries(finalBottom, finalRight)
+      
+      containerRef.current.style.transition = 'bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1), right 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+      containerRef.current.style.willChange = 'auto'
+      
+      setContainerPosition(validated)
+      console.log('[Jubee Touch] Ended without momentum at:', validated)
+    }
+  }, [containerRef, setIsDragging, setContainerPosition, validateBoundaries, applyMomentum])
 
   // Attach event listeners
   useEffect(() => {
@@ -275,6 +402,12 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
     container.style.cursor = 'grab'
 
     return () => {
+      // Cancel any ongoing momentum animation
+      if (momentumAnimationRef.current) {
+        cancelAnimationFrame(momentumAnimationRef.current)
+        momentumAnimationRef.current = null
+      }
+      
       container.removeEventListener('mousedown', handleMouseDown)
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
