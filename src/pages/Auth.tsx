@@ -230,13 +230,13 @@ export default function Auth() {
         description="Sign in to access your Jubee Love account and continue your learning journey"
       />
       
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-        <Card className="w-full max-w-md border-4 border-primary/20 shadow-2xl">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
+        <Card className="w-full max-w-md border-2 border-border shadow-2xl bg-card">
           <CardHeader className="text-center space-y-2">
             <CardTitle className="text-4xl font-bold text-primary">
               🎓 Jubee Love
             </CardTitle>
-            <CardDescription className="text-lg">
+            <CardDescription className="text-lg text-muted-foreground">
               Learning made fun and interactive
             </CardDescription>
           </CardHeader>
@@ -251,8 +251,8 @@ export default function Auth() {
               <TabsContent value="signin">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-base">
-                      <Mail className="inline w-4 h-4 mr-2" />
+                    <Label htmlFor="signin-email" className="text-base text-card-foreground flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
                       Email
                     </Label>
                     <Input
@@ -283,8 +283,8 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-base">
-                      <Lock className="inline w-4 h-4 mr-2" />
+                    <Label htmlFor="signin-password" className="text-base text-card-foreground flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
                       Password
                     </Label>
                     <Input
@@ -329,7 +329,7 @@ export default function Auth() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className="bg-card px-2 text-muted-foreground">
                       Or continue with
                     </span>
                   </div>
@@ -367,8 +367,8 @@ export default function Auth() {
               <TabsContent value="signup">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-base">
-                      <User className="inline w-4 h-4 mr-2" />
+                    <Label htmlFor="signup-name" className="text-base text-card-foreground flex items-center gap-2">
+                      <User className="w-4 h-4" />
                       Display Name (Optional)
                     </Label>
                     <Input
@@ -383,8 +383,8 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-base">
-                      <Mail className="inline w-4 h-4 mr-2" />
+                    <Label htmlFor="signup-email" className="text-base text-card-foreground flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
                       Email
                     </Label>
                     <Input
@@ -400,8 +400,8 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-base">
-                      <Lock className="inline w-4 h-4 mr-2" />
+                    <Label htmlFor="signup-password" className="text-base text-card-foreground flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
                       Password
                     </Label>
                     <Input
@@ -441,7 +441,7 @@ export default function Auth() {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
+                    <span className="bg-card px-2 text-muted-foreground">
                       Or continue with
                     </span>
                   </div>
