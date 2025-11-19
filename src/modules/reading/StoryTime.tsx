@@ -1,7 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/integrations/supabase/client'
 import { triggerHaptic } from '@/lib/hapticFeedback'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { premiumStories } from '@/data/storySeedData'
 
 interface StoryPage {
   id: number
@@ -10,83 +15,123 @@ interface StoryPage {
   narration: string
 }
 
-const stories = [
-  {
-    id: 'jubee-adventure',
-    title: "Jubee's Big Adventure",
-    pages: [
-      {
-        id: 1,
-        text: "Once upon a time, there was a happy little bee named Jubee.",
-        illustration: "🐝",
-        narration: "Once upon a time, there was a happy little bee named Jubee."
-      },
-      {
-        id: 2,
-        text: "Jubee loved to fly through the colorful garden, visiting all the beautiful flowers.",
-        illustration: "🌺🌻🌸",
-        narration: "Jubee loved to fly through the colorful garden, visiting all the beautiful flowers."
-      },
-      {
-        id: 3,
-        text: "One day, Jubee met a friendly butterfly who wanted to play!",
-        illustration: "🦋",
-        narration: "One day, Jubee met a friendly butterfly who wanted to play!"
-      },
-      {
-        id: 4,
-        text: "Together, they danced among the flowers and had so much fun!",
-        illustration: "🐝🦋💃",
-        narration: "Together, they danced among the flowers and had so much fun!"
-      },
-      {
-        id: 5,
-        text: "When the sun began to set, Jubee flew back home, excited for tomorrow's adventures!",
-        illustration: "🌅🐝🏡",
-        narration: "When the sun began to set, Jubee flew back home, excited for tomorrow's adventures!"
-      }
-    ]
-  },
-  {
-    id: 'counting-flowers',
-    title: "Counting Flowers with Jubee",
-    pages: [
-      {
-        id: 1,
-        text: "Jubee woke up and decided to count all the flowers in the garden!",
-        illustration: "🐝☀️",
-        narration: "Jubee woke up and decided to count all the flowers in the garden!"
-      },
-      {
-        id: 2,
-        text: "First, Jubee found ONE beautiful red rose. 'That's one!' said Jubee.",
-        illustration: "🌹",
-        narration: "First, Jubee found ONE beautiful red rose. That's one! said Jubee."
-      },
-      {
-        id: 3,
-        text: "Then, Jubee saw TWO yellow sunflowers. 'One, two!' counted Jubee.",
-        illustration: "🌻🌻",
-        narration: "Then, Jubee saw TWO yellow sunflowers. One, two! counted Jubee."
-      },
-      {
-        id: 4,
-        text: "Next, Jubee spotted THREE pink flowers. 'One, two, three!' Jubee was so proud!",
-        illustration: "🌸🌸🌸",
-        narration: "Next, Jubee spotted THREE pink flowers. One, two, three! Jubee was so proud!"
-      },
-      {
-        id: 5,
-        text: "Jubee learned to count and made lots of nectar! What a wonderful day!",
-        illustration: "🐝🍯✨",
-        narration: "Jubee learned to count and made lots of nectar! What a wonderful day!"
-      }
-    ]
-  }
-]
+interface Story {
+  id: string
+  title: string
+  category: string
+  age_range: string
+  description: string
+  pages: StoryPage[]
+  completed?: boolean
+}
 
 export default function StoryTime() {
-  const [selectedStory, setSelectedStory] = useState<typeof stories[0] | null>(null)
+  const [stories, setStories] = useState<Story[]>([])
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const { speak, triggerAnimation } = useJubeeStore()
+  const { addScore } = useGameStore()
+  const { user } = useAuth()
+
+  // Fetch stories from database
+  useEffect(() => {
+    fetchStories()
+  }, [user])
+
+  const fetchStories = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch all stories from database
+      const { data: dbStories, error } = await supabase
+        .from('stories')
+        .select('*')
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      // If no stories in database, use local stories as fallback
+      const storiesToUse = dbStories && dbStories.length > 0 
+        ? dbStories.map(s => ({
+            id: s.id,
+            title: s.title,
+            category: s.category,
+            age_range: s.age_range,
+            description: s.description || '',
+            pages: s.pages as StoryPage[]
+          }))
+        : premiumStories.map((s, idx) => ({
+            id: `local-${idx}`,
+            title: s.title,
+            category: s.category,
+            age_range: s.age_range,
+            description: s.description,
+            pages: s.pages
+          }))
+
+      // Fetch completion status if user is logged in
+      if (user) {
+        const { data: completions } = await supabase
+          .from('story_completions')
+          .select('story_id')
+          .eq('user_id', user.id)
+
+        const completedIds = new Set(completions?.map(c => c.story_id) || [])
+        
+        storiesToUse.forEach(story => {
+          story.completed = completedIds.has(story.id)
+        })
+      }
+
+      setStories(storiesToUse)
+    } catch (error) {
+      console.error('Error fetching stories:', error)
+      toast.error('Failed to load stories')
+      
+      // Fallback to local stories
+      setStories(premiumStories.map((s, idx) => ({
+        id: `local-${idx}`,
+        title: s.title,
+        category: s.category,
+        age_range: s.age_range,
+        description: s.description,
+        pages: s.pages
+      })))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const markStoryComplete = async (storyId: string) => {
+    if (!user) return
+
+    try {
+      const { data: existing } = await supabase
+        .from('story_completions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('story_id', storyId)
+        .maybeSingle()
+
+      if (!existing) {
+        await supabase
+          .from('story_completions')
+          .insert({
+            user_id: user.id,
+            story_id: storyId
+          })
+
+        setStories(prev => prev.map(s => 
+          s.id === storyId ? { ...s, completed: true } : s
+        ))
+      }
+    } catch (error) {
+      console.error('Error marking story complete:', error)
+    }
+  }
+
+  const handleStorySelect = (story: Story) => {
   const [currentPage, setCurrentPage] = useState(0)
   const { speak, triggerAnimation } = useJubeeStore()
   const { addScore } = useGameStore()
