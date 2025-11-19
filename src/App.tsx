@@ -33,7 +33,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
-import { LogOut, LogIn, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
@@ -192,37 +192,6 @@ export default function App() {
                     <span className="font-extrabold hidden md:inline">Customize</span>
                   </span>
                 </button>
-                {isAuthenticated ? (
-                  <button
-                    onClick={signOut}
-                    className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                    }}
-                    aria-label="Logout"
-                    title="Logout"
-                  >
-                    <span className="flex items-center gap-1 sm:gap-2">
-                      <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="font-extrabold hidden md:inline">Logout</span>
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => window.location.href = '/auth'}
-                    className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                    }}
-                    aria-label="Login"
-                    title="Login"
-                  >
-                    <span className="flex items-center gap-1 sm:gap-2">
-                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="font-extrabold hidden md:inline">Login</span>
-                    </span>
-                  </button>
-                )}
               </div>
             </header>
 
@@ -299,30 +268,30 @@ export default function App() {
               <Suspense fallback={<LoadingScreen message="Loading activity" />}>
                 <PageTransition>
                   <Routes>
-                    {/* Public route */}
+                    {/* Public routes - No auth required for toddlers */}
                     <Route path="/auth" element={<AuthPage />} />
-                    
-                    {/* Protected routes */}
-                    <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-                    <Route path="/write" element={<ProtectedRoute><WritingCanvas /></ProtectedRoute>} />
-                    <Route path="/gallery" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
-                    <Route path="/shapes" element={<ProtectedRoute><ShapeSorter /></ProtectedRoute>} />
-                    <Route path="/stories" element={<ProtectedRoute><StoryTime /></ProtectedRoute>} />
-                    <Route path="/reading" element={<ProtectedRoute><ReadingPractice /></ProtectedRoute>} />
-                    <Route path="/games" element={<ProtectedRoute><GamesMenu /></ProtectedRoute>} />
-                    <Route path="/games/memory" element={<ProtectedRoute><MemoryGame /></ProtectedRoute>} />
-                    <Route path="/games/pattern" element={<ProtectedRoute><PatternGame /></ProtectedRoute>} />
-                    <Route path="/games/numbers" element={<ProtectedRoute><NumberGame /></ProtectedRoute>} />
-                    <Route path="/games/alphabet" element={<ProtectedRoute><AlphabetGame /></ProtectedRoute>} />
-                    <Route path="/games/colors" element={<ProtectedRoute><ColorGame /></ProtectedRoute>} />
-                    <Route path="/games/puzzle" element={<ProtectedRoute><PuzzleGame /></ProtectedRoute>} />
-                    <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-                    <Route path="/stickers" element={<ProtectedRoute><StickersPage /></ProtectedRoute>} />
-                    <Route path="/music" element={<ProtectedRoute><MusicPage /></ProtectedRoute>} />
-                    <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/write" element={<WritingCanvas />} />
+                    <Route path="/gallery" element={<Gallery />} />
+                    <Route path="/shapes" element={<ShapeSorter />} />
+                    <Route path="/stories" element={<StoryTime />} />
+                    <Route path="/reading" element={<ReadingPractice />} />
+                    <Route path="/games" element={<GamesMenu />} />
+                    <Route path="/games/memory" element={<MemoryGame />} />
+                    <Route path="/games/pattern" element={<PatternGame />} />
+                    <Route path="/games/numbers" element={<NumberGame />} />
+                    <Route path="/games/alphabet" element={<AlphabetGame />} />
+                    <Route path="/games/colors" element={<ColorGame />} />
+                    <Route path="/games/puzzle" element={<PuzzleGame />} />
+                    <Route path="/progress" element={<ProgressPage />} />
+                    <Route path="/stickers" element={<StickersPage />} />
+                    <Route path="/music" element={<MusicPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/install" element={<InstallPage />} />
-                    <Route path="/parental-controls" element={<ProtectedRoute><ParentalControls /></ProtectedRoute>} />
-                    <Route path="/performance-monitor" element={<ProtectedRoute><PerformanceMonitor /></ProtectedRoute>} />
+                    <Route path="/parental-controls" element={<ParentalControls />} />
+                    <Route path="/performance-monitor" element={<PerformanceMonitor />} />
+                    
+                    {/* Auth-gated parent hub only */}
                     <Route path="/parent" element={<ProtectedRoute><ParentHub /></ProtectedRoute>} />
                   </Routes>
                 </PageTransition>
@@ -671,7 +640,7 @@ function Navigation() {
       <TabButton path="/shapes" icon={<StarIcon className="w-8 h-8" />} label="Shapes" />
       <TabButton path="/progress" icon={<ChartIcon className="w-8 h-8" />} label="Progress" />
       <TabButton path="/stickers" icon={<GiftIcon className="w-8 h-8" />} label="Stickers" />
-      <TabButton path="/settings" icon={<GearIcon className="w-8 h-8" />} label="Settings" />
+      <TabButton path="/settings" icon={<GearIcon className="w-8 h-8" />} label="Settings" longPressPath="/parent" />
     </nav>
   );
 }
@@ -680,22 +649,58 @@ interface TabButtonProps {
   path: string;
   icon: React.ReactNode;
   label: string;
+  longPressPath?: string;
 }
 
-function TabButton({ path, icon, label }: TabButtonProps) {
+function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = location.pathname === path;
+  const [pressing, setPressing] = useState(false);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handlePressStart = () => {
+    if (!longPressPath) return;
+    
+    setPressing(true);
+    pressTimer.current = setTimeout(() => {
+      setPressing(false);
+      navigate(longPressPath);
+    }, 3000); // 3 seconds long press
+  };
+
+  const handlePressEnd = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    setPressing(false);
+  };
+
+  const handleClick = () => {
+    if (!pressing) {
+      navigate(path);
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate(path)}
-      className={`tab-item min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all ${
+      onClick={handleClick}
+      onMouseDown={handlePressStart}
+      onMouseUp={handlePressEnd}
+      onMouseLeave={handlePressEnd}
+      onTouchStart={handlePressStart}
+      onTouchEnd={handlePressEnd}
+      onTouchCancel={handlePressEnd}
+      className={`tab-item min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all relative ${
         isActive ? 'scale-110' : ''
-      }`}
+      } ${pressing ? 'scale-125 ring-4 ring-primary' : ''}`}
       aria-label={`Navigate to ${label}`}
       aria-current={isActive ? 'page' : undefined}
     >
+      {pressing && longPressPath && (
+        <div className="absolute inset-0 rounded-full border-4 border-primary animate-pulse" />
+      )}
       <div className="w-8 h-8 text-primary flex items-center justify-center" aria-hidden="true">
         {icon}
       </div>
