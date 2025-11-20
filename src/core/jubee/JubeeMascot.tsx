@@ -76,14 +76,78 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
   const rightWingRef = useRef<Mesh>(null)
   const leftEyeRef = useRef<Mesh>(null)
   const rightEyeRef = useRef<Mesh>(null)
+  const leftAntennaRef = useRef<Mesh>(null)
+  const rightAntennaRef = useRef<Mesh>(null)
   const { camera } = useThree()
   const [isHovered, setIsHovered] = useState(false)
   const [blinkTime, setBlinkTime] = useState(0)
   const [showClickFeedback, setShowClickFeedback] = useState(false)
-  const { gender, speechText, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
+  const { gender, speechText, currentMood, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
 
   // Memoize current colors from design system
   const currentColors = useMemo(() => getJubeeColors(gender), [gender])
+  
+  // Dynamic facial expressions based on mood
+  const faceExpression = useMemo(() => {
+    const expressions = {
+      happy: {
+        eyeScale: 1.0,
+        eyeY: 0.08,
+        pupilSize: 0.07,
+        smileArc: Math.PI,
+        smileY: 0.55,
+        smileRotation: Math.PI / 2,
+        smileRadius: 0.12,
+        cheekOpacity: 0.7,
+        antennaWave: 0.15
+      },
+      excited: {
+        eyeScale: 1.3,
+        eyeY: 0.1,
+        pupilSize: 0.08,
+        smileArc: Math.PI * 1.2,
+        smileY: 0.53,
+        smileRotation: Math.PI / 2,
+        smileRadius: 0.15,
+        cheekOpacity: 0.9,
+        antennaWave: 0.3
+      },
+      frustrated: {
+        eyeScale: 0.8,
+        eyeY: 0.05,
+        pupilSize: 0.06,
+        smileArc: Math.PI,
+        smileY: 0.5,
+        smileRotation: -Math.PI / 2,
+        smileRadius: 0.1,
+        cheekOpacity: 0.4,
+        antennaWave: 0.05
+      },
+      curious: {
+        eyeScale: 1.1,
+        eyeY: 0.1,
+        pupilSize: 0.075,
+        smileArc: Math.PI * 0.7,
+        smileY: 0.54,
+        smileRotation: Math.PI / 2,
+        smileRadius: 0.1,
+        cheekOpacity: 0.6,
+        antennaWave: 0.2
+      },
+      tired: {
+        eyeScale: 0.7,
+        eyeY: 0.05,
+        pupilSize: 0.05,
+        smileArc: Math.PI * 0.5,
+        smileY: 0.52,
+        smileRotation: Math.PI / 2,
+        smileRadius: 0.08,
+        cheekOpacity: 0.3,
+        antennaWave: 0.02
+      }
+    }
+    return expressions[currentMood] || expressions.happy
+  }, [currentMood])
   
   // Spring physics for scale animations - bouncy click feedback
   const [{ scale }, springApi] = useSpring(() => ({
@@ -100,6 +164,27 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
     hoverScale: 1,
     config: config.wobbly
   }))
+  
+  // Spring physics for facial expression transitions
+  const [expressionSpring, expressionApi] = useSpring(() => ({
+    eyeScale: faceExpression.eyeScale,
+    eyeY: faceExpression.eyeY,
+    smileY: faceExpression.smileY,
+    smileRotation: faceExpression.smileRotation,
+    cheekOpacity: faceExpression.cheekOpacity,
+    config: { tension: 120, friction: 14 }
+  }))
+  
+  // Update expression spring when mood changes
+  useEffect(() => {
+    expressionApi.start({
+      eyeScale: faceExpression.eyeScale,
+      eyeY: faceExpression.eyeY,
+      smileY: faceExpression.smileY,
+      smileRotation: faceExpression.smileRotation,
+      cheekOpacity: faceExpression.cheekOpacity
+    })
+  }, [currentMood, faceExpression, expressionApi])
   
   // Mount/unmount logging
   useEffect(() => {
@@ -245,6 +330,20 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
     if (rightWingRef.current) {
       rightWingRef.current.rotation.y += (targetFlapRight - rightWingRef.current.rotation.y) * 0.3
     }
+    
+    // Mood-based antenna animation
+    if (leftAntennaRef.current && rightAntennaRef.current) {
+      const antennaWave = faceExpression.antennaWave
+      const antennaSpeed = currentMood === 'excited' ? 4 : currentMood === 'tired' ? 0.5 : 2
+      
+      // Left antenna sways
+      leftAntennaRef.current.rotation.z = Math.sin(time * antennaSpeed) * antennaWave
+      leftAntennaRef.current.rotation.x = Math.cos(time * antennaSpeed * 0.7) * antennaWave * 0.5
+      
+      // Right antenna sways (opposite phase)
+      rightAntennaRef.current.rotation.z = -Math.sin(time * antennaSpeed) * antennaWave
+      rightAntennaRef.current.rotation.x = Math.cos(time * antennaSpeed * 0.7) * antennaWave * 0.5
+    }
 
     // Celebration spin
     if (animation === 'celebrate') {
@@ -333,93 +432,143 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
       {/* Eyes - large and expressive with blinking */}
       <group position={[0, 0.65, 0]}>
         {/* Left eye white */}
-        <mesh ref={leftEyeRef} position={[-0.15, 0.08, 0.28]} castShadow>
+        <a.mesh 
+          ref={leftEyeRef} 
+          position={[-0.15, expressionSpring.eyeY, 0.28]} 
+          // @ts-ignore
+          scale={expressionSpring.eyeScale.to(s => [s, s, s])}
+          castShadow
+        >
           <sphereGeometry args={[0.13, 32, 32]} />
           <meshStandardMaterial 
             color={currentColors.eyeWhite}
             roughness={0.1}
             metalness={0.1}
           />
-        </mesh>
+        </a.mesh>
         {/* Left pupil */}
-        <mesh position={[-0.15, 0.08, 0.38]} castShadow>
-          <sphereGeometry args={[0.07, 32, 32]} />
+        <a.mesh 
+          position-x={-0.15}
+          position-y={expressionSpring.eyeY}
+          position-z={0.38}
+          castShadow
+        >
+          <sphereGeometry args={[faceExpression.pupilSize, 32, 32]} />
           <meshStandardMaterial 
             color={currentColors.eyePupil}
             roughness={0.8}
           />
-        </mesh>
+        </a.mesh>
         {/* Left eye shine - multiple for sparkle effect */}
-        <mesh position={[-0.13, 0.13, 0.43]} castShadow>
+        <a.mesh 
+          position-x={-0.13}
+          position-y={expressionSpring.eyeY.to(y => y + 0.05)}
+          position-z={0.43}
+          castShadow
+        >
           <sphereGeometry args={[0.035, 16, 16]} />
           <meshBasicMaterial color={currentColors.eyeWhite} />
-        </mesh>
-        <mesh position={[-0.16, 0.1, 0.42]} castShadow>
+        </a.mesh>
+        <a.mesh 
+          position-x={-0.16}
+          position-y={expressionSpring.eyeY.to(y => y + 0.02)}
+          position-z={0.42}
+          castShadow
+        >
           <sphereGeometry args={[0.02, 16, 16]} />
           <meshBasicMaterial color={currentColors.eyeWhite} transparent opacity={0.7} />
-        </mesh>
+        </a.mesh>
 
         {/* Right eye white */}
-        <mesh ref={rightEyeRef} position={[0.15, 0.08, 0.28]} castShadow>
+        <a.mesh 
+          ref={rightEyeRef} 
+          position={[0.15, expressionSpring.eyeY, 0.28]} 
+          // @ts-ignore
+          scale={expressionSpring.eyeScale.to(s => [s, s, s])}
+          castShadow
+        >
           <sphereGeometry args={[0.13, 32, 32]} />
           <meshStandardMaterial 
             color={currentColors.eyeWhite}
             roughness={0.1}
             metalness={0.1}
           />
-        </mesh>
+        </a.mesh>
         {/* Right pupil */}
-        <mesh position={[0.15, 0.08, 0.38]} castShadow>
-          <sphereGeometry args={[0.07, 32, 32]} />
+        <a.mesh 
+          position-x={0.15}
+          position-y={expressionSpring.eyeY}
+          position-z={0.38}
+          castShadow
+        >
+          <sphereGeometry args={[faceExpression.pupilSize, 32, 32]} />
           <meshStandardMaterial 
             color={currentColors.eyePupil}
             roughness={0.8}
           />
-        </mesh>
+        </a.mesh>
         {/* Right eye shine - multiple for sparkle effect */}
-        <mesh position={[0.17, 0.13, 0.43]} castShadow>
+        <a.mesh 
+          position-x={0.17}
+          position-y={expressionSpring.eyeY.to(y => y + 0.05)}
+          position-z={0.43}
+          castShadow
+        >
           <sphereGeometry args={[0.035, 16, 16]} />
           <meshBasicMaterial color={currentColors.eyeWhite} />
-        </mesh>
-        <mesh position={[0.14, 0.1, 0.42]} castShadow>
+        </a.mesh>
+        <a.mesh 
+          position-x={0.14}
+          position-y={expressionSpring.eyeY.to(y => y + 0.02)}
+          position-z={0.42}
+          castShadow
+        >
           <sphereGeometry args={[0.02, 16, 16]} />
           <meshBasicMaterial color={currentColors.eyeWhite} transparent opacity={0.7} />
-        </mesh>
+        </a.mesh>
       </group>
 
-      {/* Smile - cute torus */}
-      <mesh position={[0, 0.55, 0.3]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[0.12, 0.02, 16, 48, Math.PI]} />
+      {/* Smile - dynamic shape based on mood */}
+      <a.mesh 
+        position-x={0}
+        position-y={expressionSpring.smileY}
+        position-z={0.3}
+        rotation-x={expressionSpring.smileRotation}
+        rotation-y={0}
+        rotation-z={0}
+        castShadow
+      >
+        <torusGeometry args={[faceExpression.smileRadius, 0.02, 16, 48, faceExpression.smileArc]} />
         <meshStandardMaterial 
           color={currentColors.eyePupil}
           roughness={0.5}
         />
-      </mesh>
+      </a.mesh>
 
-      {/* Rosy cheeks */}
-      <mesh position={[-0.28, 0.58, 0.15]} castShadow>
+      {/* Rosy cheeks - dynamic opacity */}
+      <a.mesh position={[-0.28, 0.58, 0.15]} castShadow>
         <sphereGeometry args={[0.08, 32, 32]} />
-        <meshStandardMaterial 
+        <a.meshStandardMaterial 
           color={currentColors.cheek} 
           transparent 
-          opacity={0.7}
+          opacity={expressionSpring.cheekOpacity}
           roughness={0.3}
         />
-      </mesh>
-      <mesh position={[0.28, 0.58, 0.15]} castShadow>
+      </a.mesh>
+      <a.mesh position={[0.28, 0.58, 0.15]} castShadow>
         <sphereGeometry args={[0.08, 32, 32]} />
-        <meshStandardMaterial 
+        <a.meshStandardMaterial 
           color={currentColors.cheek} 
           transparent 
-          opacity={0.7}
+          opacity={expressionSpring.cheekOpacity}
           roughness={0.3}
         />
-      </mesh>
+      </a.mesh>
 
-      {/* Antennae */}
+      {/* Antennae - mood-responsive movement */}
       <group>
         {/* Left antenna */}
-        <mesh position={[-0.15, 0.95, 0]} castShadow>
+        <mesh ref={leftAntennaRef} position={[-0.15, 0.95, 0]} castShadow>
           <cylinderGeometry args={[0.02, 0.02, 0.3, 16]} />
           <meshStandardMaterial 
             color={currentColors.stripe}
@@ -431,14 +580,14 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
           <meshStandardMaterial
             color={currentColors.accent}
             emissive={currentColors.accent}
-            emissiveIntensity={0.7}
+            emissiveIntensity={currentMood === 'excited' ? 1.0 : 0.7}
             roughness={0.2}
             metalness={0.6}
           />
         </mesh>
 
         {/* Right antenna */}
-        <mesh position={[0.15, 0.95, 0]} castShadow>
+        <mesh ref={rightAntennaRef} position={[0.15, 0.95, 0]} castShadow>
           <cylinderGeometry args={[0.02, 0.02, 0.3, 16]} />
           <meshStandardMaterial 
             color={currentColors.stripe}
@@ -450,7 +599,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
           <meshStandardMaterial
             color={currentColors.accent}
             emissive={currentColors.accent}
-            emissiveIntensity={0.7}
+            emissiveIntensity={currentMood === 'excited' ? 1.0 : 0.7}
             roughness={0.2}
             metalness={0.6}
           />
@@ -614,21 +763,21 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
         </group>
       )}
 
-      {/* Sparkle particles around Jubee */}
+      {/* Sparkle particles around Jubee - mood-responsive */}
       <Sparkles
-        count={20}
-        scale={2}
-        size={3}
-        speed={0.3}
-        opacity={0.6}
+        count={currentMood === 'excited' ? 40 : currentMood === 'tired' ? 8 : 20}
+        scale={currentMood === 'excited' ? 2.5 : currentMood === 'tired' ? 1.5 : 2}
+        size={currentMood === 'excited' ? 4 : currentMood === 'tired' ? 2 : 3}
+        speed={currentMood === 'excited' ? 0.6 : currentMood === 'tired' ? 0.1 : 0.3}
+        opacity={currentMood === 'excited' ? 0.8 : currentMood === 'tired' ? 0.3 : 0.6}
         color={currentColors.accent}
       />
 
-      {/* Ambient glow around Jubee - enhanced */}
+      {/* Ambient glow around Jubee - mood-responsive intensity */}
       <pointLight
         position={[0, 0, 0]}
         color={currentColors.accent}
-        intensity={1.5}
+        intensity={currentMood === 'excited' ? 2.5 : currentMood === 'frustrated' ? 0.8 : 1.5}
         distance={4}
         decay={2}
       />
@@ -638,7 +787,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle' }: JubeeP
         position={[0, 3, 2]}
         angle={0.4}
         penumbra={1}
-        intensity={1.2}
+        intensity={currentMood === 'excited' ? 1.8 : currentMood === 'tired' ? 0.6 : 1.2}
         color={currentColors.bodyGlow}
         castShadow
         shadow-mapSize-width={2048}
