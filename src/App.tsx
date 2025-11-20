@@ -27,6 +27,7 @@ import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
+import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
 import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
 import { JubeeCanvas } from './components/JubeeCanvas';
@@ -67,19 +68,8 @@ export default function App() {
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   
-  // Run system check and regression guard on mount (dev mode only)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      Promise.all([
-        import('@/core/jubee/JubeeSystemCheck').then(({ logSystemCheckResults }) => {
-          logSystemCheckResults();
-        }),
-        import('@/core/jubee/JubeeRegressionGuard').then(({ logRegressionCheck }) => {
-          logRegressionCheck();
-        })
-      ]).catch(err => console.error('[Jubee] System checks failed:', err));
-    }
-  }, []);
+  // Monitor all systems for regressions (dev only)
+  useSystemHealthMonitor();
   
 
   // Start onboarding for first-time users
