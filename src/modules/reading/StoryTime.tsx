@@ -10,6 +10,7 @@ import { premiumStories } from '@/data/storySeedData'
 import { initializeStories } from '@/lib/initializeStories'
 import { audioManager } from '@/lib/audioManager'
 import { Slider } from '@/components/ui/slider'
+import { useSmartAudioPreloader } from '@/hooks/useSmartAudioPreloader'
 
 interface StoryPage {
   id: number
@@ -39,6 +40,7 @@ export default function StoryTime() {
   const { speak, triggerAnimation } = useJubeeStore()
   const { addScore } = useGameStore()
   const { user } = useAuth()
+  const { preloadStoryContext } = useSmartAudioPreloader()
 
   // Fetch stories from database
   useEffect(() => {
@@ -145,6 +147,9 @@ export default function StoryTime() {
     setCurrentPage(0)
     triggerHaptic('light')
     triggerAnimation('excited')
+    
+    // Preload all story pages for instant playback
+    preloadStoryContext(story.pages)
     
     // Auto-play the first page's narration
     setTimeout(() => {

@@ -33,6 +33,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
+import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
 import { Download } from 'lucide-react';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
@@ -90,6 +91,9 @@ export default function App() {
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const { user, signOut, isAuthenticated } = useAuth();
+
+  // Initialize smart audio preloader for predictive caching
+  useSmartAudioPreloader()
 
   // Start onboarding for first-time users
   useEffect(() => {

@@ -95,35 +95,82 @@ class AudioManager {
   }
 
   /**
-   * Preload common phrases to cache
+   * Preload common phrases to cache (now handled by smart preloader)
    */
   private async preloadCommonPhrases(): Promise<void> {
-    // Common Jubee phrases that can be preloaded
-    const commonPhrases = [
-      "Great job!",
-      "You're doing amazing!",
-      "Let's try again!",
-      "That's correct!",
-      "Keep going!",
-      "Well done!",
-      "Fantastic!",
-      "Try one more time!"
-    ];
+    // Handled by useSmartAudioPreloader hook
+  }
 
-    // Preload in background without blocking
-    setTimeout(async () => {
-      for (const phrase of commonPhrases) {
-        const cached = this.getCachedAudio(phrase);
-        if (!cached) {
-          try {
-            // This will be called naturally through speak() and get cached
-            console.log('Preload ready for:', phrase);
-          } catch (error) {
-            console.warn('Preload skipped for:', phrase);
-          }
+  /**
+   * Preload audio in background without blocking
+   */
+  async preloadAudio(
+    text: string, 
+    voice?: string, 
+    mood?: string,
+    priority: 'high' | 'low' = 'low'
+  ): Promise<void> {
+    // Check if already cached
+    if (this.getCachedAudio(text, voice, mood)) {
+      return
+    }
+
+    // Use idle callback for low priority preloads
+    const executePreload = async () => {
+      try {
+        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            text, 
+            voice: voice || 'shimmer',
+            mood: mood || 'happy',
+            gender: 'female',
+            language: 'en'
+          }),
+          signal: AbortSignal.timeout(8000)
+        })
+
+        if (response.ok) {
+          const blob = await response.blob()
+          this.cacheAudio(text, blob, voice, mood)
+          console.log('✓ Preloaded:', text.substring(0, 40))
         }
+      } catch (error) {
+        // Silent fail for preloads - not critical
+        console.debug('Preload skipped:', text.substring(0, 40))
       }
-    }, 2000); // Wait 2s after app load
+    }
+
+    if (priority === 'high') {
+      // Execute immediately for high priority
+      await executePreload()
+    } else {
+      // Use idle callback for low priority
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(executePreload, { timeout: 5000 })
+      } else {
+        setTimeout(executePreload, 100)
+      }
+    }
+  }
+
+  /**
+   * Batch preload multiple phrases
+   */
+  async batchPreload(
+    phrases: Array<{ text: string; voice?: string; mood?: string; priority?: 'high' | 'low' }>
+  ): Promise<void> {
+    // Limit concurrent preloads to avoid overwhelming the system
+    const MAX_CONCURRENT = 3
+    const queue = [...phrases]
+    
+    while (queue.length > 0) {
+      const batch = queue.splice(0, MAX_CONCURRENT)
+      await Promise.allSettled(
+        batch.map(p => this.preloadAudio(p.text, p.voice, p.mood, p.priority))
+      )
+    }
   }
 
   /**
