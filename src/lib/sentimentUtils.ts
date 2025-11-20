@@ -1,6 +1,6 @@
 /**
  * Sentiment Analysis Utilities
- * Provides client-side sentiment detection for enhanced empathy
+ * SECURITY: Safe client-side sentiment detection with guardrails
  */
 
 export type Sentiment = 'positive' | 'negative' | 'neutral' | 'anxious' | 'excited' | 'frustrated'
@@ -15,154 +15,177 @@ export interface SentimentAnalysis {
   keywords: string[]
 }
 
+// SECURITY: Safe constants
+const MAX_TEXT_LENGTH = 500
+const MAX_KEYWORDS = 5
+const ALLOWED_SENTIMENTS: Sentiment[] = ['positive', 'negative', 'neutral', 'anxious', 'excited', 'frustrated']
+const ALLOWED_MOODS: Mood[] = ['happy', 'excited', 'frustrated', 'curious', 'tired']
+
 /**
- * Analyze text sentiment with detailed breakdown
+ * SECURE sentiment analysis with input validation
  */
 export function analyzeSentiment(text: string): SentimentAnalysis {
-  const msg = text.toLowerCase()
-  
-  // Pattern matching with weights
-  const patterns = {
-    excitement: {
-      words: ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'yippee', 'hooray'],
-      weight: 2,
-      mood: 'excited' as Mood
-    },
-    frustration: {
-      words: ['hard', 'difficult', "can't", "cant", "don't", "dont", 'help', 'stuck', 'confused', 'scared', 'worried'],
-      weight: 2,
-      mood: 'frustrated' as Mood
-    },
-    curiosity: {
-      words: ['what', 'why', 'how', 'when', 'where', 'who', 'which', '?'],
-      weight: 1.5,
-      mood: 'curious' as Mood
-    },
-    positive: {
-      words: ['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty', 'beautiful'],
-      weight: 1,
-      mood: 'happy' as Mood
-    },
-    negative: {
-      words: ['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad', 'mean'],
-      weight: 1.5,
-      mood: 'tired' as Mood
+  // SECURITY: Validate input
+  if (!text || typeof text !== 'string') {
+    return {
+      sentiment: 'neutral',
+      mood: 'happy',
+      intensity: 'low',
+      confidence: 0.5,
+      keywords: []
     }
   }
 
-  // Calculate scores
-  const scores: Record<string, { score: number; keywords: string[]; mood: Mood }> = {}
+  // SECURITY: Limit text length
+  const sanitized = text.slice(0, MAX_TEXT_LENGTH).toLowerCase()
   
-  for (const [key, pattern] of Object.entries(patterns)) {
-    const keywords = pattern.words.filter(word => msg.includes(word))
-    scores[key] = {
-      score: keywords.length * pattern.weight,
-      keywords,
-      mood: pattern.mood
+  try {
+    // SAFE: Use simple word splitting instead of regex
+    const words = sanitized.split(/\s+/)
+    
+    // SAFE: Define word lists (no regex injection)
+    const patterns = {
+      excitement: ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'yippee', 'hooray'],
+      frustration: ['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried'],
+      curiosity: ['what', 'why', 'how', 'when', 'where', 'who', 'which'],
+      positive: ['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty', 'beautiful'],
+      negative: ['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad', 'mean']
     }
-  }
 
-  // Intensity modifiers
-  const hasExclamation = (text.match(/!/g) || []).length
-  const hasMultipleExclamation = hasExclamation >= 2
-  const hasQuestions = (text.match(/\?/g) || []).length
-  const isAllCaps = text === text.toUpperCase() && text.length > 3
+    // SAFE: Count matches safely
+    const scores = {
+      excitement: words.filter(w => patterns.excitement.includes(w)).length,
+      frustration: words.filter(w => patterns.frustration.includes(w)).length,
+      curiosity: words.filter(w => patterns.curiosity.includes(w)).length,
+      positive: words.filter(w => patterns.positive.includes(w)).length,
+      negative: words.filter(w => patterns.negative.includes(w)).length
+    }
 
-  // Determine dominant sentiment
-  const sortedScores = Object.entries(scores).sort((a, b) => b[1].score - a[1].score)
-  const topScore = sortedScores[0]
+    // SAFE: Check for punctuation safely
+    const exclamationCount = (sanitized.match(/!/g) || []).length
+    const hasMultipleExclamation = exclamationCount >= 2
+    const hasQuestions = sanitized.includes('?')
 
-  let sentiment: Sentiment = 'neutral'
-  let mood: Mood = 'happy'
-  let intensity: Intensity = 'low'
-  let confidence = 0.5
-  let keywords: string[] = []
+    // Determine dominant sentiment
+    let sentiment: Sentiment = 'neutral'
+    let mood: Mood = 'happy'
+    let intensity: Intensity = 'low'
+    let confidence = 0.5
+    const keywords: string[] = []
 
-  if (topScore && topScore[1].score > 0) {
-    const category = topScore[0]
-    keywords = topScore[1].keywords
-    mood = topScore[1].mood
-    confidence = Math.min(0.95, 0.5 + (topScore[1].score * 0.1))
-
-    // Map to sentiment
-    if (category === 'excitement') {
+    if (scores.excitement >= 2 || hasMultipleExclamation) {
       sentiment = 'excited'
-      intensity = hasMultipleExclamation || isAllCaps ? 'high' : 'medium'
-    } else if (category === 'frustration') {
+      mood = 'excited'
+      intensity = 'high'
+      confidence = 0.85
+      keywords.push(...patterns.excitement.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+    } else if (scores.frustration >= 2) {
       sentiment = 'frustrated'
-      intensity = topScore[1].score >= 3 ? 'high' : 'medium'
-    } else if (category === 'curiosity') {
+      mood = 'frustrated'
+      intensity = 'high'
+      confidence = 0.8
+      keywords.push(...patterns.frustration.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+    } else if (scores.frustration > 0 || hasQuestions) {
       sentiment = 'anxious'
-      intensity = hasQuestions >= 2 ? 'high' : 'medium'
-    } else if (category === 'positive') {
+      mood = 'curious'
+      intensity = 'medium'
+      confidence = 0.7
+      keywords.push(...patterns.frustration.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+    } else if (scores.positive > scores.negative) {
       sentiment = 'positive'
-      intensity = hasExclamation > 0 ? 'medium' : 'low'
-    } else if (category === 'negative') {
+      mood = 'happy'
+      intensity = scores.positive >= 2 ? 'medium' : 'low'
+      confidence = 0.65
+      keywords.push(...patterns.positive.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+    } else if (scores.negative > scores.positive) {
       sentiment = 'negative'
-      intensity = topScore[1].score >= 2 ? 'high' : 'medium'
+      mood = 'tired'
+      intensity = scores.negative >= 2 ? 'medium' : 'low'
+      confidence = 0.65
+      keywords.push(...patterns.negative.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
     }
-  } else {
-    // Neutral fallback
-    sentiment = 'neutral'
-    mood = 'happy'
-    intensity = 'low'
-  }
 
-  return {
-    sentiment,
-    mood,
-    intensity,
-    confidence,
-    keywords
+    // SECURITY: Validate results
+    if (!ALLOWED_SENTIMENTS.includes(sentiment)) sentiment = 'neutral'
+    if (!ALLOWED_MOODS.includes(mood)) mood = 'happy'
+
+    return {
+      sentiment,
+      mood,
+      intensity,
+      confidence: Math.min(1, Math.max(0, confidence)),
+      keywords: keywords.slice(0, MAX_KEYWORDS)
+    }
+  } catch (error) {
+    // FALLBACK: Safe default
+    console.error('Sentiment analysis error:', error)
+    return {
+      sentiment: 'neutral',
+      mood: 'happy',
+      intensity: 'low',
+      confidence: 0.5,
+      keywords: []
+    }
   }
 }
 
 /**
- * Get empathetic response prefix based on sentiment
+ * SAFE empathetic prefix generation
  */
 export function getEmpatheticPrefix(sentiment: SentimentAnalysis): string {
   const prefixes: Record<Sentiment, string[]> = {
-    excited: ['*buzz buzz!* WOW!', '*happy buzz!* Oh my!', 'Yippee!'],
-    frustrated: ['*gentle buzz* I hear you...', '*soft buzz* I understand...', 'Let me help...'],
-    anxious: ['*curious buzz* Hmm...', "That's a great question!", 'Let me think...'],
+    excited: ['*buzz buzz!* WOW!', '*happy buzz!*', 'Yippee!'],
+    frustrated: ['*gentle buzz*', '*soft buzz*', 'Let me help...'],
+    anxious: ['*curious buzz*', "Great question!", 'Hmm...'],
     positive: ['*cheerful buzz*', '*happy buzz*', 'Yay!'],
     negative: ['*comforting buzz*', '*gentle buzz*', 'I see...'],
-    neutral: ['*buzz*', '*friendly buzz*', 'Hi there!']
+    neutral: ['*buzz*', '*friendly buzz*', 'Hi!']
   }
 
-  const options = prefixes[sentiment.sentiment] || prefixes.neutral
-  return options[Math.floor(Math.random() * options.length)]
+  try {
+    const options = prefixes[sentiment.sentiment] || prefixes.neutral
+    return options[Math.floor(Math.random() * options.length)]
+  } catch {
+    return '*buzz*'
+  }
 }
 
 /**
- * Adjust voice parameters based on sentiment
+ * SAFE voice parameter calculation
  */
 export function getVoiceParameters(sentiment: SentimentAnalysis): {
   speed: number
   mood: Mood
 } {
-  let speed = 1.15 // Default
+  let speed = 1.15
 
-  switch (sentiment.sentiment) {
-    case 'excited':
-      speed = sentiment.intensity === 'high' ? 1.4 : 1.3
-      break
-    case 'frustrated':
-      speed = 0.9 // Slower, more patient
-      break
-    case 'anxious':
-      speed = 1.05 // Measured, thoughtful
-      break
-    case 'negative':
-      speed = 0.95 // Gentle, calm
-      break
-    case 'positive':
-      speed = 1.25 // Upbeat
-      break
-  }
+  try {
+    switch (sentiment.sentiment) {
+      case 'excited':
+        speed = sentiment.intensity === 'high' ? 1.35 : 1.25
+        break
+      case 'frustrated':
+        speed = 0.9
+        break
+      case 'anxious':
+        speed = 1.05
+        break
+      case 'negative':
+        speed = 0.95
+        break
+      case 'positive':
+        speed = 1.2
+        break
+    }
 
-  return {
-    speed: Math.max(0.8, Math.min(1.5, speed)),
-    mood: sentiment.mood
+    // SECURITY: Clamp speed to safe range
+    return {
+      speed: Math.max(0.8, Math.min(1.5, speed)),
+      mood: ALLOWED_MOODS.includes(sentiment.mood) ? sentiment.mood : 'happy'
+    }
+  } catch (error) {
+    // FALLBACK: Safe defaults
+    console.error('Voice parameter error:', error)
+    return { speed: 1.15, mood: 'happy' }
   }
 }

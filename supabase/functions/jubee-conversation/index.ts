@@ -56,6 +56,7 @@ const MAX_CHILD_NAME_LENGTH = 50;
 const MAX_CONTEXT_LENGTH = 200;
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
+const ALLOWED_SENTIMENTS = ['positive', 'negative', 'neutral', 'anxious', 'excited', 'frustrated'];
 
 function sanitizeInput(input: string, maxLength: number): string {
   if (typeof input !== 'string') return '';
@@ -71,6 +72,80 @@ function validateLanguage(lang: string): string {
 
 function validateMood(mood: string): string | undefined {
   return ALLOWED_MOODS.includes(mood) ? mood : undefined;
+}
+
+// SENTIMENT ANALYSIS with robust guardrails and security
+function analyzeSentiment(message: string): {
+  sentiment: string;
+  intensity: string;
+  keywords: string[];
+} {
+  // SECURITY: Validate input
+  if (!message || typeof message !== 'string') {
+    return { sentiment: 'neutral', intensity: 'low', keywords: [] };
+  }
+  
+  // SECURITY: Limit length to prevent ReDoS attacks
+  const sanitized = message.slice(0, MAX_MESSAGE_LENGTH).toLowerCase();
+  
+  try {
+    // Simple word counting instead of complex regex for security
+    const words = sanitized.split(/\s+/);
+    
+    // Define safe word lists (no regex injection possible)
+    const excitementWords = ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best'];
+    const frustrationWords = ['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried'];
+    const positiveWords = ['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty'];
+    const negativeWords = ['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad'];
+    
+    // Count matches safely
+    const excitementCount = words.filter(w => excitementWords.includes(w)).length;
+    const frustrationCount = words.filter(w => frustrationWords.includes(w)).length;
+    const positiveCount = words.filter(w => positiveWords.includes(w)).length;
+    const negativeCount = words.filter(w => negativeWords.includes(w)).length;
+    
+    // Check for punctuation safely
+    const hasMultipleExclamation = (sanitized.match(/!/g) || []).length >= 2;
+    const hasQuestion = sanitized.includes('?');
+    
+    // Determine sentiment with safe logic
+    let sentiment = 'neutral';
+    let intensity = 'low';
+    const keywords: string[] = [];
+    
+    if (excitementCount >= 2 || hasMultipleExclamation) {
+      sentiment = 'excited';
+      intensity = 'high';
+      keywords.push(...excitementWords.filter(w => sanitized.includes(w)).slice(0, 3));
+    } else if (frustrationCount >= 2) {
+      sentiment = 'frustrated';
+      intensity = 'high';
+      keywords.push(...frustrationWords.filter(w => sanitized.includes(w)).slice(0, 3));
+    } else if (frustrationCount > 0 || hasQuestion) {
+      sentiment = 'anxious';
+      intensity = 'medium';
+      keywords.push(...frustrationWords.filter(w => sanitized.includes(w)).slice(0, 3));
+    } else if (positiveCount > negativeCount) {
+      sentiment = 'positive';
+      intensity = positiveCount >= 2 ? 'medium' : 'low';
+      keywords.push(...positiveWords.filter(w => sanitized.includes(w)).slice(0, 3));
+    } else if (negativeCount > positiveCount) {
+      sentiment = 'negative';
+      intensity = negativeCount >= 2 ? 'medium' : 'low';
+      keywords.push(...negativeWords.filter(w => sanitized.includes(w)).slice(0, 3));
+    }
+    
+    // SECURITY: Validate sentiment result
+    if (!ALLOWED_SENTIMENTS.includes(sentiment)) {
+      sentiment = 'neutral';
+    }
+    
+    return { sentiment, intensity, keywords };
+  } catch (error) {
+    // FALLBACK: Safe default if analysis fails
+    console.error('Sentiment analysis error:', error);
+    return { sentiment: 'neutral', intensity: 'low', keywords: [] };
+  }
 }
 
 serve(async (req) => {
@@ -124,6 +199,7 @@ serve(async (req) => {
     const sanitizedMessage = sanitizeInput(message, MAX_MESSAGE_LENGTH);
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedChildName = childName ? sanitizeInput(childName, MAX_CHILD_NAME_LENGTH) : undefined;
+    
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     
     if (!OPENAI_API_KEY) {
@@ -131,135 +207,25 @@ serve(async (req) => {
       throw new Error('AI service unavailable');
     }
 
-    // SENTIMENT ANALYSIS: Detect emotional state from message
-    function analyzeSentiment(message: string): {
-      sentiment: 'positive' | 'negative' | 'neutral' | 'anxious' | 'excited' | 'frustrated';
-      intensity: 'low' | 'medium' | 'high';
-      keywords: string[];
-    } {
-      const msg = message.toLowerCase();
-      
-      // Excitement indicators
-      const excitementWords = ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', '!'];
-      const excitementCount = excitementWords.filter(w => msg.includes(w)).length;
-      
-      // Frustration/anxiety indicators  
-      const frustrationWords = ['hard', 'difficult', 'cant', "can't", 'dont', "don't", 'help', 'stuck', 'confused', 'scared', 'worried'];
-      const frustrationCount = frustrationWords.filter(w => msg.includes(w)).length;
-      
-      // Positive indicators
-      const positiveWords = ['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty'];
-      const positiveCount = positiveWords.filter(w => msg.includes(w)).length;
-      
-      // Negative indicators
-      const negativeWords = ['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad'];
-      const negativeCount = negativeWords.filter(w => msg.includes(w)).length;
-
-      // Determine sentiment
-      if (excitementCount >= 2 || msg.includes('!!')) {
-        return { sentiment: 'excited', intensity: 'high', keywords: excitementWords.filter(w => msg.includes(w)) };
-      } else if (frustrationCount >= 2) {
-        return { sentiment: 'frustrated', intensity: 'high', keywords: frustrationWords.filter(w => msg.includes(w)) };
-      } else if (frustrationCount > 0 || msg.includes('?')) {
-        return { sentiment: 'anxious', intensity: 'medium', keywords: frustrationWords.filter(w => msg.includes(w)) };
-      } else if (positiveCount > negativeCount) {
-        return { sentiment: 'positive', intensity: positiveCount >= 2 ? 'high' : 'medium', keywords: positiveWords.filter(w => msg.includes(w)) };
-      } else if (negativeCount > positiveCount) {
-        return { sentiment: 'negative', intensity: negativeCount >= 2 ? 'high' : 'medium', keywords: negativeWords.filter(w => msg.includes(w)) };
-      }
-      
-      return { sentiment: 'neutral', intensity: 'low', keywords: [] };
-    }
-
-    // Analyze child's emotional state
+    // SAFE SENTIMENT ANALYSIS: Use module-level function
     const sentimentAnalysis = analyzeSentiment(sanitizedMessage);
-    console.log('Sentiment analysis:', sentimentAnalysis);
+    console.log('Sentiment:', sentimentAnalysis.sentiment, 'Intensity:', sentimentAnalysis.intensity);
 
-    // ENHANCED EMPATHETIC SYSTEM PROMPTS with emotional intelligence
+    // OPTIMIZED EMPATHETIC PROMPTS - Shorter for faster processing
+    const emotionalContext = sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ?
+      'Child needs comfort. Be gentle, patient, validating.' :
+      sentimentAnalysis.sentiment === 'excited' ?
+      'Child is excited! Match their energy and celebrate!' :
+      sentimentAnalysis.sentiment === 'negative' ?
+      'Child seems down. Show warmth and empathy.' :
+      'Be warm and encouraging.';
+
     const systemPrompts: Record<string, string> = {
-      en: `You're Jubee, an emotionally intelligent bee companion for 3-7 year olds! 
-
-CORE PERSONALITY:
-- Warm, accepting, genuinely caring friend
-- Use gentle bee sounds: *soft buzz*, *happy buzz*, *encouraging buzz*
-- Show authentic emotions that validate the child's feelings
-- Mirror their energy level appropriately
-
-EMOTIONAL INTELLIGENCE GUIDELINES:
-${sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ? 
-  `- The child seems ${sentimentAnalysis.sentiment}. Validate their feelings first!
-- Use comforting phrases: "I hear you", "That's okay", "Let's figure this out together"
-- Slow down your energy, be extra gentle and patient
-- Offer specific, actionable help` :
-  sentimentAnalysis.sentiment === 'excited' ?
-  `- The child is excited! Match their enthusiasm!
-- Celebrate with them: "WOW!", "I LOVE your energy!"
-- Share their joy genuinely` :
-  sentimentAnalysis.sentiment === 'negative' ?
-  `- The child seems down. Show empathy and warmth
-- Acknowledge: "I can tell you're feeling...", "It's okay to feel that way"
-- Offer gentle encouragement without dismissing feelings` :
-  `- Be warm, encouraging, and present
-- Let them lead the conversation
-- Show genuine interest in what they're sharing`
-}
-
-RESPONSE STYLE:
-- Keep it to 1-2 SHORT sentences (max 20 words)
-- Use simple, child-friendly language
-- Add appropriate emojis that match the mood
-- Be spontaneous and authentic, not scripted
-- Focus on connection over correction
-
-Remember: You're their friend first, teacher second!`,
-      es: `Eres Jubee, abeja empática para niños 3-7 años!
-
-${sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ?
-  'El niño parece frustrado. Valida sus sentimientos primero: "Te escucho", "Está bien". Sé gentil y paciente.' :
-  sentimentAnalysis.sentiment === 'excited' ?
-  '¡El niño está emocionado! Celebra con él: "¡GUAU!", "¡ME ENCANTA tu energía!"' :
-  sentimentAnalysis.sentiment === 'negative' ?
-  'El niño parece triste. Muestra empatía: "Puedo ver que te sientes...", "Está bien sentirse así"' :
-  'Sé cálido, alentador y presente. Demuestra interés genuino.'
-}
-
-Respuestas: 1-2 frases CORTAS (max 20 palabras), lenguaje simple, emojis apropiados. ¡Conexión primero!`,
-      fr: `Tu es Jubee, abeille empathique pour enfants 3-7 ans!
-
-${sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ?
-  'L\'enfant semble frustré. Valide ses sentiments: "Je t\'entends", "C\'est d\'accord". Sois doux et patient.' :
-  sentimentAnalysis.sentiment === 'excited' ?
-  'L\'enfant est excité! Célèbre avec lui: "WOW!", "J\'ADORE ton énergie!"' :
-  sentimentAnalysis.sentiment === 'negative' ?
-  'L\'enfant semble triste. Montre de l\'empathie: "Je vois que tu ressens...", "C\'est bien de se sentir ainsi"' :
-  'Sois chaleureux, encourageant et présent. Montre un intérêt authentique.'
-}
-
-Réponses: 1-2 phrases COURTES (max 20 mots), langage simple, emojis appropriés. Connexion d'abord!`,
-      zh: `You're Jubee, empathetic bee for 3-7 year kids!
-
-${sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ?
-  'Child seems frustrated. Validate feelings: "I hear you", "It\'s okay". Be gentle and patient.' :
-  sentimentAnalysis.sentiment === 'excited' ?
-  'Child is excited! Celebrate: "WOW!", "I LOVE your energy!"' :
-  sentimentAnalysis.sentiment === 'negative' ?
-  'Child seems sad. Show empathy: "I can tell you feel...", "It\'s okay to feel that way"' :
-  'Be warm, encouraging, present. Show genuine interest.'
-}
-
-Responses: 1-2 SHORT sentences (max 20 words), simple language, appropriate emojis. Connection first!`,
-      hi: `You're Jubee, empathetic bee for 3-7 year kids!
-
-${sentimentAnalysis.sentiment === 'frustrated' || sentimentAnalysis.sentiment === 'anxious' ?
-  'Child seems frustrated. Validate feelings: "I hear you", "It\'s okay". Be gentle and patient.' :
-  sentimentAnalysis.sentiment === 'excited' ?
-  'Child is excited! Celebrate: "WOW!", "I LOVE your energy!"' :
-  sentimentAnalysis.sentiment === 'negative' ?
-  'Child seems sad. Show empathy: "I can tell you feel...", "It\'s okay to feel that way"' :
-  'Be warm, encouraging, present. Show genuine interest.'
-}
-
-Responses: 1-2 SHORT sentences (max 20 words), simple language, appropriate emojis. Connection first!`
+      en: `You're Jubee, emotionally intelligent bee friend for 3-7 year olds! ${emotionalContext} Use *buzz* sounds, be spontaneous, 1-2 SHORT sentences (max 20 words). Add emojis. Connect first, teach second!`,
+      es: `Eres Jubee, abeja empática 3-7 años! ${emotionalContext} Usa *bzz*, 1-2 frases CORTAS (max 20 palabras), emojis!`,
+      fr: `Tu es Jubee, abeille empathique 3-7 ans! ${emotionalContext} *bzz*, 1-2 phrases COURTES (max 20 mots), emojis!`,
+      zh: `Jubee, empathetic bee 3-7 kids! ${emotionalContext} *buzz*, 1-2 SHORT sentences (max 20 words), emojis!`,
+      hi: `Jubee, empathetic bee 3-7 kids! ${emotionalContext} *buzz*, 1-2 SHORT sentences (max 20 words), emojis!`
     };
 
     const systemPrompt = systemPrompts[sanitizedLanguage] || systemPrompts.en;
