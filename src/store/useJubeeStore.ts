@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
-import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
+import { validatePosition, validateCanvasPosition, validateContainerPosition as validateContainerPos, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 
@@ -70,7 +70,7 @@ export const useJubeeStore = create<JubeeState>()(
       gender: 'female',
       voice: 'shimmer',
       position: { x: 0, y: 0, z: 0 },
-      containerPosition: { bottom: 250, right: 100 }, // Safe default position above nav bar
+      containerPosition: getSafeDefaultPosition(), // Use validated safe default
       isDragging: false,
       currentAnimation: 'idle',
       speechText: '',

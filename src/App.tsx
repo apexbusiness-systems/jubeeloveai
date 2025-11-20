@@ -63,10 +63,23 @@ export default function App() {
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
-  const [canvasError, setCanvasError] = useState(false);
   const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
+  
+  // Run system check and regression guard on mount (dev mode only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      Promise.all([
+        import('@/core/jubee/JubeeSystemCheck').then(({ logSystemCheckResults }) => {
+          logSystemCheckResults();
+        }),
+        import('@/core/jubee/JubeeRegressionGuard').then(({ logRegressionCheck }) => {
+          logRegressionCheck();
+        })
+      ]).catch(err => console.error('[Jubee] System checks failed:', err));
+    }
+  }, []);
   
 
   // Start onboarding for first-time users
