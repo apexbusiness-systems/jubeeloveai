@@ -171,6 +171,16 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
     speak: async (text, mood = 'happy') => {
+      // CRITICAL: Stop any currently playing audio immediately to prevent echo/duplication
+      audioManager.stopCurrentAudio()
+      
+      // Clear existing speech timer to prevent conflicts
+      const existingSpeechTimer = timers.get('speech')
+      if (existingSpeechTimer && typeof existingSpeechTimer !== 'object') {
+        clearTimeout(existingSpeechTimer)
+        timers.delete('speech')
+      }
+
       const gender = get().gender
       const voice = get().voice
       const language = window.i18nextLanguage || 'en'
@@ -184,7 +194,7 @@ export const useJubeeStore = create<JubeeState>()(
       // Check cache first for instant playback
       const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
       if (cachedAudio) {
-        await audioManager.playAudio(cachedAudio)
+        await audioManager.playAudio(cachedAudio, true) // Explicitly stop current
         set((state) => { state.speechText = '' })
         return
       }
@@ -209,12 +219,15 @@ export const useJubeeStore = create<JubeeState>()(
           // Cache for future use
           audioManager.cacheAudio(text, audioBlob, voice, mood)
           
-          await audioManager.playAudio(audioBlob)
+          await audioManager.playAudio(audioBlob, true) // Explicitly stop current
           set((state) => { state.speechText = '' })
           return
         }
       } catch (error) {
-        console.error('TTS failed:', error)
+        // Only log non-abort errors
+        if (error.name !== 'AbortError') {
+          console.error('TTS failed:', error)
+        }
       }
 
       // All retries failed, use browser speech fallback
@@ -481,6 +494,9 @@ if (typeof window !== 'undefined') {
 // Browser speech fallback helper with mood support
 function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
   if ('speechSynthesis' in window) {
+    // CRITICAL: Cancel any ongoing browser speech to prevent overlap
+    speechSynthesis.cancel()
+    
     const utterance = new SpeechSynthesisUtterance(text)
     
     // Set language based on i18n
