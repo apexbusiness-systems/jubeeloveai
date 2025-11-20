@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.jubee-conversation]
 verify_jwt = false
+
+[functions.send-screen-time-alert]
+verify_jwt = false
