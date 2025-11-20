@@ -32,6 +32,7 @@ interface JubeeState {
   isDragging: boolean
   currentAnimation: string
   speechText: string
+  currentMood: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired'
   isTransitioning: boolean
   isProcessing: boolean
   lastError: string | null
@@ -73,6 +74,7 @@ export const useJubeeStore = create<JubeeState>()(
       isDragging: false,
       currentAnimation: 'idle',
       speechText: '',
+      currentMood: 'happy',
       isTransitioning: false,
       isProcessing: false,
       lastError: null,
@@ -187,6 +189,7 @@ export const useJubeeStore = create<JubeeState>()(
       
       set((state) => { 
         state.speechText = text
+        state.currentMood = mood
         state.lastError = null
         state.interactionCount += 1
       })
@@ -249,8 +252,9 @@ export const useJubeeStore = create<JubeeState>()(
         return "Let me finish what I was saying first! 🐝"
       }
 
-      set((state) => { 
+      set((state) => {
         state.isProcessing = true
+        state.currentMood = context.mood || 'happy'
         state.lastError = null
       })
 
