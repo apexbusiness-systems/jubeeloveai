@@ -176,7 +176,7 @@ serve(async (req) => {
       }
     }
     
-    // DYNAMIC SPEED - More expressive variation!
+    // ENHANCED DYNAMIC SPEED with sentiment awareness
     let speed = 1.15;
     if (sanitizedMood === 'excited') {
       speed = 1.35;
@@ -185,13 +185,30 @@ serve(async (req) => {
     } else if (sanitizedMood === 'curious') {
       speed = 1.1;
     } else if (sanitizedMood === 'frustrated') {
-      speed = 0.9;
+      speed = 0.9; // Slower, more patient
     } else if (sanitizedMood === 'tired') {
-      speed = 0.85;
+      speed = 0.85; // Gentle and calm
+    }
+    
+    // SENTIMENT-BASED ADJUSTMENTS for even more empathy
+    // If text contains comforting words, slow down for warmth
+    const comfortingPhrases = ['hear you', 'understand', 'okay', "it's alright", 'together', 'here for you'];
+    const isComforting = comfortingPhrases.some(phrase => sanitizedText.toLowerCase().includes(phrase));
+    if (isComforting) {
+      speed = Math.max(0.85, speed - 0.15); // Slower, more reassuring
+    }
+    
+    // If celebrating or excited, speed up
+    const celebrationPhrases = ['wow', 'amazing', 'awesome', 'fantastic', 'love it', 'incredible'];
+    const isCelebrating = celebrationPhrases.some(phrase => sanitizedText.toLowerCase().includes(phrase));
+    if (isCelebrating) {
+      speed = Math.min(1.4, speed + 0.1); // Faster, more energetic
     }
 
     // Clamp speed to valid range
     speed = Math.max(0.25, Math.min(4.0, speed));
+
+    console.log('TTS with empathetic speed:', speed, 'for mood:', sanitizedMood, 'isComforting:', isComforting, 'isCelebrating:', isCelebrating);
 
     // SECURITY: Send to OpenAI with timeout
     const controller = new AbortController();
