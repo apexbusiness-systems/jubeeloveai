@@ -1,11 +1,9 @@
-import { Suspense, lazy, useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Canvas } from '@react-three/fiber';
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { motion, useSpring } from 'framer-motion';
 import { JubeeMascot } from './core/jubee/JubeeMascot';
 import { useGameStore } from './store/useGameStore';
@@ -15,7 +13,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { JubeeErrorBoundary } from './components/JubeeErrorBoundary';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
-import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
 import { JubeePersonalization } from './components/common/JubeePersonalization';
 import { VoiceSelector } from './components/common/VoiceSelector';
 import { StickerBook } from './components/rewards/StickerBook';
@@ -32,33 +29,10 @@ import { useJubeeDraggable } from './hooks/useJubeeDraggable';
 import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { useAuth } from './hooks/useAuth';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
 import { logger } from './lib/logger';
-import { Download } from 'lucide-react';
-
-const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
-const ShapeSorter = lazy(() => import('./modules/shapes/ShapeSorter'));
-const StoryTime = lazy(() => import('./modules/reading/StoryTime'));
-const ReadingPractice = lazy(() => import('./modules/reading/ReadingPractice'));
-const MemoryGame = lazy(() => import('./modules/games/MemoryGame'));
-const PatternGame = lazy(() => import('./modules/games/PatternGame'));
-const NumberGame = lazy(() => import('./modules/games/NumberGame'));
-const AlphabetGame = lazy(() => import('./modules/games/AlphabetGame'));
-const ColorGame = lazy(() => import('./modules/games/ColorGame'));
-const PuzzleGame = lazy(() => import('./modules/games/PuzzleGame'));
-const ProgressPage = lazy(() => import('./pages/Progress'));
-const StickersPage = lazy(() => import('./pages/Stickers'));
-const SettingsPage = lazy(() => import('./pages/Settings'));
-const MusicPage = lazy(() => import('./pages/Music'));
-const Gallery = lazy(() => import('./pages/Gallery'));
-const InstallPage = lazy(() => import('./pages/Install'));
-const ParentalControls = lazy(() => import('./pages/ParentalControls'));
-const PerformanceMonitor = lazy(() => import('./pages/PerformanceMonitor'));
-const AuthPage = lazy(() => import('./pages/Auth'));
-const ParentHub = lazy(() => import('./pages/ParentHub'));
-const ConversationAnalytics = lazy(() => import('./pages/ConversationAnalytics'));
+import { AppRoutes } from './components/AppRoutes';
+import { Navigation } from './components/Navigation';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,7 +70,7 @@ export default function App() {
   const jubeeContainerRef = useRef<HTMLDivElement>(null);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
-  const { user, signOut, isAuthenticated } = useAuth();
+  
 
   // Start onboarding for first-time users
   useEffect(() => {
@@ -274,34 +248,7 @@ export default function App() {
             <main className="main-content" role="main" style={{ paddingTop: '80px' }}>
               <Suspense fallback={<LoadingScreen message="Loading activity" />}>
                 <PageTransition>
-                  <Routes>
-                    {/* Public routes - No auth required for toddlers */}
-                    <Route path="/auth" element={<AuthPage />} />
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/write" element={<WritingCanvas />} />
-                    <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/shapes" element={<ShapeSorter />} />
-                    <Route path="/stories" element={<StoryTime />} />
-                    <Route path="/reading" element={<ReadingPractice />} />
-                    <Route path="/games" element={<GamesMenu />} />
-                    <Route path="/games/memory" element={<MemoryGame />} />
-                    <Route path="/games/pattern" element={<PatternGame />} />
-                    <Route path="/games/numbers" element={<NumberGame />} />
-                    <Route path="/games/alphabet" element={<AlphabetGame />} />
-                    <Route path="/games/colors" element={<ColorGame />} />
-                    <Route path="/games/puzzle" element={<PuzzleGame />} />
-                    <Route path="/progress" element={<ProgressPage />} />
-                    <Route path="/stickers" element={<StickersPage />} />
-                    <Route path="/music" element={<MusicPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/install" element={<InstallPage />} />
-                    <Route path="/parental-controls" element={<ParentalControls />} />
-                    <Route path="/performance-monitor" element={<PerformanceMonitor />} />
-                    
-                    {/* Auth-gated parent routes */}
-                    <Route path="/parent" element={<ProtectedRoute><ParentHub /></ProtectedRoute>} />
-                    <Route path="/analytics" element={<ProtectedRoute><ConversationAnalytics /></ProtectedRoute>} />
-                  </Routes>
+                  <AppRoutes />
                 </PageTransition>
               </Suspense>
             </main>
@@ -362,358 +309,3 @@ export default function App() {
   );
 }
 
-function HomePage() {
-  const navigate = useNavigate();
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
-
-  useEffect(() => {
-    // Check if app is installed or user dismissed banner
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const dismissed = localStorage.getItem('install-banner-dismissed');
-    
-    if (!isStandalone && !dismissed) {
-      // Show banner after a short delay
-      const timer = setTimeout(() => setShowInstallBanner(true), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const dismissBanner = () => {
-    setShowInstallBanner(false);
-    localStorage.setItem('install-banner-dismissed', 'true');
-  };
-
-  return (
-    <>
-      <SEO 
-        title="Jubee Love - Home"
-        description="Welcome to Jubee's World! Choose from writing practice, shape recognition, and more fun learning activities."
-      />
-      <div className="home-page">
-        {showInstallBanner && (
-          <div className="mx-4 mt-4 mb-2 animate-in slide-in-from-top duration-500">
-            <Card className="border-2 border-primary bg-gradient-to-r from-primary/10 to-accent/10">
-              <CardContent className="p-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <Download className="w-5 h-5 text-primary flex-shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm md:text-base">Install Jubee Love for a better experience!</p>
-                    <p className="text-xs md:text-sm text-muted-foreground">Works offline, loads faster, and feels like a real app.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => navigate('/install')}
-                    size="sm"
-                    className="flex-shrink-0"
-                  >
-                    Install
-                  </Button>
-                  <Button
-                    onClick={dismissBanner}
-                    variant="ghost"
-                    size="sm"
-                    className="flex-shrink-0"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        <h1 className="text-4xl md:text-5xl font-bold text-center mt-8 text-primary">
-          Welcome to Jubee's World!
-        </h1>
-        <p className="text-center text-primary mt-4 px-4 max-w-2xl mx-auto">
-          Learn and play with Jubee the friendly bee! Choose an activity below to start your educational adventure.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 max-w-4xl mx-auto">
-          <GameCard
-            title="Writing Practice"
-            icon="✏️"
-            path="/write"
-            description="Practice your writing skills with fun drawing activities"
-          />
-          <GameCard
-            title="Shape Recognition"
-            icon="⭐"
-            path="/shapes"
-            description="Learn and identify different shapes"
-          />
-          <GameCard
-            title="Story Time"
-            icon="📖"
-            path="/stories"
-            description="Read interactive stories with Jubee"
-          />
-          <GameCard
-            title="Games"
-            icon="🎮"
-            path="/games"
-            description="Play memory and pattern games"
-          />
-          <GameCard
-            title="My Progress"
-            icon="📊"
-            path="/progress"
-            description="See your scores, achievements, and learning stats"
-          />
-          <GameCard
-            title="Sticker Collection"
-            icon="🎁"
-            path="/stickers"
-            description="Collect and unlock colorful stickers and rewards"
-          />
-          <GameCard
-            title="Music Library"
-            icon="🎵"
-            path="/music"
-            description="Listen to fun songs and lullabies"
-          />
-          <GameCard
-            title="Reading Practice"
-            icon="📚"
-            path="/reading"
-            description="Learn to read with Jubee's pronunciation help"
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
-interface GameCardProps {
-  title: string;
-  icon: React.ReactNode | string;
-  path: string;
-  description: string;
-}
-
-function GameCard({ title, icon, path, description }: GameCardProps) {
-  const navigate = useNavigate();
-  const { triggerAnimation } = useJubeeStore();
-
-  const handleClick = () => {
-    triggerAnimation('excited');
-    navigate(path);
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      className="game-card group focus:outline-none focus-visible:ring-4 focus-visible:ring-ring focus-visible:ring-offset-2"
-      aria-label={`Start ${title} activity`}
-    >
-      <div className="w-24 h-24 transition-transform group-hover:scale-110 text-primary flex items-center justify-center" aria-hidden="true">
-        {typeof icon === 'string' ? <span className="text-6xl">{icon}</span> : icon}
-      </div>
-      <span className="text-2xl md:text-3xl mt-4 font-bold text-primary">{title}</span>
-      <p className="text-sm text-primary mt-2 px-4">{description}</p>
-    </button>
-  );
-}
-
-function GamesMenu() {
-  const navigate = useNavigate();
-  const { triggerAnimation } = useJubeeStore();
-
-  return (
-    <div className="games-menu p-8">
-      <h1 className="text-5xl font-bold text-center mb-8 text-game">
-        🎮 Choose a Game! 🎮
-      </h1>
-      <p className="text-2xl text-center mb-12 text-game-neutral">
-        Play and learn with Jubee!
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/memory');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-warm)',
-            boxShadow: 'var(--shadow-game)'
-          }}
-        >
-          <div className="text-7xl mb-4">🧠</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Memory Match</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Find matching pairs!</p>
-        </button>
-
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/pattern');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-cool)',
-            boxShadow: 'var(--shadow-accent)'
-          }}
-        >
-          <div className="text-7xl mb-4">🎯</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Pattern Game</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Repeat the pattern!</p>
-        </button>
-
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/numbers');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-game)',
-            boxShadow: 'var(--shadow-game)'
-          }}
-        >
-          <div className="text-7xl mb-4">🔢</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Number Adventure</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Learn counting & math!</p>
-        </button>
-
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/alphabet');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-warm)',
-            boxShadow: 'var(--shadow-game)'
-          }}
-        >
-          <div className="text-7xl mb-4">🔤</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Alphabet Adventure</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Master your ABCs!</p>
-        </button>
-
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/colors');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-cool)',
-            boxShadow: 'var(--shadow-accent)'
-          }}
-        >
-          <div className="text-7xl mb-4">🌈</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Color Splash</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Match beautiful colors!</p>
-        </button>
-
-        <button
-          onClick={() => {
-            triggerAnimation('excited');
-            navigate('/games/puzzle');
-          }}
-          className="game-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
-          style={{
-            background: 'var(--gradient-game)',
-            boxShadow: 'var(--shadow-game)'
-          }}
-        >
-          <div className="text-7xl mb-4">🧩</div>
-          <h2 className="text-2xl font-bold text-primary-foreground mb-2">Puzzle Master</h2>
-          <p className="text-lg text-primary-foreground opacity-90">Solve picture puzzles!</p>
-        </button>
-      </div>
-
-      <div className="text-center mt-12">
-        <button
-          onClick={() => navigate('/')}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all border-3 border-border text-game-neutral"
-          style={{
-            background: 'var(--gradient-neutral)',
-            boxShadow: '0 4px 10px hsl(var(--muted) / 0.3)'
-          }}
-        >
-          ← Back to Home
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Navigation() {
-  return (
-    <nav className="tab-bar" role="navigation" aria-label="Main navigation">
-      <TabButton path="/" icon={<HomeIcon className="w-8 h-8" />} label="Home" />
-      <TabButton path="/write" icon={<PencilIcon className="w-8 h-8" />} label="Write" />
-      <TabButton path="/shapes" icon={<StarIcon className="w-8 h-8" />} label="Shapes" />
-      <TabButton path="/progress" icon={<ChartIcon className="w-8 h-8" />} label="Progress" />
-      <TabButton path="/stickers" icon={<GiftIcon className="w-8 h-8" />} label="Stickers" />
-      <TabButton path="/settings" icon={<GearIcon className="w-8 h-8" />} label="Settings" longPressPath="/parent" />
-    </nav>
-  );
-}
-
-interface TabButtonProps {
-  path: string;
-  icon: React.ReactNode;
-  label: string;
-  longPressPath?: string;
-}
-
-function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isActive = location.pathname === path;
-  const [pressing, setPressing] = useState(false);
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
-
-  const handlePressStart = () => {
-    if (!longPressPath) return;
-    
-    setPressing(true);
-    pressTimer.current = setTimeout(() => {
-      setPressing(false);
-      navigate(longPressPath);
-    }, 3000); // 3 seconds long press
-  };
-
-  const handlePressEnd = () => {
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-    }
-    setPressing(false);
-  };
-
-  const handleClick = () => {
-    if (!pressing) {
-      navigate(path);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      onMouseDown={handlePressStart}
-      onMouseUp={handlePressEnd}
-      onMouseLeave={handlePressEnd}
-      onTouchStart={handlePressStart}
-      onTouchEnd={handlePressEnd}
-      onTouchCancel={handlePressEnd}
-      className={`tab-item min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all relative ${
-        isActive ? 'scale-110' : ''
-      } ${pressing ? 'scale-125 ring-4 ring-primary' : ''}`}
-      aria-label={`Navigate to ${label}`}
-      aria-current={isActive ? 'page' : undefined}
-    >
-      {pressing && longPressPath && (
-        <div className="absolute inset-0 rounded-full border-4 border-primary animate-pulse" />
-      )}
-      <div className="w-8 h-8 text-primary flex items-center justify-center" aria-hidden="true">
-        {icon}
-      </div>
-      <span className="text-xs font-medium text-primary">{label}</span>
-    </button>
-  );
-}
