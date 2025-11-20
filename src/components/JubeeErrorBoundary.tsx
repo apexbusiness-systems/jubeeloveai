@@ -5,9 +5,10 @@
  * graceful fallback with automatic recovery attempts.
  */
 
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { useJubeeStore } from '@/store/useJubeeStore'
-import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { useJubeeStore } from '@/store/useJubeeStore';
+import { jubeeStateBackupService } from '@/lib/jubeeStateBackup';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode

@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react'
-import { AlertCircle, Calendar, Database, Laptop } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { AlertCircle, Calendar, Database, Laptop } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver'
-import { jubeeDB } from '@/lib/indexedDB'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { format } from 'date-fns'
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver';
+import { jubeeDB } from '@/lib/indexedDB';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
@@ -79,7 +80,7 @@ export function ConflictResolutionDialog() {
       const remaining = conflictResolver.getConflicts()
       setCurrentConflict(remaining.length > 0 ? remaining[0] : null)
     } catch (error) {
-      console.error('Failed to resolve conflict:', error)
+      logger.error('Failed to resolve conflict:', error);
       toast({
         title: "Resolution Failed",
         description: "Could not resolve conflict. Please try again.",
@@ -134,7 +135,7 @@ export function ConflictResolutionDialog() {
       setCurrentConflict(null)
       setShowBatchOptions(false)
     } catch (error) {
-      console.error('Failed to resolve conflicts:', error)
+      logger.error('Failed to resolve conflicts:', error);
       toast({
         title: "Batch Resolution Failed",
         description: "Some conflicts could not be resolved. Please try again.",
@@ -195,7 +196,7 @@ export function ConflictResolutionDialog() {
 
       setCurrentConflict(null)
     } catch (error) {
-      console.error('Failed to auto-diagnose:', error)
+      logger.error('Failed to auto-diagnose:', error);
       toast({
         title: "Auto-Diagnosis Failed",
         description: "Could not automatically resolve conflicts.",

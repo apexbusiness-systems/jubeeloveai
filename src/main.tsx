@@ -51,10 +51,10 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
           }
         });
         
-        // Check for updates periodically
+        // Check for updates every 5 minutes instead of every minute
         setInterval(() => {
           registration.update();
-        }, 60000); // Check every minute
+        }, 300000); // Changed from 60000 (1min) to 300000 (5min)
       },
       (err) => {
         logger.error('ServiceWorker registration failed:', err);

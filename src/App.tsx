@@ -35,6 +35,7 @@ import { useOnboardingStore } from './store/useOnboardingStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
+import { logger } from './lib/logger';
 import { Download } from 'lucide-react';
 
 const WritingCanvas = lazy(() => import('./modules/writing/WritingCanvas'));
@@ -235,7 +236,7 @@ export default function App() {
                       powerPreference: "high-performance"
                     }}
                     onCreated={({ gl }) => {
-                      console.log('[Jubee] Canvas created via Portal with dimensions: 400x450');
+                      logger.dev('[Jubee] Canvas created via Portal with dimensions: 400x450');
                       gl.setClearColor('#000000', 0);
                       gl.setSize(400, 450);
                     }}

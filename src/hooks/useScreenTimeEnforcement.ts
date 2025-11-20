@@ -90,7 +90,7 @@ export function useScreenTimeEnforcement() {
     return Math.floor(remainingSeconds / 60);
   }, [activeChild]);
 
-  // Update status every second
+  // Update status every 10 seconds instead of every second for better performance
   useEffect(() => {
     if (!activeChild || !activeChildId) {
       setStatus({
@@ -120,7 +120,7 @@ export function useScreenTimeEnforcement() {
         } : null,
       });
 
-      // Update session time in store
+      // Update session time in store (only check limits, not every second)
       const canContinue = updateSessionTime();
       
       // Show warnings and send email alerts
@@ -153,10 +153,10 @@ export function useScreenTimeEnforcement() {
     };
 
     updateStatus();
-    const interval = setInterval(updateStatus, 1000);
+    const interval = setInterval(updateStatus, 10000); // Changed from 1000ms to 10000ms
 
     return () => clearInterval(interval);
-  }, [activeChild, activeChildId, checkSchedule, calculateRemaining, updateSessionTime, endSession]);
+  }, [activeChild, activeChildId, checkSchedule, calculateRemaining, updateSessionTime, endSession, sendEmailAlert]);
 
   // Sync session to database
   const syncSessionToDatabase = useCallback(async () => {
