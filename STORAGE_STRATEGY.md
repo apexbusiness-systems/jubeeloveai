@@ -19,7 +19,8 @@ This document defines the storage architecture for Jubee Love, ensuring consiste
 - `useGameStore` → `jubeelove-game-storage`
 - `useParentalStore` → `jubeelove-parental-storage`
 - `useAchievementStore` → `jubeelove-achievement-storage`
-- `useJubeeStore` → NOT persisted (runtime state only)
+- `useJubeeStore` → `jubee-store` (persists gender, voice, position, visibility)
+- `useOnboardingStore` → `jubee-onboarding-storage` (persists onboarding completion)
 
 **Advantages**:
 - ✅ Automatic serialization/deserialization
@@ -134,6 +135,8 @@ Need to store data?
 - `jubeelove-game-storage` - Game state, scores, themes
 - `jubeelove-parental-storage` - Child profiles, parental controls, session tracking
 - `jubeelove-achievement-storage` - Achievement progress and unlocks
+- `jubee-store` - Jubee mascot preferences (gender, voice, position, visibility)
+- `jubee-onboarding-storage` - Onboarding completion status
 
 ### IndexedDB Database
 - **Database Name**: `JubeeLoveDB`
