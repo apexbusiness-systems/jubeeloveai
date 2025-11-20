@@ -250,6 +250,47 @@ export type Database = {
         }
         Relationships: []
       }
+      screen_time_requests: {
+        Row: {
+          child_profile_id: string
+          created_at: string
+          id: string
+          requested_minutes: number
+          responded_at: string | null
+          responded_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          child_profile_id: string
+          created_at?: string
+          id?: string
+          requested_minutes: number
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          child_profile_id?: string
+          created_at?: string
+          id?: string
+          requested_minutes?: number
+          responded_at?: string | null
+          responded_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screen_time_requests_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stickers: {
         Row: {
           child_profile_id: string | null
