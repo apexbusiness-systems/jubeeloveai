@@ -136,41 +136,91 @@ export default function App() {
         <BrowserRouter>
           <AchievementTracker />
           <SEO />
-          <div className="app" data-theme={currentTheme}>
-            {/* Header with score and action buttons */}
-            <header className="fixed top-0 left-0 right-0 z-40 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 p-2 sm:p-4" style={{ background: 'var(--gradient-warm)' }}>
-              {/* Score display */}
-              <div className="score-display px-3 py-2 sm:px-6 sm:py-3 rounded-full text-base sm:text-xl md:text-2xl font-bold text-primary-foreground bg-primary/20 border-2 sm:border-3 border-primary-foreground shadow-lg">
+          <div className="app min-h-screen w-full" data-theme={currentTheme}>
+            {/* Header with score and action buttons - responsive with safe areas */}
+            <header 
+              className="
+                fixed top-0 left-0 right-0 z-40
+                flex flex-col sm:flex-row 
+                items-center justify-between 
+                gap-2 sm:gap-0 
+                p-3 sm:p-4
+                bg-gradient-to-r from-accent/20 to-primary/20
+                border-b-2 border-primary/30
+                backdrop-blur-sm
+              "
+              style={{
+                paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
+                paddingRight: 'max(0.75rem, env(safe-area-inset-right))',
+                paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+              }}
+            >
+              {/* Score display - touch friendly */}
+              <div className="
+                score-display
+                px-4 py-2.5 sm:px-6 sm:py-3
+                rounded-full
+                text-base sm:text-xl md:text-2xl
+                font-bold
+                text-primary-foreground
+                bg-primary/90
+                border-2 border-primary-foreground/20
+                shadow-lg
+              ">
                 ⭐ {score} points
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-1.5 sm:gap-2 md:gap-3">
+              {/* Action buttons - touch friendly */}
+              <div className="flex gap-2 md:gap-3">
                 <button
                   onClick={toggleVisibility}
-                  className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                  }}
+                  className="
+                    action-button
+                    px-4 py-2.5 sm:px-5 sm:py-3
+                    rounded-xl
+                    text-sm sm:text-base
+                    font-bold
+                    text-foreground
+                    bg-card/90
+                    backdrop-blur-sm
+                    border-2 border-primary/40
+                    shadow-lg
+                    transform hover:scale-105 active:scale-95
+                    transition-all duration-200
+                    min-h-[44px] min-w-[44px]
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                  "
                   aria-label={isVisible ? "Hide Jubee" : "Show Jubee"}
                   title={isVisible ? "Hide Jubee" : "Show Jubee"}
                 >
-                  <span className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-base sm:text-lg">{isVisible ? '👁️' : '👁️‍🗨️'}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg sm:text-xl">{isVisible ? '👁️' : '👁️‍🗨️'}</span>
                     <span className="font-extrabold hidden sm:inline">{isVisible ? 'Hide' : 'Show'}</span>
                   </span>
                 </button>
                 <button
                   onClick={() => setShowPersonalization(true)}
-                  className="action-button px-3 py-2 sm:px-4 sm:py-2.5 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base md:text-lg font-bold text-primary-foreground bg-card/40 backdrop-blur-sm border-2 border-primary-foreground/60 shadow-lg transform hover:scale-110 hover:shadow-xl active:scale-95 transition-all duration-200"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1))',
-                  }}
+                  className="
+                    action-button
+                    px-4 py-2.5 sm:px-5 sm:py-3
+                    rounded-xl
+                    text-sm sm:text-base
+                    font-bold
+                    text-foreground
+                    bg-card/90
+                    backdrop-blur-sm
+                    border-2 border-primary/40
+                    shadow-lg
+                    transform hover:scale-105 active:scale-95
+                    transition-all duration-200
+                    min-h-[44px] min-w-[44px]
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                  "
                   aria-label="Customize Jubee"
                   title="Customize Jubee"
                 >
-                  <span className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-base sm:text-lg">🐝</span>
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg sm:text-xl">🐝</span>
                     <span className="font-extrabold hidden md:inline">Customize</span>
                   </span>
                 </button>
@@ -202,14 +252,35 @@ export default function App() {
               document.body
             )}
 
-            <main className="main-content" role="main" style={{ paddingTop: '80px' }}>
-              <Suspense fallback={<LoadingScreen message="Loading activity" />}>
-                <PageTransition>
-                  <AppRoutes />
-                </PageTransition>
-              </Suspense>
+            {/* Main content with proper spacing and safe areas */}
+            <main 
+              className="
+                main-content
+                w-full
+                min-h-screen
+                pt-[76px] sm:pt-[80px]
+                pb-[88px]
+                px-4 sm:px-6 md:px-8
+                overflow-y-auto
+                overscroll-behavior-y-contain
+              " 
+              role="main"
+              style={{
+                paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+                paddingRight: 'max(1rem, env(safe-area-inset-right))',
+                paddingBottom: 'max(88px, calc(88px + env(safe-area-inset-bottom)))',
+              }}
+            >
+              <div className="max-w-7xl mx-auto">
+                <Suspense fallback={<LoadingScreen message="Loading activity" />}>
+                  <PageTransition>
+                    <AppRoutes />
+                  </PageTransition>
+                </Suspense>
+              </div>
             </main>
 
+            {/* Navigation with safe area support */}
             <Navigation />
 
             {/* Modals */}
@@ -238,7 +309,19 @@ export default function App() {
           {needsRecovery && (
             <button
               onClick={forceReset}
-              className="fixed top-4 right-4 z-[100] bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg hover:opacity-90 transition-opacity flex items-center gap-2 animate-fade-in"
+              className="
+                fixed top-4 right-4 z-[100]
+                bg-primary text-primary-foreground
+                px-4 py-3
+                rounded-lg
+                shadow-lg
+                hover:opacity-90
+                transition-opacity
+                flex items-center gap-2
+                animate-fade-in
+                min-h-[44px]
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+              "
               aria-label="Reset Jubee position"
             >
               <svg 
@@ -255,7 +338,7 @@ export default function App() {
                 <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
                 <path d="M21 3v5h-5"/>
               </svg>
-              Reset Jubee
+              <span className="font-bold">Reset Jubee</span>
             </button>
           )}
           
