@@ -71,6 +71,9 @@ function AchievementTracker() {
   const { trackActivity, checkAchievements } = useAchievementTracker();
   const setActivityCompleteCallback = useGameStore(state => state.setActivityCompleteCallback);
 
+  // Initialize smart audio preloader inside Router context
+  useSmartAudioPreloader();
+
   useEffect(() => {
     setActivityCompleteCallback(() => {
       trackActivity();
@@ -91,9 +94,6 @@ export default function App() {
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const { user, signOut, isAuthenticated } = useAuth();
-
-  // Initialize smart audio preloader for predictive caching
-  useSmartAudioPreloader()
 
   // Start onboarding for first-time users
   useEffect(() => {
