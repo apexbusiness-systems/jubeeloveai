@@ -4,7 +4,7 @@ import { useParentalStore } from '@/store/useParentalStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
-import { Users, Settings, BarChart3, Shield, Plus, LogOut } from 'lucide-react';
+import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lucide-react';
 
 export default function ParentHub() {
   const navigate = useNavigate();
@@ -109,6 +109,25 @@ export default function ParentHub() {
               <CardContent>
                 <Button variant="outline" className="w-full">
                   View Progress
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/analytics')}>
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <TrendingUp className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Conversation Analytics</CardTitle>
+                    <CardDescription>View sentiment trends and emotional patterns over time</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  View Analytics
                 </Button>
               </CardContent>
             </Card>

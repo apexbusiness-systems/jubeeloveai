@@ -85,6 +85,56 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_logs: {
+        Row: {
+          child_profile_id: string | null
+          confidence: number
+          created_at: string
+          id: string
+          interaction_type: string | null
+          keywords: Json | null
+          message_preview: string | null
+          mood: string
+          response_length: number | null
+          sentiment: string
+          user_id: string
+        }
+        Insert: {
+          child_profile_id?: string | null
+          confidence: number
+          created_at?: string
+          id?: string
+          interaction_type?: string | null
+          keywords?: Json | null
+          message_preview?: string | null
+          mood: string
+          response_length?: number | null
+          sentiment: string
+          user_id: string
+        }
+        Update: {
+          child_profile_id?: string | null
+          confidence?: number
+          created_at?: string
+          id?: string
+          interaction_type?: string | null
+          keywords?: Json | null
+          message_preview?: string | null
+          mood?: string
+          response_length?: number | null
+          sentiment?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_logs_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "children_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drawings: {
         Row: {
           child_profile_id: string | null
@@ -339,6 +389,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_conversation_analytics: {
+        Args: { _end_date?: string; _start_date?: string; _user_id: string }
+        Returns: {
+          avg_confidence: number
+          date: string
+          mood_distribution: Json
+          most_common_keywords: Json
+          sentiment_distribution: Json
+          total_conversations: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

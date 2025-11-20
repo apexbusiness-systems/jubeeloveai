@@ -281,7 +281,59 @@ serve(async (req) => {
       throw new Error('AI service temporarily unavailable');
     }
 
-    // Stream the response back to client
+    // Log conversation for analytics (async, non-blocking)
+    const logConversation = async () => {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        
+        if (!supabaseUrl || !supabaseServiceKey) {
+          console.warn('Supabase credentials not configured for logging')
+          return
+        }
+        
+        // Create sanitized preview (first 50 chars, no PII)
+        const messagePreview = sanitizedMessage.slice(0, 50).replace(/[0-9]{3,}/g, '***')
+        
+        // Calculate confidence based on intensity
+        const confidence = sentimentAnalysis.intensity === 'high' ? 0.85 : 
+                          sentimentAnalysis.intensity === 'medium' ? 0.7 : 0.5
+        
+        // Get validated mood
+        const mood = context.mood ? validateMood(context.mood) || 'happy' : 'happy'
+        
+        // Insert log using service role key
+        const logResponse = await fetch(`${supabaseUrl}/rest/v1/conversation_logs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseServiceKey,
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            user_id: context.userId || null,
+            child_profile_id: context.childProfile || null,
+            message_preview: messagePreview,
+            sentiment: sentimentAnalysis.sentiment,
+            mood: mood,
+            confidence: confidence,
+            keywords: sentimentAnalysis.keywords || [],
+            interaction_type: 'chat',
+            response_length: 0
+          })
+        })
+        
+        if (!logResponse.ok) {
+          console.error('Failed to log conversation:', await logResponse.text())
+        }
+      } catch (logError) {
+        console.error('Failed to log conversation:', logError)
+      }
+    }
+    
+    logConversation().catch(console.error)
+
     return new Response(response.body, {
       headers: { 
         ...corsHeaders, 
