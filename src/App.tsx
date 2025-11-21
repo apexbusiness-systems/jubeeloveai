@@ -69,6 +69,7 @@ function AppShell() {
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const location = useLocation();
+  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   // Routes where parent auth experience should be clean (no Jubee, nav, or onboarding)
   const isAuthRoute = location.pathname.startsWith('/auth');
@@ -112,8 +113,26 @@ function AppShell() {
   useJubeeDraggable(jubeeContainerRef);
   const { needsRecovery, forceReset } = useJubeeVisibilityMonitor(jubeeContainerRef);
 
+  // Track viewport width safely in browser-only effect
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   // Revalidate position on viewport resize (especially when crossing breakpoints)
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     let resizeTimeout: ReturnType<typeof setTimeout>;
     let previousBreakpoint = window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop';
     
@@ -267,7 +286,7 @@ function AppShell() {
         )}
 
         {/* Jubee rendered via Portal at document.body level for global viewport freedom */}
-        {!isAuthRoute && isVisible && createPortal(
+        {!isAuthRoute && isVisible && viewportWidth !== null && createPortal(
           <motion.div
             ref={jubeeContainerRef}
             className="jubee-container"
@@ -277,8 +296,8 @@ function AppShell() {
               bottom: isDragging ? containerPosition.bottom : springBottom,
               right: isDragging ? containerPosition.right : springRight,
               // Responsive dimensions matching JubeePositionManager breakpoints
-              width: window.innerWidth < 768 ? '300px' : window.innerWidth < 1024 ? '350px' : '400px',
-              height: window.innerWidth < 768 ? '360px' : window.innerWidth < 1024 ? '400px' : '450px',
+              width: viewportWidth < 768 ? '300px' : viewportWidth < 1024 ? '350px' : '400px',
+              height: viewportWidth < 768 ? '360px' : viewportWidth < 1024 ? '400px' : '450px',
               zIndex: 10001,
               touchAction: 'none',
               pointerEvents: 'auto'
@@ -291,6 +310,7 @@ function AppShell() {
           </motion.div>,
           document.body
         )}
+
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
         <main 
