@@ -1,24 +1,42 @@
+import { useMemo, memo } from 'react'
 import { Achievement, AchievementCategory } from '@/types/achievements'
 import { AchievementBadge } from './AchievementBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useOptimizedList } from '@/hooks/useOptimizedList'
 
 interface Props {
   achievements: Achievement[]
 }
 
-export function AchievementList({ achievements }: Props) {
-  const categorizeAchievements = () => {
-    return {
-      all: achievements,
-      activity: achievements.filter(a => a.category === 'activity'),
-      streak: achievements.filter(a => a.category === 'streak'),
-      milestone: achievements.filter(a => a.category === 'milestone'),
-      special: achievements.filter(a => a.category === 'special')
-    }
-  }
+// Memoized achievement badge wrapper
+const MemoizedAchievementBadge = memo(AchievementBadge)
 
-  const categories = categorizeAchievements()
-  const earnedCount = achievements.filter(a => a.earned).length
+export function AchievementList({ achievements }: Props) {
+  // Memoize categorization to avoid recalculation on every render
+  const categories = useMemo(() => ({
+    all: achievements,
+    activity: achievements.filter(a => a.category === 'activity'),
+    streak: achievements.filter(a => a.category === 'streak'),
+    milestone: achievements.filter(a => a.category === 'milestone'),
+    special: achievements.filter(a => a.category === 'special')
+  }), [achievements])
+
+  // Memoize earned count
+  const earnedCount = useMemo(
+    () => achievements.filter(a => a.earned).length,
+    [achievements]
+  )
+
+  // Memoize sorting function O(n log n)
+  const sortAchievements = useMemo(() => {
+    return (achievementList: Achievement[]) => {
+      return [...achievementList].sort((a, b) => {
+        if (a.earned && !b.earned) return -1
+        if (!a.earned && b.earned) return 1
+        return b.progress - a.progress
+      })
+    }
+  }, [])
 
   const renderAchievements = (achievementList: Achievement[]) => {
     if (achievementList.length === 0) {
@@ -29,17 +47,12 @@ export function AchievementList({ achievements }: Props) {
       )
     }
 
-    // Sort: earned first, then by progress
-    const sorted = [...achievementList].sort((a, b) => {
-      if (a.earned && !b.earned) return -1
-      if (!a.earned && b.earned) return 1
-      return b.progress - a.progress
-    })
+    const sorted = sortAchievements(achievementList)
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sorted.map(achievement => (
-          <AchievementBadge key={achievement.id} achievement={achievement} />
+          <MemoizedAchievementBadge key={achievement.id} achievement={achievement} />
         ))}
       </div>
     )

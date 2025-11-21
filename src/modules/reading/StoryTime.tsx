@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 import { useAuth } from '@/hooks/useAuth'
@@ -11,6 +11,94 @@ import { initializeStories } from '@/lib/initializeStories'
 import { audioManager } from '@/lib/audioManager'
 import { Slider } from '@/components/ui/slider'
 import { useSmartAudioPreloader } from '@/hooks/useSmartAudioPreloader'
+
+// Memoized story card component
+const StoryCard = memo(({ 
+  story, 
+  onSelect 
+}: { 
+  story: Story; 
+  onSelect: (story: Story) => void;
+}) => (
+  <button
+    onClick={() => onSelect(story)}
+    className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95 relative"
+    style={{
+      background: 'var(--gradient-warm)',
+      boxShadow: 'var(--shadow-game)',
+      touchAction: 'manipulation',
+      WebkitTapHighlightColor: 'transparent'
+    }}
+  >
+    {story.completed && (
+      <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+        ✓ Completed
+      </div>
+    )}
+    <div className="text-8xl mb-4">{story.pages[0].illustration}</div>
+    <h2 className="text-3xl font-bold text-primary-foreground mb-2">{story.title}</h2>
+    <p className="text-xl text-primary-foreground opacity-90">{story.pages.length} pages</p>
+  </button>
+))
+StoryCard.displayName = 'StoryCard'
+
+// Memoized audio controls component
+const AudioControls = memo(({ 
+  isNarrating,
+  isPaused,
+  playbackSpeed,
+  onPauseResume,
+  onSpeedChange
+}: {
+  isNarrating: boolean;
+  isPaused: boolean;
+  playbackSpeed: number;
+  onPauseResume: (e: React.MouseEvent | React.TouchEvent) => void;
+  onSpeedChange: (value: number[]) => void;
+}) => {
+  if (!isNarrating) return null
+  
+  return (
+    <div className="playback-controls flex flex-col items-center gap-4 p-6 rounded-2xl bg-card border-2 border-game-accent">
+      <div className="flex items-center gap-6 w-full max-w-md">
+        <button
+          onClick={onPauseResume}
+          className="p-4 rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-2 border-game-accent"
+          style={{
+            background: 'var(--gradient-game)',
+            boxShadow: 'var(--shadow-accent)',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent'
+          }}
+          aria-label={isPaused ? 'Resume narration' : 'Pause narration'}
+        >
+          {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+        </button>
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-medium text-card-foreground">Speed:</span>
+            <span className="text-lg font-bold text-primary">{playbackSpeed.toFixed(1)}x</span>
+          </div>
+          <Slider
+            value={[playbackSpeed]}
+            onValueChange={onSpeedChange}
+            min={0.5}
+            max={2}
+            step={0.1}
+            className="w-full"
+          />
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>0.5x</span>
+            <span>1x</span>
+            <span>2x</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
+AudioControls.displayName = 'AudioControls'
 
 interface StoryPage {
   id: number
@@ -256,11 +344,19 @@ export default function StoryTime() {
     }
   }
 
-  const handleSpeedChange = (value: number[]) => {
+  const handleSpeedChange = useCallback((value: number[]) => {
     const newSpeed = value[0]
     setPlaybackSpeed(newSpeed)
     audioManager.setPlaybackSpeed(newSpeed)
-  }
+  }, [])
+
+  // Memoize current page data
+  const currentPageData = useMemo(() => {
+    if (!selectedStory) return null
+    const page = selectedStory.pages[currentPage]
+    const progress = ((currentPage + 1) / selectedStory.pages.length) * 100
+    return { page, progress }
+  }, [selectedStory, currentPage])
 
   if (!selectedStory) {
     return (
@@ -279,26 +375,7 @@ export default function StoryTime() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {stories.map((story) => (
-              <button
-                key={story.id}
-                onClick={() => handleStorySelect(story)}
-                className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95 relative"
-                style={{
-                  background: 'var(--gradient-warm)',
-                  boxShadow: 'var(--shadow-game)',
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                {story.completed && (
-                  <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    ✓ Completed
-                  </div>
-                )}
-                <div className="text-8xl mb-4">{story.pages[0].illustration}</div>
-                <h2 className="text-3xl font-bold text-primary-foreground mb-2">{story.title}</h2>
-                <p className="text-xl text-primary-foreground opacity-90">{story.pages.length} pages</p>
-              </button>
+              <StoryCard key={story.id} story={story} onSelect={handleStorySelect} />
             ))}
           </div>
         )}
@@ -306,8 +383,8 @@ export default function StoryTime() {
     )
   }
 
-  const page = selectedStory.pages[currentPage]
-  const progress = ((currentPage + 1) / selectedStory.pages.length) * 100
+  if (!currentPageData) return null
+  const { page, progress } = currentPageData
 
   return (
     <div className="story-reader p-8 max-w-4xl mx-auto">
@@ -367,45 +444,13 @@ export default function StoryTime() {
 
       <div className="controls-container space-y-6">
         {/* Playback Controls */}
-        {isNarrating && (
-          <div className="playback-controls flex flex-col items-center gap-4 p-6 rounded-2xl bg-card border-2 border-game-accent">
-            <div className="flex items-center gap-6 w-full max-w-md">
-              <button
-                onClick={handlePauseResume}
-                className="p-4 rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-2 border-game-accent"
-                style={{
-                  background: 'var(--gradient-game)',
-                  boxShadow: 'var(--shadow-accent)',
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-                aria-label={isPaused ? 'Resume narration' : 'Pause narration'}
-              >
-                {isPaused ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
-              </button>
-              
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium text-card-foreground">Speed:</span>
-                  <span className="text-lg font-bold text-primary">{playbackSpeed.toFixed(1)}x</span>
-                </div>
-                <Slider
-                  value={[playbackSpeed]}
-                  onValueChange={handleSpeedChange}
-                  min={0.5}
-                  max={2}
-                  step={0.1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>0.5x</span>
-                  <span>1x</span>
-                  <span>2x</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <AudioControls
+          isNarrating={isNarrating}
+          isPaused={isPaused}
+          playbackSpeed={playbackSpeed}
+          onPauseResume={handlePauseResume}
+          onSpeedChange={handleSpeedChange}
+        />
 
         {/* Navigation Controls */}
         <div className="navigation-controls flex gap-4 justify-center">
