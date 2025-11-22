@@ -108,6 +108,11 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       setContainerPosition: (position) => {
+        console.group('[🔍 DIAGNOSTIC] Container Position Update')
+        console.log('Requested position:', position)
+        console.log('Viewport:', { width: window.innerWidth, height: window.innerHeight })
+        console.groupEnd()
+        
         set((state) => {
           const validated = validatePosition(undefined, position)
           state.containerPosition = validated.container
@@ -122,10 +127,28 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       toggleVisibility: () => {
+        const currentVisibility = get().isVisible
+        const newVisibility = !currentVisibility
+        
+        console.group('[🔍 DIAGNOSTIC] Jubee Visibility Toggle')
+        console.log('Previous state:', currentVisibility)
+        console.log('New state:', newVisibility)
+        console.log('Stack trace:', new Error().stack)
+        console.groupEnd()
+        
         set((state) => {
-          state.isVisible = !state.isVisible
-          console.log('[Jubee] Visibility toggled:', state.isVisible)
+          state.isVisible = newVisibility
         })
+        
+        // Log state after update
+        setTimeout(() => {
+          const finalState = get()
+          console.log('[🔍 DIAGNOSTIC] Visibility update complete:', {
+            isVisible: finalState.isVisible,
+            containerPosition: finalState.containerPosition,
+            position: finalState.position
+          })
+        }, 0)
       },
 
       triggerAnimation: (animation) => {

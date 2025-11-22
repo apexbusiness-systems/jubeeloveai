@@ -17,8 +17,25 @@ export const JubeeCanvas = memo(function JubeeCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { profile } = useJubeePerformance();
   
+  console.log('[🔍 DIAGNOSTIC] JubeeCanvas render:', {
+    jubeePosition,
+    jubeeAnimation,
+    canvasRef: canvasRef.current,
+    profile: profile.quality
+  });
+  
   // Optimized canvas creation with performance-aware settings
   const handleCreated = useCallback(({ gl }: any) => {
+    console.group('[🔍 DIAGNOSTIC] Canvas Creation')
+    console.log('Quality profile:', profile.quality)
+    console.log('Canvas ref:', canvasRef.current)
+    console.log('GL context:', {
+      renderer: gl.info.renderer,
+      vendor: gl.info.vendor,
+      version: gl.getParameter(gl.VERSION)
+    })
+    console.groupEnd()
+    
     logger.dev('[Jubee Canvas] Initialized with quality:', profile.quality);
     
     // Configure WebGL for optimal performance
