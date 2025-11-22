@@ -132,12 +132,21 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
 
       // If collisions detected, find and move to safe position
       if (collidingElements.length > 0) {
-        console.log('[Jubee Collision] Detected', collidingElements.length, 'collisions')
+        console.group('[🔍 DIAGNOSTIC] Collision Detection')
+        console.log('Collisions detected:', collidingElements.length)
+        console.log('Jubee rect:', jubeeRect)
+        console.log('Colliding elements:', collidingElements)
+        
         const safePosition = findSafePosition(jubeeRect, collidingElements)
         
         if (safePosition) {
-          console.log('[Jubee Collision] Moving to safe position:', safePosition)
+          console.log('Safe position found:', safePosition)
+          console.log('Call stack:', new Error().stack?.split('\n').slice(1, 4).join('\n'))
+          console.groupEnd()
           setContainerPosition(safePosition)
+        } else {
+          console.warn('No safe position found!')
+          console.groupEnd()
         }
       }
     } finally {

@@ -53,6 +53,12 @@ export function useJubeeDraggable(containerRef: React.RefObject<HTMLDivElement>)
 
     e.preventDefault()
     
+    console.group('[🔍 DIAGNOSTIC] Drag Start')
+    console.log('Mouse position:', { x: e.clientX, y: e.clientY })
+    console.log('Container rect:', containerRef.current.getBoundingClientRect())
+    console.log('Viewport:', { width: window.innerWidth, height: window.innerHeight })
+    console.groupEnd()
+    
     // Cancel any ongoing momentum animation
     if (momentumAnimationRef.current) {
       cancelAnimationFrame(momentumAnimationRef.current)

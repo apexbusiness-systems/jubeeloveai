@@ -28,6 +28,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
 import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
+import { useJubeeLifecycleDiagnostics } from './hooks/useJubeeLifecycleDiagnostics';
 import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
 import { JubeeCanvas } from './components/JubeeCanvas';
@@ -112,6 +113,16 @@ function AppShell() {
   useJubeeCollision(jubeeContainerRef);
   useJubeeDraggable(jubeeContainerRef);
   const { needsRecovery, forceReset } = useJubeeVisibilityMonitor(jubeeContainerRef);
+  
+  // DIAGNOSTIC: Add comprehensive lifecycle instrumentation
+  const jubeeDebug = useJubeeLifecycleDiagnostics(jubeeContainerRef);
+  
+  // Expose debug utilities to window for manual inspection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).jubeeDebugUtils = jubeeDebug;
+    }
+  }, [jubeeDebug]);
 
   // Track viewport width safely in browser-only effect
   useEffect(() => {
