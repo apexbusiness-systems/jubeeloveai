@@ -511,55 +511,51 @@ class SyncService {
       switch (storeName) {
         case 'gameProgress':
           await supabase.from('game_progress').upsert({
-            user_id: user.id,
             child_profile_id: null,
-            score: data.score,
-            activities_completed: data.activitiesCompleted,
-            current_theme: data.currentTheme,
-            last_activity: data.lastActivity,
-            updated_at: data.updatedAt,
-          }, { onConflict: 'user_id,child_profile_id' })
+            score: data.score as number,
+            activities_completed: data.activitiesCompleted as number,
+            current_theme: data.currentTheme as string,
+            last_activity: data.lastActivity as string,
+            updated_at: data.updatedAt as string,
+          })
           break
 
         case 'achievements':
           await supabase.from('achievements').upsert({
-            user_id: user.id,
             child_profile_id: null,
-            achievement_id: data.achievementId,
-            unlocked_at: data.unlockedAt,
-          }, { onConflict: 'user_id,child_profile_id,achievement_id' })
+            achievement_id: data.achievementId as string,
+            unlocked_at: data.unlockedAt as string,
+          })
           break
 
         case 'drawings':
           await supabase.from('drawings').insert({
-            user_id: user.id,
             child_profile_id: null,
-            title: data.title,
-            image_data: data.imageData,
-            created_at: data.createdAt,
-            updated_at: data.updatedAt,
+            title: data.title as string,
+            image_data: data.imageData as string,
+            created_at: data.createdAt as string,
+            updated_at: data.updatedAt as string,
           })
           break
 
         case 'stickers':
           await supabase.from('stickers').upsert({
-            user_id: user.id,
             child_profile_id: null,
-            sticker_id: data.stickerId,
-            unlocked_at: data.unlockedAt,
-          }, { onConflict: 'user_id,child_profile_id,sticker_id' })
+            sticker_id: data.stickerId as string,
+            unlocked_at: data.unlockedAt as string,
+          })
           break
 
         case 'childrenProfiles':
           await supabase.from('children_profiles').upsert([{
-            id: data.id,
+            id: data.id as string,
             parent_user_id: user.id,
-            name: data.name,
-            age: data.age,
-            gender: data.gender,
-            avatar_url: data.avatarUrl,
+            name: data.name as string,
+            age: data.age as number,
+            gender: data.gender as string,
+            avatar_url: data.avatarUrl as string,
             settings: (data.settings as Json) ?? null,
-            updated_at: data.updatedAt,
+            updated_at: data.updatedAt as string,
           }])
           break
 
@@ -568,7 +564,7 @@ class SyncService {
       }
 
       // Mark as synced in IndexedDB
-      await jubeeDB.put(storeName as any, { ...data, synced: true })
+      await jubeeDB.put(storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', { ...data, synced: true } as any)
     })
   }
 

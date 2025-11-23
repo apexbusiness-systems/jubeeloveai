@@ -25,7 +25,12 @@ export const useGameStore = create<GameState>()(
       stickers: [],
       completedActivities: [],
       onActivityComplete: undefined,
-      updateTheme: (theme) => set((state) => { state.currentTheme = theme }),
+      updateTheme: (theme) => {
+        // Guardrail: Only allow light themes for toddlers, never night mode
+        const allowedThemes: Theme[] = ['morning', 'afternoon', 'evening'];
+        const safeTheme = allowedThemes.includes(theme) ? theme : 'morning';
+        set((state) => { state.currentTheme = safeTheme });
+      },
       addScore: (points) => {
         set((state) => { state.score += points })
         const callback = get().onActivityComplete
@@ -49,6 +54,14 @@ export const useGameStore = create<GameState>()(
         state.onActivityComplete = callback
       })
     })),
-    { name: 'jubeelove-game-storage' }
+    { 
+      name: 'jubeelove-game-storage',
+      // Guardrail: Ensure persisted state always has a light theme
+      onRehydrateStorage: () => (state) => {
+        if (state && state.currentTheme === 'night') {
+          state.currentTheme = 'morning';
+        }
+      }
+    }
   )
 )

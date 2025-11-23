@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/useGameStore'
 import { useAchievementStore } from '@/store/useAchievementStore'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { toast } from '@/hooks/use-toast'
+import { useAchievementWorker } from './useAchievementWorker'
 
 export function useAchievementTracker() {
   const { score, completedActivities } = useGameStore()
@@ -11,33 +12,77 @@ export function useAchievementTracker() {
     checkAndUnlockAchievements,
     updateStreak,
     trackSpecialAchievement,
-    achievements
+    achievements,
+    streakData
   } = useAchievementStore()
   const { speak } = useJubeeStore()
+
+  // Initialize Web Worker for achievement calculations
+  const { processAchievements, isWorkerSupported } = useAchievementWorker({
+    onAchievementsProcessed: (data) => {
+      // Show notifications for newly unlocked achievements
+      data.newUnlocks.forEach(achievement => {
+        toast({
+          title: `🎉 Achievement Unlocked!`,
+          description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+          duration: 5000
+        })
+
+        speak(`Amazing! You unlocked ${achievement.name}!`)
+      })
+
+      console.log(`[AchievementTracker] Web Worker processed achievements in ${data.processingTime.toFixed(2)}ms`)
+    },
+    onError: (error) => {
+      console.error('[AchievementTracker] Worker error:', error)
+      // Fallback to main thread already handled by useAchievementWorker
+    }
+  })
 
   // Initialize achievements on first load
   useEffect(() => {
     initializeAchievements()
   }, [initializeAchievements])
 
-  // Check for new achievements whenever game state changes
-  const checkAchievements = useCallback(() => {
-    const newAchievements = checkAndUnlockAchievements({
-      score,
-      completedActivities
-    })
-
-    // Show notifications for newly unlocked achievements
-    newAchievements.forEach(achievement => {
-      toast({
-        title: `🎉 Achievement Unlocked!`,
-        description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
-        duration: 5000
+  // Check for new achievements using Web Worker
+  const checkAchievements = useCallback(async () => {
+    if (isWorkerSupported) {
+      // Process in Web Worker (offloaded from main thread)
+      await processAchievements(achievements, {
+        activitiesCompleted: completedActivities.length,
+        currentStreak: streakData.currentStreak,
+        totalScore: score,
+        categoryCounts: {}, // TODO: Track category-specific counts if needed
+        lastActivityDate: new Date().toISOString()
+      })
+    } else {
+      // Fallback to original sync processing
+      const newAchievements = checkAndUnlockAchievements({
+        score,
+        completedActivities
       })
 
-      speak(`Amazing! You unlocked ${achievement.name}!`)
-    })
-  }, [score, completedActivities, checkAndUnlockAchievements, speak])
+      // Show notifications for newly unlocked achievements
+      newAchievements.forEach(achievement => {
+        toast({
+          title: `🎉 Achievement Unlocked!`,
+          description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+          duration: 5000
+        })
+
+        speak(`Amazing! You unlocked ${achievement.name}!`)
+      })
+    }
+  }, [
+    isWorkerSupported,
+    processAchievements,
+    achievements,
+    completedActivities,
+    streakData.currentStreak,
+    score,
+    checkAndUnlockAchievements,
+    speak
+  ])
 
   // Track activity completion for streaks
   const trackActivity = useCallback(() => {

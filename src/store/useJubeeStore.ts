@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
-import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
+import { validatePosition, validateCanvasPosition, validateContainerPosition as validateContainerPos, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 
@@ -19,7 +19,8 @@ interface TimerEntry {
 
 // Cleanup timers map - can store either Timeout or TimerEntry
 const timers = new Map<string, NodeJS.Timeout | TimerEntry>()
-let currentAudio: HTMLAudioElement | null = null
+
+import { audioManager } from '@/lib/audioManager'
 
 export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
 
@@ -31,10 +32,12 @@ interface JubeeState {
   isDragging: boolean
   currentAnimation: string
   speechText: string
+  currentMood: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired'
   isTransitioning: boolean
   isProcessing: boolean
   lastError: string | null
   isVisible: boolean
+  interactionCount: number
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: Position3D | null | undefined) => void
@@ -67,14 +70,16 @@ export const useJubeeStore = create<JubeeState>()(
       gender: 'female',
       voice: 'shimmer',
       position: { x: 0, y: 0, z: 0 },
-      containerPosition: { bottom: 250, right: 100 }, // Safe default position above nav bar
+      containerPosition: getSafeDefaultPosition(), // Use validated safe default
       isDragging: false,
       currentAnimation: 'idle',
       speechText: '',
+      currentMood: 'happy',
       isTransitioning: false,
       isProcessing: false,
       lastError: null,
       isVisible: true,
+      interactionCount: 0,
 
       setGender: (gender) => {
         console.log('[Jubee] Gender changed:', gender)
@@ -103,6 +108,11 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       setContainerPosition: (position) => {
+        console.group('[🔍 DIAGNOSTIC] Container Position Update')
+        console.log('Requested position:', position)
+        console.log('Viewport:', { width: window.innerWidth, height: window.innerHeight })
+        console.groupEnd()
+        
         set((state) => {
           const validated = validatePosition(undefined, position)
           state.containerPosition = validated.container
@@ -117,10 +127,28 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       toggleVisibility: () => {
+        const currentVisibility = get().isVisible
+        const newVisibility = !currentVisibility
+        
+        console.group('[🔍 DIAGNOSTIC] Jubee Visibility Toggle')
+        console.log('Previous state:', currentVisibility)
+        console.log('New state:', newVisibility)
+        console.log('Stack trace:', new Error().stack)
+        console.groupEnd()
+        
         set((state) => {
-          state.isVisible = !state.isVisible
-          console.log('[Jubee] Visibility toggled:', state.isVisible)
+          state.isVisible = newVisibility
         })
+        
+        // Log state after update
+        setTimeout(() => {
+          const finalState = get()
+          console.log('[🔍 DIAGNOSTIC] Visibility update complete:', {
+            isVisible: finalState.isVisible,
+            containerPosition: finalState.containerPosition,
+            position: finalState.position
+          })
+        }, 0)
       },
 
       triggerAnimation: (animation) => {
@@ -168,85 +196,63 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
     speak: async (text, mood = 'happy') => {
-      // Stop any currently playing audio
-      if (currentAudio) {
-        currentAudio.pause()
-        currentAudio = null
-      }
+      // CRITICAL: Stop any currently playing audio immediately to prevent echo/duplication
+      audioManager.stopCurrentAudio()
       
-      // Clear existing speech timer
-      const existingTimer = timers.get('speech')
-      if (existingTimer && typeof existingTimer !== 'object') {
-        clearTimeout(existingTimer)
+      // Clear existing speech timer to prevent conflicts
+      const existingSpeechTimer = timers.get('speech')
+      if (existingSpeechTimer && typeof existingSpeechTimer !== 'object') {
+        clearTimeout(existingSpeechTimer)
+        timers.delete('speech')
       }
-      
+
       const gender = get().gender
       const voice = get().voice
-      // Get current language from i18n if available
       const language = window.i18nextLanguage || 'en'
+      
       set((state) => { 
         state.speechText = text
+        state.currentMood = mood
         state.lastError = null
+        state.interactionCount += 1
       })
-      
-      // Retry logic with exponential backoff
-      const maxRetries = 2
-      let retryCount = 0
-      let retryDelay = 1000
 
-      const attemptTTS = async (): Promise<boolean> => {
-        try {
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
-
-          const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text, gender, language, mood, voice }),
-            signal: controller.signal,
-          })
-
-          clearTimeout(timeoutId)
-
-          if (response.ok) {
-            const audioBlob = await response.blob()
-            const audioUrl = URL.createObjectURL(audioBlob)
-            const audio = new Audio(audioUrl)
-            currentAudio = audio
-            
-            audio.onended = () => {
-              URL.revokeObjectURL(audioUrl)
-              currentAudio = null
-              set((state) => { state.speechText = '' })
-            }
-            
-            audio.onerror = () => {
-              URL.revokeObjectURL(audioUrl)
-              currentAudio = null
-              set((state) => { state.speechText = '' })
-            }
-            
-            await audio.play()
-            return true
-          }
-          return false
-        } catch (error) {
-          console.error(`TTS attempt ${retryCount + 1} failed:`, error)
-          return false
-        }
+      // Check cache first for instant playback
+      const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
+      if (cachedAudio) {
+        await audioManager.playAudio(cachedAudio, true) // Explicitly stop current
+        set((state) => { state.speechText = '' })
+        return
       }
+      
+      // Single TTS request with timeout
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
 
-      // Try TTS with retries
-      while (retryCount <= maxRetries) {
-        const success = await attemptTTS()
-        if (success) return
+        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, gender, language, mood, voice }),
+          signal: controller.signal,
+        })
 
-        retryCount++
-        if (retryCount <= maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
-          retryDelay *= 2 // Exponential backoff
+        clearTimeout(timeoutId)
+
+        if (response.ok) {
+          const audioBlob = await response.blob()
+          
+          // Cache for future use
+          audioManager.cacheAudio(text, audioBlob, voice, mood)
+          
+          await audioManager.playAudio(audioBlob, true) // Explicitly stop current
+          set((state) => { state.speechText = '' })
+          return
+        }
+      } catch (error) {
+        // Only log non-abort errors
+        if (error.name !== 'AbortError') {
+          console.error('TTS failed:', error)
         }
       }
 
@@ -269,8 +275,9 @@ export const useJubeeStore = create<JubeeState>()(
         return "Let me finish what I was saying first! 🐝"
       }
 
-      set((state) => { 
+      set((state) => {
         state.isProcessing = true
+        state.currentMood = context.mood || 'happy'
         state.lastError = null
       })
 
@@ -377,10 +384,7 @@ export const useJubeeStore = create<JubeeState>()(
         })
         timers.clear()
         
-        if (currentAudio) {
-          currentAudio.pause()
-          currentAudio = null
-        }
+        audioManager.cleanup()
         
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel()
@@ -517,6 +521,9 @@ if (typeof window !== 'undefined') {
 // Browser speech fallback helper with mood support
 function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
   if ('speechSynthesis' in window) {
+    // CRITICAL: Cancel any ongoing browser speech to prevent overlap
+    speechSynthesis.cancel()
+    
     const utterance = new SpeechSynthesisUtterance(text)
     
     // Set language based on i18n

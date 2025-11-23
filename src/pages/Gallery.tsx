@@ -7,6 +7,7 @@ import { getSavedDrawings, deleteDrawing, clearAllDrawings, type SavedDrawing } 
 import { Trash2, Download, ArrowLeft, ImageIcon } from 'lucide-react';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useOptimizedList } from '@/hooks/useOptimizedList';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -188,6 +189,20 @@ export default function Gallery() {
     [drawings, filter]
   );
 
+  // Memoize filter counts to avoid recalculation on every render
+  const filterCounts = useMemo(() => ({
+    all: drawings.length,
+    letter: drawings.filter(d => d.type === 'letter').length,
+    number: drawings.filter(d => d.type === 'number').length
+  }), [drawings]);
+
+  // Use optimized list for virtual scrolling with large galleries
+  const { visibleItems, hasMore, loadMore } = useOptimizedList(filteredDrawings, {
+    initialBatchSize: 20,
+    batchIncrement: 10,
+    enableVirtualization: true
+  });
+
   return (
     <>
       <SEO 
@@ -254,21 +269,21 @@ export default function Gallery() {
                 variant={filter === 'all' ? 'default' : 'outline'}
                 size="lg"
               >
-                All ({drawings.length})
+                All ({filterCounts.all})
               </Button>
               <Button
                 onClick={() => setFilter('letter')}
                 variant={filter === 'letter' ? 'default' : 'outline'}
                 size="lg"
               >
-                Letters ({drawings.filter(d => d.type === 'letter').length})
+                Letters ({filterCounts.letter})
               </Button>
               <Button
                 onClick={() => setFilter('number')}
                 variant={filter === 'number' ? 'default' : 'outline'}
                 size="lg"
               >
-                Numbers ({drawings.filter(d => d.type === 'number').length})
+                Numbers ({filterCounts.number})
               </Button>
             </div>
           )}
@@ -309,16 +324,29 @@ export default function Gallery() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredDrawings.map((drawing) => (
-              <DrawingCard
-                key={drawing.id}
-                drawing={drawing}
-                onDelete={handleDelete}
-                onDownload={handleDownload}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {visibleItems.map((drawing) => (
+                <DrawingCard
+                  key={drawing.id}
+                  drawing={drawing}
+                  onDelete={handleDelete}
+                  onDownload={handleDownload}
+                />
+              ))}
+            </div>
+            {hasMore && (
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={loadMore}
+                  variant="outline"
+                  size="lg"
+                >
+                  Load More Drawings
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </>

@@ -2,13 +2,19 @@ import { Mic, MicOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useVoiceCommands } from '@/hooks/useVoiceCommands'
 import { cn } from '@/lib/utils'
+import { triggerHaptic } from '@/lib/hapticFeedback'
 
 export function VoiceCommandButton() {
   const { isListening, isProcessing, toggleListening } = useVoiceCommands()
 
+  const handleClick = () => {
+    triggerHaptic('medium')
+    toggleListening()
+  }
+
   return (
     <Button
-      onClick={toggleListening}
+      onClick={handleClick}
       disabled={isProcessing}
       variant={isListening ? "default" : "outline"}
       size="icon"

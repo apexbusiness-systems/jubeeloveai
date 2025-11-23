@@ -2,6 +2,17 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
+export interface Schedule {
+  day: number; // 0-6 (Sunday-Saturday)
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+}
+
+export interface ChildSettings {
+  schedules?: Schedule[];
+  enforceSchedule?: boolean;
+}
+
 export interface ChildProfile {
   id: string;
   name: string;
@@ -13,6 +24,7 @@ export interface ChildProfile {
   totalTimeToday: number; // in seconds
   allowedActivities: string[];
   lastResetDate: string | null; // Track daily reset per child
+  settings?: ChildSettings; // Schedule and other settings
 }
 
 export interface ParentalSettings {

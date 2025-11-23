@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useCallback, memo } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useJubeeStore } from '../../store/useJubeeStore'
 
@@ -32,52 +32,101 @@ const stickers: Sticker[] = [
   { id: 'sparkle1', emoji: '✨', name: 'Sparkles', description: 'Earn 1000 points', unlockRequirement: 1000, category: 'expert' }
 ]
 
+// Memoize category helpers
+const getCategoryGradient = (category: string) => {
+  switch (category) {
+    case 'beginner':
+      return 'var(--gradient-beginner)'
+    case 'intermediate':
+      return 'var(--gradient-intermediate)'
+    case 'expert':
+      return 'var(--gradient-expert)'
+    default:
+      return 'var(--gradient-neutral)'
+  }
+}
+
+const getCategoryBorder = (category: string) => {
+  switch (category) {
+    case 'beginner':
+      return 'hsl(var(--beginner-border))'
+    case 'intermediate':
+      return 'hsl(var(--intermediate-border))'
+    case 'expert':
+      return 'hsl(var(--expert-border))'
+    default:
+      return 'hsl(var(--border))'
+  }
+}
+
+// Memoized sticker card component
+const StickerCard = memo(({ 
+  sticker, 
+  isUnlocked, 
+  category 
+}: { 
+  sticker: Sticker; 
+  isUnlocked: boolean; 
+  category: string;
+}) => (
+  <div
+    className="sticker-card p-6 rounded-2xl transform transition-all duration-300"
+    style={{
+      background: isUnlocked
+        ? getCategoryGradient(category)
+        : 'var(--gradient-neutral)',
+      border: `3px solid ${isUnlocked ? getCategoryBorder(category) : 'hsl(var(--border))'}`,
+      boxShadow: isUnlocked
+        ? `0 6px 15px ${getCategoryBorder(category)}40`
+        : '0 4px 10px hsl(var(--muted) / 0.3)',
+      opacity: isUnlocked ? 1 : 0.5
+    }}
+  >
+    <div className="text-6xl mb-3 text-center">
+      {isUnlocked ? sticker.emoji : '🔒'}
+    </div>
+    <h4
+      className="text-xl font-bold text-center mb-1"
+      style={{ color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }}
+    >
+      {sticker.name}
+    </h4>
+    <p
+      className="text-sm text-center opacity-90"
+      style={{
+        color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
+      }}
+    >
+      {isUnlocked ? sticker.description : `${sticker.unlockRequirement} points`}
+    </p>
+  </div>
+))
+StickerCard.displayName = 'StickerCard'
+
 export function StickerBook({ onClose }: Props) {
   const { score, stickers: unlockedStickers, addSticker } = useGameStore()
   const { speak, triggerAnimation } = useJubeeStore()
 
-  // Check for newly unlocked stickers
+  // Memoize categorized stickers to avoid filtering on every render
+  const categorizedStickers = useMemo(() => ({
+    beginner: stickers.filter(s => s.category === 'beginner'),
+    intermediate: stickers.filter(s => s.category === 'intermediate'),
+    expert: stickers.filter(s => s.category === 'expert')
+  }), [])
+
+  // Memoize unlock check to avoid creating new Set on every render
+  const unlockedSet = useMemo(() => new Set(unlockedStickers), [unlockedStickers])
+
+  // Check for newly unlocked stickers - optimized dependencies
   useEffect(() => {
     stickers.forEach(sticker => {
-      if (score >= sticker.unlockRequirement && !unlockedStickers.includes(sticker.id)) {
+      if (score >= sticker.unlockRequirement && !unlockedSet.has(sticker.id)) {
         addSticker(sticker.id)
         triggerAnimation('celebrate')
         speak(`New sticker unlocked: ${sticker.name}!`)
       }
     })
-  }, [score, unlockedStickers, addSticker, triggerAnimation, speak])
-
-  const getCategoryGradient = (category: string) => {
-    switch (category) {
-      case 'beginner':
-        return 'var(--gradient-beginner)'
-      case 'intermediate':
-        return 'var(--gradient-intermediate)'
-      case 'expert':
-        return 'var(--gradient-expert)'
-      default:
-        return 'var(--gradient-neutral)'
-    }
-  }
-
-  const getCategoryBorder = (category: string) => {
-    switch (category) {
-      case 'beginner':
-        return 'hsl(var(--beginner-border))'
-      case 'intermediate':
-        return 'hsl(var(--intermediate-border))'
-      case 'expert':
-        return 'hsl(var(--expert-border))'
-      default:
-        return 'hsl(var(--border))'
-    }
-  }
-
-  const categorizedStickers = {
-    beginner: stickers.filter(s => s.category === 'beginner'),
-    intermediate: stickers.filter(s => s.category === 'intermediate'),
-    expert: stickers.filter(s => s.category === 'expert')
-  }
+  }, [score, unlockedSet, addSticker, triggerAnimation, speak])
 
   return (
     <div
@@ -111,44 +160,14 @@ export function StickerBook({ onClose }: Props) {
             </h3>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {categoryStickers.map((sticker) => {
-                const isUnlocked = unlockedStickers.includes(sticker.id)
-
-                return (
-                  <div
-                    key={sticker.id}
-                    className="sticker-card p-6 rounded-2xl transform transition-all duration-300"
-                    style={{
-                      background: isUnlocked
-                        ? getCategoryGradient(category)
-                        : 'var(--gradient-neutral)',
-                      border: `3px solid ${isUnlocked ? getCategoryBorder(category) : 'hsl(var(--border))'}`,
-                      boxShadow: isUnlocked
-                        ? `0 6px 15px ${getCategoryBorder(category)}40`
-                        : '0 4px 10px hsl(var(--muted) / 0.3)',
-                      opacity: isUnlocked ? 1 : 0.5
-                    }}
-                  >
-                    <div className="text-6xl mb-3 text-center">
-                      {isUnlocked ? sticker.emoji : '🔒'}
-                    </div>
-                    <h4
-                      className="text-xl font-bold text-center mb-1"
-                      style={{ color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))' }}
-                    >
-                      {sticker.name}
-                    </h4>
-                    <p
-                      className="text-sm text-center opacity-90"
-                      style={{
-                        color: isUnlocked ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))'
-                      }}
-                    >
-                      {isUnlocked ? sticker.description : `${sticker.unlockRequirement} points`}
-                    </p>
-                  </div>
-                )
-              })}
+              {categoryStickers.map((sticker) => (
+                <StickerCard
+                  key={sticker.id}
+                  sticker={sticker}
+                  isUnlocked={unlockedSet.has(sticker.id)}
+                  category={category}
+                />
+              ))}
             </div>
           </div>
         ))}

@@ -230,5 +230,33 @@
     "next": "Siguiente",
     "start": "Comenzar",
     "finish": "Terminar"
+  },
+  "onboarding": {
+    "getStarted": "¡Comenzar!",
+    "skip": "Saltar Tutorial",
+    "welcome": {
+      "title": "¡Bienvenido a Jubee Love! 🎉",
+      "description": "¡Déjame mostrarte todo! Soy Jubee, tu amigo de aprendizaje. ¡Estoy aquí para ayudarte a aprender, jugar y divertirte!"
+    },
+    "jubee-interaction": {
+      "title": "¡Conoce a Jubee! 👋",
+      "description": "Puedes arrastrarme por la pantalla, tocarme para oírme hablar, ¡o simplemente di hola! Estaré contigo en cada aventura."
+    },
+    "writing-practice": {
+      "title": "Practica Escritura ✏️",
+      "description": "¡Dibuja letras, números y formas! Te animaré y te ayudaré a mejorar tus habilidades de escritura."
+    },
+    "shapes-game": {
+      "title": "Aprende Formas 🔷",
+      "description": "¡Ordena formas, aprende sus nombres y juega divertidos juegos de memoria! Es una gran manera de aprender mientras te diviertes."
+    },
+    "reading-stories": {
+      "title": "Lee y Escucha 📚",
+      "description": "¡Explora historias maravillosas y practica la lectura! Puedo leerte o tú puedes leerme a mí."
+    },
+    "collect-stickers": {
+      "title": "¡Colecciona Stickers! ⭐",
+      "description": "¡Gana stickers completando actividades! Cuanto más aprendas, más stickers obtendrás para tu colección."
+    }
   }
 }

@@ -26,6 +26,8 @@ import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'luci
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 import { saveDrawing } from '@/types/drawing';
 import confetti from 'canvas-confetti';
+import { triggerHaptic } from '@/lib/hapticFeedback';
+import { useDrawingWorker } from '@/hooks/useDrawingWorker';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -52,6 +54,7 @@ export default function WritingCanvas() {
   const { speak, triggerAnimation } = useJubeeStore();
   const { addScore } = useGameStore();
   const { playDrawSound, playClearSound, playSuccessSound } = useAudioEffects();
+  const { processDrawing, isProcessing } = useDrawingWorker();
 
   const currentCharacter = mode === 'letter' ? currentLetter : currentNumber;
 
@@ -99,6 +102,8 @@ export default function WritingCanvas() {
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     try {
       e.preventDefault();
+      e.stopPropagation();
+      triggerHaptic('light');
       setIsDrawing(true);
       playDrawSound();
       
@@ -169,6 +174,7 @@ export default function WritingCanvas() {
       ctx.textBaseline = 'middle';
       ctx.strokeText(currentCharacter, canvas.width / 2, canvas.height / 2);
 
+      triggerHaptic('light');
       toast({
         title: "Canvas cleared",
         description: "Try tracing the letter again!",
@@ -184,6 +190,14 @@ export default function WritingCanvas() {
   };
 
   const handleSaveDrawing = async () => {
+    if (isProcessing) {
+      toast({
+        title: "Processing...",
+        description: "Please wait while we process your drawing.",
+      });
+      return;
+    }
+
     try {
       playSuccessSound();
       const canvas = canvasRef.current;
@@ -191,7 +205,21 @@ export default function WritingCanvas() {
         throw new Error('Canvas not found');
       }
 
-      const imageData = canvas.toDataURL('image/png');
+      toast({
+        title: "Processing drawing...",
+        description: "Converting your artwork to high-quality image.",
+      });
+
+      // Process drawing in Web Worker (offloads toDataURL from main thread)
+      const result = await processDrawing(canvas, 'image/png', 0.95);
+      
+      if (!result || !result.dataURL) {
+        throw new Error('Failed to process drawing');
+      }
+
+      const imageData = result.dataURL;
+      
+      console.log(`[WritingCanvas] Drawing processed in ${result.processingTime?.toFixed(2)}ms`);
       
       // Save to IndexedDB via helper function
       await saveDrawing(currentCharacter, mode, imageData);
@@ -207,6 +235,7 @@ export default function WritingCanvas() {
         description: `Your ${mode} "${currentCharacter}" has been saved to your gallery!`,
       });
 
+      triggerHaptic('success');
       addScore(20);
       triggerAnimation('celebrate');
       confetti({
@@ -287,6 +316,7 @@ export default function WritingCanvas() {
       speak(`Fantastic! Now let's try ${nextNumberValue}!`);
     }
     
+    triggerHaptic('medium');
     triggerAnimation('excited');
     addScore(10);
     clearCanvas();
@@ -356,6 +386,12 @@ export default function WritingCanvas() {
           onTouchEnd={stopDrawing}
           aria-label={`Writing canvas for tracing ${mode} ${currentCharacter}`}
           role="img"
+          style={{
+            touchAction: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}
         />
 
         <div className="flex gap-4 justify-center mt-6 flex-wrap" role="group" aria-label="Canvas controls">
@@ -409,9 +445,10 @@ export default function WritingCanvas() {
             size="lg"
             className="min-h-[44px] min-w-[44px]"
             aria-label="Save drawing"
+            disabled={isProcessing}
           >
             <Download className="mr-2 h-5 w-5" />
-            Save
+            {isProcessing ? 'Processing...' : 'Save'}
           </Button>
           <Button 
             onClick={nextCharacter} 

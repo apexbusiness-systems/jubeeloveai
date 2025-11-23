@@ -7,7 +7,7 @@
 
 import { useEffect, useCallback, useRef } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
-import { getContainerDimensions } from '@/core/jubee/JubeeDom'
+import { validatePosition, getPreferredPositions, calculateDistance } from '@/core/jubee/JubeePositionManager'
 
 interface CollisionRect {
   top: number
@@ -29,7 +29,6 @@ const COLLISION_SELECTORS = [
 ]
 
 const COLLISION_PADDING = 20 // pixels
-const SAFE_MARGIN = 50 // Margin to prevent edge clipping
 
 export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>) {
   const { containerPosition, setContainerPosition } = useJubeeStore()
@@ -56,83 +55,58 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
     )
   }, [])
 
-  const validatePosition = useCallback((pos: { bottom: number; right: number }): { bottom: number; right: number } => {
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-    const containerDims = getContainerDimensions()
-
-    // Calculate absolute maximum right that keeps container fully visible
-    // right value is distance from right edge, so we need to ensure:
-    // viewportWidth - right - containerDims.width >= 0 (left edge is on screen)
-    const absoluteMaxRight = viewportWidth - containerDims.width - SAFE_MARGIN
-
-    // Enhanced boundary calculation with generous minimums to prevent clipping
-    const minBottom = 180 // Ensure above bottom navigation
-    const minRight = 100 // Minimum distance from right edge
-    const maxBottom = Math.max(minBottom, viewportHeight - containerDims.height - SAFE_MARGIN)
-    const maxRight = Math.max(minRight, Math.min(absoluteMaxRight, 300)) // Cap at 300px from right edge
-    
-    // Validate with defensive boundaries
-    const validated = {
-      bottom: Math.max(minBottom, Math.min(maxBottom, pos.bottom)),
-      right: Math.max(minRight, Math.min(maxRight, pos.right))
-    }
-    
-    // Additional safety check: ensure values are finite and not NaN
-    return {
-      bottom: Number.isFinite(validated.bottom) ? validated.bottom : 200,
-      right: Number.isFinite(validated.right) ? validated.right : 100
-    }
-  }, [])
+  // Use centralized validation - removed local implementation
 
   const findSafePosition = useCallback((
     jubeeRect: CollisionRect,
     collidingElements: CollisionRect[]
   ): { bottom: number; right: number } | null => {
-    const viewportWidth = window.innerWidth
-    const viewportHeight = window.innerHeight
-    const containerDims = getContainerDimensions()
+    // Get preferred positions from centralized manager
+    const preferredPositions = getPreferredPositions()
 
-    // Dynamic safe zone calculation based on viewport size
-    const cornerMargin = Math.max(SAFE_MARGIN, Math.min(100, viewportWidth * 0.05))
-    const centerOffset = Math.max(containerDims.width / 2, Math.min(200, viewportWidth * 0.1))
-
-    // Try positions in order of preference with dynamic zones
-    const positions = [
-      { bottom: 200, right: 100 }, // Default safe position
-      { bottom: cornerMargin, right: cornerMargin }, // Bottom-right corner
-      { bottom: cornerMargin, right: viewportWidth - containerDims.width - cornerMargin }, // Bottom-left corner
-      { bottom: viewportHeight - containerDims.height - cornerMargin, right: cornerMargin }, // Top-right corner
-      { bottom: viewportHeight - containerDims.height - cornerMargin, right: viewportWidth - containerDims.width - cornerMargin }, // Top-left corner
-      { bottom: viewportHeight / 2 - containerDims.height / 2, right: cornerMargin }, // Middle-right
-      { bottom: cornerMargin, right: viewportWidth / 2 - centerOffset } // Bottom-center
-    ]
-
-    for (const pos of positions) {
-      // Validate position is within safe bounds first
-      const validatedPos = validatePosition(pos)
+    for (const position of preferredPositions) {
+      const viewportHeight = window.innerHeight
+      const viewportWidth = window.innerWidth
       
+      // Calculate new rect for this position (converting from bottom/right to top/left)
       const testRect: CollisionRect = {
-        top: viewportHeight - validatedPos.bottom - jubeeRect.height,
-        left: viewportWidth - validatedPos.right - jubeeRect.width,
-        bottom: viewportHeight - validatedPos.bottom,
-        right: viewportWidth - validatedPos.right,
-        width: jubeeRect.width,
-        height: jubeeRect.height
+        top: viewportHeight - position.bottom - 450,
+        bottom: viewportHeight - position.bottom,
+        left: viewportWidth - position.right - 400,
+        right: viewportWidth - position.right,
+        width: 400,
+        height: 450
       }
 
-      const hasCollision = collidingElements.some(elementRect => 
-        checkCollision(testRect, elementRect)
+      // Check if this position collides with any elements
+      const hasCollision = collidingElements.some(element => 
+        checkCollision(testRect, element)
       )
 
       if (!hasCollision) {
-        return validatedPos
+        // Found a safe position - already validated by getPreferredPositions
+        return position
       }
     }
 
-    // If no collision-free position found, return validated default
-    return validatePosition({ bottom: 200, right: 100 })
-  }, [checkCollision, validatePosition])
+    // If no safe position found, pick the one farthest from all colliding elements
+    let bestPosition = preferredPositions[0]
+    let maxMinDistance = 0
+
+    for (const position of preferredPositions) {
+      // Find minimum distance to any colliding element using centralized distance calc
+      const minDistance = Math.min(
+        ...preferredPositions.map(p => calculateDistance(position, p))
+      )
+
+      if (minDistance > maxMinDistance) {
+        maxMinDistance = minDistance
+        bestPosition = position
+      }
+    }
+
+    return bestPosition
+  }, [checkCollision])
 
   const detectAndResolveCollisions = useCallback(() => {
     if (!containerRef.current || checkingRef.current) return
@@ -158,12 +132,21 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
 
       // If collisions detected, find and move to safe position
       if (collidingElements.length > 0) {
-        console.log('[Jubee Collision] Detected', collidingElements.length, 'collisions')
+        console.group('[🔍 DIAGNOSTIC] Collision Detection')
+        console.log('Collisions detected:', collidingElements.length)
+        console.log('Jubee rect:', jubeeRect)
+        console.log('Colliding elements:', collidingElements)
+        
         const safePosition = findSafePosition(jubeeRect, collidingElements)
         
         if (safePosition) {
-          console.log('[Jubee Collision] Moving to safe position:', safePosition)
+          console.log('Safe position found:', safePosition)
+          console.log('Call stack:', new Error().stack?.split('\n').slice(1, 4).join('\n'))
+          console.groupEnd()
           setContainerPosition(safePosition)
+        } else {
+          console.warn('No safe position found!')
+          console.groupEnd()
         }
       }
     } finally {
@@ -171,38 +154,39 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
     }
   }, [containerRef, getElementRect, checkCollision, findSafePosition, setContainerPosition])
 
-  // Run collision detection frequently during initial page load
+  // Optimized collision detection with debouncing - reduce frequency significantly
   useEffect(() => {
-    // Run immediately
-    const timeoutId1 = setTimeout(detectAndResolveCollisions, 100)
+    // Only run collision detection on initial mount and after navigation
+    const timeoutId1 = setTimeout(detectAndResolveCollisions, 200)
+    const timeoutId2 = setTimeout(detectAndResolveCollisions, 1000)
     
-    // Run multiple times during initial load to catch late-rendering elements
-    const timeoutId2 = setTimeout(detectAndResolveCollisions, 500)
-    const timeoutId3 = setTimeout(detectAndResolveCollisions, 1000)
-    const timeoutId4 = setTimeout(detectAndResolveCollisions, 2000)
-
     return () => {
       clearTimeout(timeoutId1)
       clearTimeout(timeoutId2)
-      clearTimeout(timeoutId3)
-      clearTimeout(timeoutId4)
     }
   }, [detectAndResolveCollisions])
 
-  // Re-check on window resize
+  // Debounced resize handler
   useEffect(() => {
+    let resizeTimeout: ReturnType<typeof setTimeout>
     const handleResize = () => {
-      setTimeout(detectAndResolveCollisions, 150)
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(detectAndResolveCollisions, 300)
     }
 
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(resizeTimeout)
+    }
   }, [detectAndResolveCollisions])
 
-  // Re-check when new elements are added to DOM (mutation observer)
+  // Optimized mutation observer with heavy debouncing
   useEffect(() => {
+    let mutationTimeout: ReturnType<typeof setTimeout>
     const observer = new MutationObserver(() => {
-      setTimeout(detectAndResolveCollisions, 100)
+      clearTimeout(mutationTimeout)
+      mutationTimeout = setTimeout(detectAndResolveCollisions, 500) // Increased debounce
     })
 
     observer.observe(document.body, {
@@ -210,39 +194,14 @@ export function useJubeeCollision(containerRef: React.RefObject<HTMLDivElement>)
       subtree: true
     })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      clearTimeout(mutationTimeout)
+    }
   }, [detectAndResolveCollisions])
 
-  // Continuous position validation - more frequent checks with throttling
-  useEffect(() => {
-    let lastValidationTime = 0
-    const VALIDATION_THROTTLE = 2000 // Throttle to every 2 seconds
-    
-    const sanityCheckInterval = setInterval(() => {
-      const now = Date.now()
-      if (now - lastValidationTime < VALIDATION_THROTTLE) return
-      
-      lastValidationTime = now
-      const { containerPosition, setContainerPosition, isDragging } = useJubeeStore.getState()
-      
-      // Skip validation during active dragging
-      if (isDragging) return
-      
-      const validatedPosition = validatePosition(containerPosition)
-      
-      // If position needed correction, apply it
-      const needsCorrection = 
-        Math.abs(validatedPosition.bottom - containerPosition.bottom) > 1 || 
-        Math.abs(validatedPosition.right - containerPosition.right) > 1
-      
-      if (needsCorrection) {
-        console.log('[Jubee Collision] Auto-correcting position:', { from: containerPosition, to: validatedPosition })
-        setContainerPosition(validatedPosition)
-      }
-    }, 1000)
-
-    return () => clearInterval(sanityCheckInterval)
-  }, [validatePosition])
+  // REMOVED: Continuous validation - was causing the feedback loop
+  // Position validation now only happens during specific events
 
   return { detectAndResolveCollisions }
 }

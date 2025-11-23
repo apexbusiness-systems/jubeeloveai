@@ -9,8 +9,10 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { SEO } from '@/components/SEO';
+import { ScheduleConfigurator } from '@/components/ScheduleConfigurator';
 import { toast } from '@/hooks/use-toast';
 import { Lock, Unlock, UserPlus, Clock, Shield, Users, Settings as SettingsIcon } from 'lucide-react';
+import type { Schedule } from '@/store/useParentalStore';
 
 export default function ParentalControls() {
   const navigate = useNavigate();
@@ -333,19 +335,45 @@ export default function ParentalControls() {
                             Edit
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Edit {child.name}'s Profile</DialogTitle>
+                            <CardDescription>
+                              Configure time limits and usage schedules
+                            </CardDescription>
                           </DialogHeader>
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             <div className="space-y-2">
                               <Label>Daily Time Limit (minutes)</Label>
                               <Input
                                 type="number"
+                                min="15"
+                                max="180"
                                 defaultValue={child.dailyTimeLimit}
                                 onChange={(e) => updateChild(child.id, { dailyTimeLimit: parseInt(e.target.value) })}
                               />
                             </div>
+
+                            <ScheduleConfigurator
+                              schedules={child.settings?.schedules || []}
+                              enforceSchedule={child.settings?.enforceSchedule || false}
+                              onSchedulesChange={(schedules) => 
+                                updateChild(child.id, { 
+                                  settings: { 
+                                    ...child.settings,
+                                    schedules 
+                                  } 
+                                })
+                              }
+                              onEnforceChange={(enforceSchedule) =>
+                                updateChild(child.id, {
+                                  settings: {
+                                    ...child.settings,
+                                    enforceSchedule
+                                  }
+                                })
+                              }
+                            />
                           </div>
                           <DialogFooter>
                             <Button onClick={() => toast({ title: "Profile updated!" })}>

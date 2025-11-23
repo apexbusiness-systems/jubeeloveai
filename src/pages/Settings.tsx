@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, Volume2, VolumeX, Sun, Moon, Sunrise, Sunset, Shield, Download, Play } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, VolumeX, Sun, Moon, Sunrise, Sunset, Shield, Download, Play, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useNavigate } from 'react-router-dom';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ export default function SettingsPage() {
   const { children } = useParentalStore();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
+  const { startOnboarding } = useOnboardingStore();
 
   const themes = [
     { name: 'morning', icon: Sunrise, label: 'Morning' },
@@ -93,8 +95,44 @@ export default function SettingsPage() {
           </p>
         </header>
 
+        {/* Account Info */}
+        <Card className="border-4 border-primary/30">
+          <CardHeader>
+            <CardTitle className="text-primary flex items-center gap-2">
+              🔐 Account
+            </CardTitle>
+            <CardDescription className="text-primary">
+              You're signed in and your data is securely synced across devices
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
         {/* Language Selection */}
         <LanguageSelector />
+
+        {/* Tutorial */}
+        <Card className="border-4 border-primary/30">
+          <CardHeader>
+            <CardTitle className="text-primary flex items-center gap-2">
+              <GraduationCap className="w-5 h-5" />
+              Tutorial
+            </CardTitle>
+            <CardDescription className="text-primary">
+              Learn how to use the app with an interactive guide
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={startOnboarding}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Restart Tutorial
+            </Button>
+          </CardContent>
+        </Card>
 
         <Card className="border-4 border-primary/30">
           <CardHeader>

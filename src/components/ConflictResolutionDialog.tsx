@@ -1,22 +1,23 @@
-import { useState, useEffect } from 'react'
-import { AlertCircle, Calendar, Database, Laptop } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { AlertCircle, Calendar, Database, Laptop } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver'
-import { jubeeDB } from '@/lib/indexedDB'
-import { supabase } from '@/integrations/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { format } from 'date-fns'
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver';
+import { jubeeDB } from '@/lib/indexedDB';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
@@ -58,9 +59,9 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const resolvedData = conflictResolver.resolveConflict(currentConflict.id, choice)
-      
+
       // Update local database
-      await jubeeDB.put(currentConflict.storeName as any, resolvedData)
+      await jubeeDB.put(currentConflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', resolvedData as any)
       
       // If keeping local or merge, sync to server
       if (choice === 'local' || choice === 'merge') {
@@ -79,7 +80,7 @@ export function ConflictResolutionDialog() {
       const remaining = conflictResolver.getConflicts()
       setCurrentConflict(remaining.length > 0 ? remaining[0] : null)
     } catch (error) {
-      console.error('Failed to resolve conflict:', error)
+      logger.error('Failed to resolve conflict:', error);
       toast({
         title: "Resolution Failed",
         description: "Could not resolve conflict. Please try again.",
@@ -95,8 +96,8 @@ export function ConflictResolutionDialog() {
 
     setIsResolving(true)
     try {
-      let resolvedDataArray: any[]
-      
+      let resolvedDataArray: Record<string, unknown>[]
+
       if (scope === 'all') {
         resolvedDataArray = await conflictResolver.resolveAll(choice)
       } else if (currentConflict) {
@@ -122,7 +123,7 @@ export function ConflictResolutionDialog() {
         const data = resolvedDataArray[i]
         const conflict = conflicts[i]
         if (conflict) {
-          await jubeeDB.put(conflict.storeName as any, data)
+          await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
         }
       }
 
@@ -134,7 +135,7 @@ export function ConflictResolutionDialog() {
       setCurrentConflict(null)
       setShowBatchOptions(false)
     } catch (error) {
-      console.error('Failed to resolve conflicts:', error)
+      logger.error('Failed to resolve conflicts:', error);
       toast({
         title: "Batch Resolution Failed",
         description: "Some conflicts could not be resolved. Please try again.",
@@ -151,7 +152,7 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const diagnosis = conflictResolver.getDiagnosis()
-      const resolvedDataArray: any[] = []
+      const resolvedDataArray: Record<string, unknown>[] = []
 
       // Group conflicts by recommended strategy
       const byStrategy: Record<ResolutionChoice, string[]> = {
@@ -179,8 +180,8 @@ export function ConflictResolutionDialog() {
           const data = resolvedDataArray[i]
           const conflict = conflicts[i]
           if (conflict) {
-            await jubeeDB.put(conflict.storeName as any, data)
-            
+            await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
+
             if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
               await syncToServer(conflict.storeName, data, user.id)
             }
@@ -195,7 +196,7 @@ export function ConflictResolutionDialog() {
 
       setCurrentConflict(null)
     } catch (error) {
-      console.error('Failed to auto-diagnose:', error)
+      logger.error('Failed to auto-diagnose:', error);
       toast({
         title: "Auto-Diagnosis Failed",
         description: "Could not automatically resolve conflicts.",
@@ -206,34 +207,31 @@ export function ConflictResolutionDialog() {
     }
   }
 
-  const syncToServer = async (storeName: string, data: any, userId: string) => {
+  const syncToServer = async (storeName: string, data: Record<string, unknown>, userId: string) => {
     switch (storeName) {
       case 'gameProgress':
-        await supabase.from('game_progress').upsert({
-          user_id: userId,
+        await supabase.from('game_progress').upsert([{
           child_profile_id: null,
-          score: data.score,
-          activities_completed: data.activitiesCompleted,
-          current_theme: data.currentTheme,
-          last_activity: data.lastActivity,
-          updated_at: data.updatedAt,
-        }, { onConflict: 'user_id,child_profile_id' })
+          score: data.score as number,
+          activities_completed: data.activitiesCompleted as number,
+          current_theme: data.currentTheme as string,
+          last_activity: data.lastActivity as string,
+          updated_at: data.updatedAt as string,
+        }])
         break
       
       case 'drawings':
-        await supabase.from('drawings').upsert({
-          id: data.id,
-          user_id: userId,
+        await supabase.from('drawings').insert([{
           child_profile_id: null,
-          title: data.title,
-          image_data: data.imageData,
-          updated_at: data.updatedAt,
-        })
+          title: data.title as string,
+          image_data: data.imageData as string,
+          updated_at: data.updatedAt as string,
+        }])
         break
     }
   }
 
-  const formatValue = (value: any): string => {
+  const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return 'Not set'
     if (typeof value === 'object') return JSON.stringify(value, null, 2)
     if (typeof value === 'boolean') return value ? 'Yes' : 'No'

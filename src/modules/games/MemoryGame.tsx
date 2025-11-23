@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 
@@ -15,6 +15,35 @@ const emojiSets = {
   hard: ['🐝', '🦋', '🌻', '🌺', '🌈', '⭐', '🎨', '🎵']
 }
 
+const MemoryCard = memo(({
+  card, 
+  onClick,
+  gradient,
+  isDisabled
+}: { 
+  card: Card; 
+  onClick: (id: number) => void;
+  gradient: string;
+  isDisabled: boolean;
+}) => (
+  <button
+    onClick={() => onClick(card.id)}
+    disabled={isDisabled || card.isMatched || card.isFlipped}
+    className="card aspect-square rounded-2xl flex items-center justify-center text-6xl transform transition-all duration-300 hover:scale-105 border-4 border-game-accent"
+    style={{
+      background: card.isFlipped || card.isMatched
+        ? 'var(--gradient-warm)'
+        : gradient,
+      boxShadow: 'var(--shadow-game)',
+      cursor: card.isMatched ? 'default' : 'pointer',
+      opacity: card.isMatched ? 0.6 : 1
+    }}
+  >
+    {(card.isFlipped || card.isMatched) ? card.emoji : '?'}
+  </button>
+))
+MemoryCard.displayName = 'MemoryCard'
+
 export default function MemoryGame() {
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null)
   const [cards, setCards] = useState<Card[]>([])
@@ -24,7 +53,7 @@ export default function MemoryGame() {
   const { speak, triggerAnimation } = useJubeeStore()
   const { addScore } = useGameStore()
 
-  const initializeGame = (level: 'easy' | 'medium' | 'hard') => {
+  const initializeGame = useCallback((level: 'easy' | 'medium' | 'hard') => {
     const emojis = emojiSets[level]
     const gameCards: Card[] = []
 
@@ -36,18 +65,22 @@ export default function MemoryGame() {
       )
     })
 
-    // Shuffle cards
-    const shuffled = gameCards.sort(() => Math.random() - 0.5)
-    setCards(shuffled)
+    // Shuffle cards - Fisher-Yates for O(n) performance
+    for (let i = gameCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [gameCards[i], gameCards[j]] = [gameCards[j], gameCards[i]]
+    }
+    
+    setCards(gameCards)
     setFlippedCards([])
     setMoves(0)
     setMatches(0)
     setDifficulty(level)
     triggerAnimation('excited')
     speak("Let's play memory! Find the matching pairs!")
-  }
+  }, [triggerAnimation, speak])
 
-  const handleCardClick = (cardId: number) => {
+  const handleCardClick = useCallback((cardId: number) => {
     // Don't allow more than 2 flipped cards or clicking already flipped/matched cards
     if (flippedCards.length >= 2) return
     const card = cards.find(c => c.id === cardId)
@@ -102,7 +135,15 @@ export default function MemoryGame() {
         }, 1000)
       }
     }
-  }
+  }, [cards, flippedCards, moves, matches, addScore, triggerAnimation, speak])
+
+  // Memoize grid configuration
+  const gridConfig = useMemo(() => ({
+    columns: 4,
+    maxWidth: difficulty === 'easy' ? '600px' : difficulty === 'medium' ? '700px' : '800px'
+  }), [difficulty])
+
+  const totalPairs = useMemo(() => cards.length / 2, [cards.length])
 
   if (!difficulty) {
     return (
@@ -154,11 +195,9 @@ export default function MemoryGame() {
             <p className="text-xl text-primary-foreground opacity-90">16 cards (8 pairs)</p>
           </button>
         </div>
-      </div>
-    )
-  }
-
-  const totalPairs = cards.length / 2
+    </div>
+  )
+}
 
   return (
     <div className="memory-game p-4 sm:p-6 md:p-8 pt-8">
@@ -180,28 +219,19 @@ export default function MemoryGame() {
         className="cards-grid mx-auto mb-8"
         style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${difficulty === 'easy' ? 4 : difficulty === 'medium' ? 4 : 4}, 1fr)`,
+          gridTemplateColumns: `repeat(${gridConfig.columns}, 1fr)`,
           gap: '16px',
-          maxWidth: difficulty === 'easy' ? '600px' : difficulty === 'medium' ? '700px' : '800px'
+          maxWidth: gridConfig.maxWidth
         }}
       >
         {cards.map((card) => (
-          <button
+          <MemoryCard
             key={card.id}
-            onClick={() => handleCardClick(card.id)}
-            disabled={card.isMatched || card.isFlipped}
-            className="card aspect-square rounded-2xl flex items-center justify-center text-6xl transform transition-all duration-300 hover:scale-105 border-4 border-game-accent"
-            style={{
-              background: card.isFlipped || card.isMatched
-                ? 'var(--gradient-warm)'
-                : 'var(--gradient-game)',
-              boxShadow: 'var(--shadow-game)',
-              cursor: card.isMatched ? 'default' : 'pointer',
-              opacity: card.isMatched ? 0.6 : 1
-            }}
-          >
-            {(card.isFlipped || card.isMatched) ? card.emoji : '?'}
-          </button>
+            card={card}
+            onClick={handleCardClick}
+            gradient="var(--gradient-game)"
+            isDisabled={flippedCards.length >= 2}
+          />
         ))}
       </div>
 
