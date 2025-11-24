@@ -4,6 +4,9 @@ import { persist } from 'zustand/middleware'
 import { validatePosition, validateCanvasPosition, validateContainerPosition as validateContainerPos, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
+import { callEdgeFunction } from '@/lib/edgeFunctionErrorHandler'
+import { sanitizeString, validateNotEmpty, validateLength } from '@/lib/inputSanitizer'
+import { logger } from '@/lib/logger'
 
 // Extend Window interface for i18next properties
 declare global {
@@ -196,7 +199,17 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
     speak: async (text, mood = 'happy') => {
-      // CRITICAL: Stop any currently playing audio immediately to prevent echo/duplication
+      // Validate and sanitize input
+      try {
+        validateNotEmpty(text, 'Speech text');
+        validateLength(text, 'Speech text', 1, 1000);
+        text = sanitizeString(text, { maxLength: 1000, trim: true });
+      } catch (error) {
+        logger.error('[Jubee] Invalid speech input:', error);
+        return;
+      }
+
+      // Stop any current audio first
       audioManager.stopCurrentAudio()
       
       // Clear existing speech timer to prevent conflicts
@@ -225,39 +238,26 @@ export const useJubeeStore = create<JubeeState>()(
         return
       }
       
-      // Single TTS request with timeout
+      // Single TTS request with timeout using edge function handler
       try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
+        const audioBlob = await callEdgeFunction<Blob>({
+          functionName: 'text-to-speech',
+          body: { text, gender, language, mood, voice },
+          timeout: 8000,
+          retries: 1,
+        });
 
-        const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, gender, language, mood, voice }),
-          signal: controller.signal,
-        })
-
-        clearTimeout(timeoutId)
-
-        if (response.ok) {
-          const audioBlob = await response.blob()
-          
-          // Cache for future use
-          audioManager.cacheAudio(text, audioBlob, voice, mood)
-          
-          await audioManager.playAudio(audioBlob, true) // Explicitly stop current
-          set((state) => { state.speechText = '' })
-          return
-        }
+        // Cache for future use
+        audioManager.cacheAudio(text, audioBlob, voice, mood)
+        
+        await audioManager.playAudio(audioBlob, true) // Explicitly stop current
+        set((state) => { state.speechText = '' })
+        return
       } catch (error) {
-        // Only log non-abort errors
-        if (error.name !== 'AbortError') {
-          console.error('TTS failed:', error)
-        }
+        logger.warn('[Jubee] TTS service unavailable, using browser fallback', error);
       }
 
       // All retries failed, use browser speech fallback
-      console.warn('TTS service unavailable, using browser fallback')
       set((state) => { state.lastError = 'TTS_FALLBACK' })
       browserSpeech(text, gender, mood)
       const timer = setTimeout(() => {
@@ -271,85 +271,56 @@ export const useJubeeStore = create<JubeeState>()(
       const state = get()
       
       if (state.isProcessing) {
-        console.warn('Already processing a conversation')
+        logger.warn('[Jubee] Already processing a conversation');
         return "Let me finish what I was saying first! 🐝"
+      }
+
+      // Validate and sanitize input
+      try {
+        validateNotEmpty(message, 'Message');
+        validateLength(message, 'Message', 1, 2000);
+        message = sanitizeString(message, { maxLength: 2000, trim: true });
+      } catch (error) {
+        logger.error('[Jubee] Invalid conversation input:', error);
+        return "Bzz! That message doesn't look quite right. Could you try again? 🐝";
       }
 
       set((state) => {
         state.isProcessing = true
         state.currentMood = context.mood || 'happy'
-        state.lastError = null
+        state.interactionCount += 1
       })
 
       const language = window.i18nextLanguage || 'en'
-      const maxRetries = 2
-      let retryCount = 0
 
       try {
-        while (retryCount <= maxRetries) {
-          try {
-            const controller = new AbortController()
-            const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout
+        const response = await callEdgeFunction<{ response: string }>({
+          functionName: 'jubee-conversation',
+          body: {
+            message,
+            context: {
+              ...context,
+              mood: state.currentMood,
+              language,
+            },
+          },
+          timeout: 15000,
+          retries: 2,
+        });
 
-            const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/jubee-conversation', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ 
-                message, 
-                language,
-                childName: context.childName,
-                context: {
-                  activity: context.activity,
-                  mood: context.mood,
-                }
-              }),
-              signal: controller.signal,
-            })
-
-            clearTimeout(timeoutId)
-
-            const data = await response.json()
-
-            if (data.success || data.fallback) {
-              const aiResponse = data.response
-              
-              // Speak with contextual mood
-              const speechMood = context.mood || 'happy'
-              get().speak(aiResponse, speechMood)
-              
-              // Show animation matching mood
-              get().triggerAnimation(context.mood || 'excited')
-              
-              set((state) => { state.isProcessing = false })
-              return aiResponse
-            }
-
-            if (response.status === 429) {
-              throw new Error('RATE_LIMIT')
-            }
-
-            throw new Error(data.error || 'Unknown error')
-          } catch (error) {
-            retryCount++
-            
-            if (error instanceof Error && error.name === 'AbortError') {
-              console.error('Conversation request timed out')
-            }
-            
-            if (retryCount > maxRetries) {
-              throw error
-            }
-            
-            // Wait before retry (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
-          }
-        }
-
-        throw new Error('Max retries exceeded')
+        const jubeeResponse = response.response;
+        
+        set((state) => { 
+          state.isProcessing = false
+          state.lastError = null
+        })
+        
+        // Speak the response
+        get().speak(jubeeResponse, context.mood || 'happy')
+        
+        return jubeeResponse;
       } catch (error) {
-        console.error('Conversation error:', error)
+        logger.error('[Jubee] Conversation error:', error)
         
         // Provide empathetic fallback messages
         const fallbackMessages: Record<string, string> = {

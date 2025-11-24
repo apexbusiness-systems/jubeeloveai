@@ -5,6 +5,14 @@ import "./index.css";
 import "./i18n/config";
 import { runMigrations } from "./lib/storageVersion";
 import { logger } from "./lib/logger";
+import { initializeGlobalErrorHandlers } from "./lib/globalErrorHandlers";
+import { initSentry } from "./lib/sentry";
+
+// Initialize Sentry for error tracking
+initSentry();
+
+// Initialize global error handlers
+initializeGlobalErrorHandlers();
 
 // Initialize storage migrations
 try {
