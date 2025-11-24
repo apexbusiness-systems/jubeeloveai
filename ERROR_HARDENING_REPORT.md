@@ -13,12 +13,19 @@ Comprehensive error handling and prevention system implemented across the entire
 
 ## Critical Fixes
 
-### Toast System Infinite Loop (FIXED)
+### 1. Toast System Infinite Loop (FIXED)
 **Issue:** Maximum update depth exceeded error in toast/toaster component
 **Root Cause:** `useToast` hook had `state` in useEffect dependencies, causing infinite re-registration of listeners
 **Solution:** Removed `state` from dependency array - listener registration should only happen on mount/unmount
 **File:** `src/hooks/use-toast.ts:177`
-**Impact:** Application is now stable without React rendering errors
+**Impact:** Prevented infinite re-render loop in toast system
+
+### 2. Achievement Worker Infinite Reinitialization (FIXED)
+**Issue:** Worker constantly terminating and reinitializing, visible in console as repeated "Worker initialized/terminated" messages
+**Root Cause:** `useAchievementWorker` hook had callback functions in useEffect dependencies, causing effect to re-run on every render
+**Solution:** Used ref pattern to store callbacks and removed them from dependency array - worker now initializes only once
+**File:** `src/hooks/useAchievementWorker.ts:22-79`
+**Impact:** Eliminated continuous worker cycling that was contributing to render thrashing
 
 ---
 
