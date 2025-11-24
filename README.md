@@ -36,6 +36,8 @@ npm i
 npm run dev
 ```
 
+> **Note:** If `npm ci` reports that `package.json` and `package-lock.json` are out of sync, regenerate the lockfile with `npm install --package-lock-only` in a networked environment before re-running CI.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).

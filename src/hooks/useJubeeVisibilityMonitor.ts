@@ -5,9 +5,9 @@
  * Provides failsafe recovery when Jubee disappears or fails to render.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
-import { validatePosition, getSafeDefaultPosition } from '@/core/jubee/JubeePositionManager'
+import { getSafeDefaultPosition } from '@/core/jubee/JubeePositionManager'
 
 interface VisibilityState {
   isActuallyVisible: boolean
@@ -28,10 +28,47 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
     invisibleDuration: 0
   })
   const recoveryAttemptsRef = useRef(0)
+  const recoveryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const checkVisibility = () => {
-    if (!containerRef.current || !isVisible) {
+  const clearRecoveryTimeout = useCallback(() => {
+    if (recoveryTimeoutRef.current) {
+      clearTimeout(recoveryTimeoutRef.current)
+      recoveryTimeoutRef.current = null
+    }
+  }, [])
+
+  const attemptRecovery = useCallback(() => {
+    recoveryAttemptsRef.current++
+
+    clearRecoveryTimeout()
+
+    const safePosition = getSafeDefaultPosition()
+
+    console.log('[Jubee Visibility] Attempting recovery - resetting to safe position:', safePosition)
+    setContainerPosition(safePosition)
+
+    recoveryTimeoutRef.current = setTimeout(() => {
+      if (!stateRef.current.isActuallyVisible) {
+        console.log('[Jubee Visibility] Still not visible after recovery, showing manual reset UI')
+        setNeedsRecovery(true)
+      }
+    }, 1000)
+  }, [clearRecoveryTimeout, setContainerPosition])
+
+  const checkVisibility = useCallback(() => {
+    if (!isVisible) {
+      clearRecoveryTimeout()
       stateRef.current.isActuallyVisible = false
+      stateRef.current.lastSeenTimestamp = Date.now()
+      stateRef.current.invisibleDuration = 0
+      recoveryAttemptsRef.current = 0
+      setNeedsRecovery(false)
+      return false
+    }
+
+    if (!containerRef.current) {
+      stateRef.current.isActuallyVisible = false
+      stateRef.current.invisibleDuration = Date.now() - stateRef.current.lastSeenTimestamp
       return false
     }
 
@@ -95,36 +132,18 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
           attemptRecovery()
         }
       }
-      
+
       return actuallyVisible
     } catch (error) {
       console.error('[Jubee Visibility] Check failed:', error)
       return false
     }
-  }
+  }, [attemptRecovery, clearRecoveryTimeout, containerRef, isVisible])
 
-  const attemptRecovery = () => {
-    recoveryAttemptsRef.current++
-    
-    // Use centralized safe position calculation
-    const safePosition = getSafeDefaultPosition()
-    
-    console.log('[Jubee Visibility] Attempting recovery - resetting to safe position:', safePosition)
-    setContainerPosition(safePosition)
-    
-    // Force re-render by toggling visibility flag
-    setTimeout(() => {
-      if (!stateRef.current.isActuallyVisible) {
-        console.log('[Jubee Visibility] Still not visible after recovery, showing manual reset UI')
-        setNeedsRecovery(true)
-      }
-    }, 1000)
-  }
-
-  const forceReset = () => {
+  const forceReset = useCallback(() => {
     console.log('[Jubee Visibility] Manual reset triggered')
     recoveryAttemptsRef.current = 0
-    
+
     // Use centralized safe position calculation
     const safePosition = getSafeDefaultPosition()
     
@@ -146,7 +165,7 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
         }
       }
     }
-  }
+  }, [containerRef, setContainerPosition])
 
   // Periodic visibility checks
   useEffect(() => {
@@ -154,16 +173,25 @@ export function useJubeeVisibilityMonitor(containerRef: React.RefObject<HTMLDivE
       checkVisibility()
     }, VISIBILITY_CHECK_INTERVAL)
 
-    // Initial check
-    setTimeout(checkVisibility, 500)
+    const initialTimeoutId = setTimeout(checkVisibility, 500)
 
-    return () => clearInterval(intervalId)
-  }, [isVisible, containerRef, checkVisibility])
+    return () => {
+      clearInterval(intervalId)
+      clearTimeout(initialTimeoutId)
+    }
+  }, [checkVisibility])
 
   // Check on position changes
   useEffect(() => {
-    setTimeout(checkVisibility, 300)
+    const timeoutId = setTimeout(checkVisibility, 300)
+    return () => clearTimeout(timeoutId)
   }, [containerPosition, checkVisibility])
+
+  useEffect(() => {
+    return () => {
+      clearRecoveryTimeout()
+    }
+  }, [clearRecoveryTimeout])
 
   return {
     needsRecovery,
