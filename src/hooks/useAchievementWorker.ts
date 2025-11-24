@@ -19,7 +19,11 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
   const [isWorkerSupported, setIsWorkerSupported] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  // Initialize worker on mount
+  // Store callbacks in ref to avoid re-initialization loop
+  const callbacksRef = useRef(options);
+  callbacksRef.current = options;
+
+  // Initialize worker on mount (only once)
   useEffect(() => {
     // Check if Worker API is supported
     if (typeof Worker === 'undefined') {
@@ -35,7 +39,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         { type: 'module' }
       )
 
-      // Set up message handler
+      // Set up message handler using ref to always access latest callbacks
       workerRef.current.onmessage = (event: MessageEvent<AchievementWorkerOutput>) => {
         setIsProcessing(false)
         
@@ -44,19 +48,19 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
             `[AchievementWorker] Processed in ${event.data.processingTime.toFixed(2)}ms`,
             `Found ${event.data.newUnlocks.length} new unlocks`
           )
-          options.onAchievementsProcessed?.(event.data)
+          callbacksRef.current.onAchievementsProcessed?.(event.data)
         } else if (event.data.type === 'ERROR' && event.data.error) {
           const error = new Error(event.data.error)
           console.error('[AchievementWorker] Worker error:', error)
-          options.onError?.(error)
+          callbacksRef.current.onError?.(error)
         }
       }
 
-      // Set up error handler
+      // Set up error handler using ref
       workerRef.current.onerror = (error) => {
         setIsProcessing(false)
         console.error('[AchievementWorker] Worker error:', error)
-        options.onError?.(new Error(error.message))
+        callbacksRef.current.onError?.(new Error(error.message))
       }
 
       console.log('[AchievementWorker] Worker initialized successfully')
@@ -73,7 +77,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         console.log('[AchievementWorker] Worker terminated')
       }
     }
-  }, [options.onAchievementsProcessed, options.onError])
+  }, []) // Empty deps - initialize only once
 
   /**
    * Process achievements in worker
@@ -102,7 +106,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         } catch (error) {
           setIsProcessing(false)
           const err = error instanceof Error ? error : new Error('Unknown error')
-          options.onError?.(err)
+          callbacksRef.current.onError?.(err)
           return null
         }
       }
@@ -127,7 +131,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         workerRef.current!.postMessage(input)
       })
     },
-    [isWorkerSupported, isProcessing, options]
+    [isWorkerSupported, isProcessing]
   )
 
   /**
