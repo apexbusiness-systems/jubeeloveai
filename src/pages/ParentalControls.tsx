@@ -13,6 +13,7 @@ import { ScheduleConfigurator } from '@/components/ScheduleConfigurator';
 import { toast } from '@/hooks/use-toast';
 import { Lock, Unlock, UserPlus, Clock, Shield, Users, Settings as SettingsIcon } from 'lucide-react';
 import type { Schedule } from '@/store/useParentalStore';
+import { validatePIN, validateChildName } from '@/lib/inputValidation';
 
 export default function ParentalControls() {
   const navigate = useNavigate();
@@ -59,10 +60,12 @@ export default function ParentalControls() {
   };
 
   const handleSetupPin = () => {
-    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+    // SECURITY: Use centralized validation
+    const pinValidation = validatePIN(newPin);
+    if (!pinValidation.valid) {
       toast({
         title: "Invalid PIN",
-        description: "PIN must be exactly 4 digits",
+        description: pinValidation.error || "PIN must be exactly 4 digits",
         variant: "destructive",
       });
       return;
@@ -88,10 +91,21 @@ export default function ParentalControls() {
   };
 
   const handleAddChild = () => {
-    if (!newChildName.trim() || !newChildAge) {
+    // SECURITY: Validate child name
+    const nameValidation = validateChildName(newChildName);
+    if (!nameValidation.valid) {
+      toast({
+        title: "Invalid Name",
+        description: nameValidation.error || "Please provide a valid name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!newChildAge) {
       toast({
         title: "Missing Information",
-        description: "Please provide child's name and age",
+        description: "Please provide child's age",
         variant: "destructive",
       });
       return;
