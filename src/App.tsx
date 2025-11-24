@@ -21,9 +21,6 @@ import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { ScreenTimeIndicator } from './components/ScreenTimeIndicator';
 import { ConflictResolutionDialog } from './components/ConflictResolutionDialog';
-import { useJubeeCollision } from './hooks/useJubeeCollision';
-import { useJubeeDraggable } from './hooks/useJubeeDraggable';
-import { useJubeeVisibilityMonitor } from './hooks/useJubeeVisibilityMonitor';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
@@ -31,7 +28,7 @@ import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
 import { useJubeeLifecycleDiagnostics } from './hooks/useJubeeLifecycleDiagnostics';
 import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
-import { JubeeCanvas } from './components/JubeeCanvas';
+import { JubeeCanvas3DDirect } from './components/JubeeCanvas3DDirect';
 import { validatePosition } from './core/jubee/JubeePositionManager';
 
 const queryClient = new QueryClient({
@@ -108,13 +105,8 @@ function AppShell() {
     springBottom.set(containerPosition.bottom);
     springRight.set(containerPosition.right);
   }, [containerPosition.bottom, containerPosition.right, springBottom, springRight]);
-
-  // Enable collision detection, dragging, and visibility monitoring
-  useJubeeCollision(jubeeContainerRef);
-  useJubeeDraggable(jubeeContainerRef);
-  const { needsRecovery, forceReset } = useJubeeVisibilityMonitor(jubeeContainerRef);
   
-  // DIAGNOSTIC: Add comprehensive lifecycle instrumentation
+  // DIAGNOSTIC: Add comprehensive lifecycle instrumentation (for debugging)
   const jubeeDebug = useJubeeLifecycleDiagnostics(jubeeContainerRef);
   
   // Expose debug utilities to window for manual inspection
@@ -296,31 +288,8 @@ function AppShell() {
           </header>
         )}
 
-        {/* Jubee rendered via Portal at document.body level for global viewport freedom */}
-        {!isAuthRoute && isVisible && viewportWidth !== null && createPortal(
-          <motion.div
-            ref={jubeeContainerRef}
-            className="jubee-container"
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              bottom: isDragging ? containerPosition.bottom : springBottom,
-              right: isDragging ? containerPosition.right : springRight,
-              // Responsive dimensions matching JubeePositionManager breakpoints
-              width: viewportWidth < 768 ? '300px' : viewportWidth < 1024 ? '350px' : '400px',
-              height: viewportWidth < 768 ? '360px' : viewportWidth < 1024 ? '400px' : '450px',
-              zIndex: 10001,
-              touchAction: 'none',
-              pointerEvents: 'auto'
-            }}
-          >
-            <JubeeCanvas 
-              jubeePosition={jubeePosition} 
-              jubeeAnimation={jubeeAnimation} 
-            />
-          </motion.div>,
-          document.body
-        )}
+        {/* Jubee 3D Mascot - Direct Canvas Rendering (No Portal) */}
+        {!isAuthRoute && <JubeeCanvas3DDirect />}
 
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
@@ -381,42 +350,7 @@ function AppShell() {
           </>
         )}
 
-        {/* Recovery button when Jubee disappears */}
-        {!isAuthRoute && needsRecovery && (
-          <button
-            onClick={forceReset}
-            className="
-              fixed top-4 right-4 z-[100]
-              bg-primary text-primary-foreground
-              px-4 py-3
-              rounded-lg
-              shadow-lg
-              hover:opacity-90
-              transition-opacity
-              flex items-center gap-2
-              animate-fade-in
-              min-h-[44px]
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-            "
-            aria-label="Reset Jubee position"
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
-              <path d="M21 3v5h-5"/>
-            </svg>
-            <span className="font-bold">Reset Jubee</span>
-          </button>
-        )}
+        {/* No longer need recovery button - new 3D engine is more stable */}
       </div>
       <Toaster />
     </>

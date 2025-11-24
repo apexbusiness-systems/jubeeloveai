@@ -1,6 +1,13 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { 
+  GameSkeleton, 
+  StoryTimeSkeleton, 
+  ProgressSkeleton,
+  GallerySkeleton,
+  SettingsSkeleton 
+} from './LoadingSkeleton';
 
 const WritingCanvas = lazy(() => import('../modules/writing/WritingCanvas'));
 const ShapeSorter = lazy(() => import('../modules/shapes/ShapeSorter'));
@@ -30,24 +37,24 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Public routes - No auth required for toddlers */}
-      <Route path="/auth" element={<AuthPage />} />
-      <Route path="/" element={<HomePage />} />
-      <Route path="/write" element={<WritingCanvas />} />
-      <Route path="/gallery" element={<Gallery />} />
-      <Route path="/shapes" element={<ShapeSorter />} />
-      <Route path="/stories" element={<StoryTime />} />
-      <Route path="/reading" element={<ReadingPractice />} />
-      <Route path="/games" element={<GamesMenu />} />
-      <Route path="/games/memory" element={<MemoryGame />} />
-      <Route path="/games/pattern" element={<PatternGame />} />
-      <Route path="/games/numbers" element={<NumberGame />} />
-      <Route path="/games/alphabet" element={<AlphabetGame />} />
-      <Route path="/games/colors" element={<ColorGame />} />
-      <Route path="/games/puzzle" element={<PuzzleGame />} />
-      <Route path="/progress" element={<ProgressPage />} />
-      <Route path="/stickers" element={<StickersPage />} />
-      <Route path="/music" element={<MusicPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/auth" element={<Suspense fallback={<SettingsSkeleton />}><AuthPage /></Suspense>} />
+      <Route path="/" element={<Suspense fallback={<GameSkeleton />}><HomePage /></Suspense>} />
+      <Route path="/write" element={<Suspense fallback={<GameSkeleton />}><WritingCanvas /></Suspense>} />
+      <Route path="/gallery" element={<Suspense fallback={<GallerySkeleton />}><Gallery /></Suspense>} />
+      <Route path="/shapes" element={<Suspense fallback={<GameSkeleton />}><ShapeSorter /></Suspense>} />
+      <Route path="/stories" element={<Suspense fallback={<StoryTimeSkeleton />}><StoryTime /></Suspense>} />
+      <Route path="/reading" element={<Suspense fallback={<GameSkeleton />}><ReadingPractice /></Suspense>} />
+      <Route path="/games" element={<Suspense fallback={<GameSkeleton />}><GamesMenu /></Suspense>} />
+      <Route path="/games/memory" element={<Suspense fallback={<GameSkeleton />}><MemoryGame /></Suspense>} />
+      <Route path="/games/pattern" element={<Suspense fallback={<GameSkeleton />}><PatternGame /></Suspense>} />
+      <Route path="/games/numbers" element={<Suspense fallback={<GameSkeleton />}><NumberGame /></Suspense>} />
+      <Route path="/games/alphabet" element={<Suspense fallback={<GameSkeleton />}><AlphabetGame /></Suspense>} />
+      <Route path="/games/colors" element={<Suspense fallback={<GameSkeleton />}><ColorGame /></Suspense>} />
+      <Route path="/games/puzzle" element={<Suspense fallback={<GameSkeleton />}><PuzzleGame /></Suspense>} />
+      <Route path="/progress" element={<Suspense fallback={<ProgressSkeleton />}><ProgressPage /></Suspense>} />
+      <Route path="/stickers" element={<Suspense fallback={<GameSkeleton />}><StickersPage /></Suspense>} />
+      <Route path="/music" element={<Suspense fallback={<GameSkeleton />}><MusicPage /></Suspense>} />
+      <Route path="/settings" element={<Suspense fallback={<SettingsSkeleton />}><SettingsPage /></Suspense>} />
       <Route path="/install" element={<InstallPage />} />
       <Route path="/parental-controls" element={<ParentalControls />} />
       <Route path="/performance-monitor" element={<PerformanceMonitor />} />

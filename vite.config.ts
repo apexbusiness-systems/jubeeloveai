@@ -125,4 +125,41 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Optimize bundle splitting for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select'],
+          'vendor-animation': ['framer-motion', '@react-spring/three'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          // Feature chunks
+          'games': [
+            './src/modules/games/MemoryGame',
+            './src/modules/games/PatternGame',
+            './src/modules/games/NumberGame',
+            './src/modules/games/AlphabetGame',
+            './src/modules/games/ColorGame',
+            './src/modules/games/PuzzleGame',
+          ],
+          'reading': [
+            './src/modules/reading/StoryTime',
+            './src/modules/reading/ReadingPractice',
+          ],
+        },
+      },
+    },
+    // Target modern browsers for smaller bundles
+    target: 'es2020',
+    // Optimize chunk sizes
+    chunkSizeWarningLimit: 600,
+  },
+  optimizeDeps: {
+    // Pre-bundle heavy dependencies
+    include: ['three', 'framer-motion', '@tanstack/react-query'],
+  },
 }));
