@@ -8,10 +8,11 @@ test.describe('Jubee Mascot Interactions', () => {
     await expect(jubee).toBeVisible({ timeout: 5000 });
   });
 
-  test('should be draggable', async ({ page }) => {
+  test('should be draggable on desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
     
-    const jubee = page.locator('[data-testid="jubee-mascot"]');
+    const jubee = page.locator('[data-jubee-container="true"]');
     await jubee.waitFor({ state: 'visible' });
     
     // Get initial position
@@ -27,12 +28,87 @@ test.describe('Jubee Mascot Interactions', () => {
     // Position should have changed
     const newBox = await jubee.boundingBox();
     expect(newBox?.x).not.toBe(initialBox?.x);
+    expect(newBox?.y).not.toBe(initialBox?.y);
+  });
+
+  test('should stay within bounds when dragged on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    
+    const jubee = page.locator('[data-jubee-container="true"]');
+    await jubee.waitFor({ state: 'visible' });
+    
+    // Try to drag Jubee off-screen to the right
+    const initialBox = await jubee.boundingBox();
+    expect(initialBox).toBeTruthy();
+    
+    // Attempt to drag beyond viewport
+    await jubee.hover();
+    await page.mouse.down();
+    await page.mouse.move(500, initialBox!.y); // Beyond viewport width
+    await page.mouse.up();
+    
+    // Jubee should be clamped within viewport
+    const newBox = await jubee.boundingBox();
+    expect(newBox).toBeTruthy();
+    expect(newBox!.x + newBox!.width).toBeLessThanOrEqual(390); // Within viewport width
+  });
+
+  test('should stay within bounds when dragged on tablet', async ({ page }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.goto('/');
+    
+    const jubee = page.locator('[data-jubee-container="true"]');
+    await jubee.waitFor({ state: 'visible' });
+    
+    // Try to drag Jubee off-screen to the top
+    const initialBox = await jubee.boundingBox();
+    expect(initialBox).toBeTruthy();
+    
+    // Attempt to drag beyond viewport top
+    await jubee.hover();
+    await page.mouse.down();
+    await page.mouse.move(initialBox!.x, -100); // Beyond viewport top
+    await page.mouse.up();
+    
+    // Jubee should be clamped within viewport
+    const newBox = await jubee.boundingBox();
+    expect(newBox).toBeTruthy();
+    expect(newBox!.y).toBeGreaterThanOrEqual(0); // Within viewport height
+  });
+
+  test('should maintain responsive dimensions across viewport changes', async ({ page }) => {
+    await page.goto('/');
+    
+    const jubee = page.locator('[data-jubee-container="true"]');
+    await jubee.waitFor({ state: 'visible' });
+    
+    // Desktop: 400x450
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.waitForTimeout(100);
+    let box = await jubee.boundingBox();
+    expect(box?.width).toBe(400);
+    expect(box?.height).toBe(450);
+    
+    // Tablet: 350x400
+    await page.setViewportSize({ width: 800, height: 1024 });
+    await page.waitForTimeout(100);
+    box = await jubee.boundingBox();
+    expect(box?.width).toBe(350);
+    expect(box?.height).toBe(400);
+    
+    // Mobile: 300x360
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(100);
+    box = await jubee.boundingBox();
+    expect(box?.width).toBe(300);
+    expect(box?.height).toBe(360);
   });
 
   test('should persist position across page navigation', async ({ page }) => {
     await page.goto('/');
     
-    const jubee = page.locator('[data-testid="jubee-mascot"]');
+    const jubee = page.locator('[data-jubee-container="true"]');
     await jubee.waitFor({ state: 'visible' });
     
     // Get position on home page
