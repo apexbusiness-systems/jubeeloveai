@@ -16,7 +16,10 @@ import { useEffect, useRef, memo, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { logger } from '@/lib/logger';
-import { validatePosition as validateContainerPosition } from '@/core/jubee/JubeePositionManager';
+import { 
+  validatePosition as validateContainerPosition,
+  getContainerDimensions 
+} from '@/core/jubee/JubeePositionManager';
 
 interface JubeeCanvas3DDirectProps {
   className?: string;
@@ -42,6 +45,19 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; startBottom: number; startRight: number } | null>(null);
+  
+  // Get responsive container dimensions
+  const [containerDimensions, setContainerDimensions] = useState(() => getContainerDimensions());
+
+  // Update dimensions on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setContainerDimensions(getContainerDimensions());
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // DIAGNOSTIC: Component lifecycle tracking
   useEffect(() => {
@@ -333,8 +349,8 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         position: 'fixed',
         bottom: `${containerPosition.bottom}px`,
         right: `${containerPosition.right}px`,
-        width: '400px',
-        height: '450px',
+        width: `${containerDimensions.width}px`,
+        height: `${containerDimensions.height}px`,
         pointerEvents: isVisible ? 'auto' : 'none',
         opacity: isVisible ? 1 : 0,
         transition: isDragging ? 'none' : 'opacity 0.3s ease',
