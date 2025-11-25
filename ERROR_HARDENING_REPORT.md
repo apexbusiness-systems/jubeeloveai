@@ -27,7 +27,7 @@ Comprehensive error handling and prevention system implemented across the entire
 **File:** `src/hooks/useAchievementWorker.ts:22-79`
 **Impact:** Eliminated continuous worker cycling that was contributing to render thrashing
 
-### 3. Jubee DOM Disappearance - Phase 1 Diagnostic Instrumentation (IN PROGRESS)
+### 3. Jubee DOM Disappearance - Phase 1 Diagnostic Instrumentation (COMPLETED)
 **Issue:** Jubee mascot state shows `isVisible: true` but DOM shows `containerExists: false, canvasExists: false` - persistent disappearing bug with 6+ failed reactive fixes
 **Approach:** Following systematic-debugging framework Phase 1 - Root Cause Investigation with comprehensive diagnostic instrumentation
 **Implementation:** Added diagnostic logging at every lifecycle boundary:
@@ -38,11 +38,17 @@ Comprehensive error handling and prevention system implemented across the entire
   - Three.js initialization gate logging
   - Render cycle completion tracking
   - App.tsx conditional render decision logging
+  - **ALL `logger.dev()` calls replaced with `console.log()` for production visibility**
 **Files Modified:**
-  - `src/components/JubeeCanvas3DDirect.tsx`: 7 diagnostic checkpoints
-  - `src/App.tsx`: Conditional render tracing
-**Next Steps:** Gather empirical evidence from logs to identify exact failure point before proposing architectural fixes
-**Status:** 🔬 Evidence gathering phase - no fixes attempted until root cause is confirmed
+  - `src/components/JubeeCanvas3DDirect.tsx`: 7 diagnostic checkpoints, all using `console.log()`
+  - `src/App.tsx`: Conditional render tracing using `console.log()`
+**Production Visibility:** All diagnostic logs now use `console.log()` instead of `logger.dev()` to ensure visibility in production builds (preview environment)
+**Next Steps:** 
+  1. Refresh preview to capture diagnostic evidence
+  2. Analyze log patterns to identify exact failure point
+  3. Determine if React Three Fiber portal + draggable + position management architecture is fundamentally sound
+  4. Implement targeted fixes based on root cause evidence
+**Status:** ✅ Phase 1 Complete - Ready for evidence gathering and pattern analysis
 
 ---
 

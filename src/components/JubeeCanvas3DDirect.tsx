@@ -40,7 +40,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
   // DIAGNOSTIC: Component lifecycle tracking
   useEffect(() => {
-    logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT MOUNTED', {
+    console.log('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT MOUNTED', {
       isVisible,
       containerPosition,
       currentAnimation,
@@ -48,7 +48,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     });
 
     return () => {
-      logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT UNMOUNTING', {
+      console.log('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT UNMOUNTING', {
         timestamp: Date.now()
       });
     };
@@ -57,7 +57,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   // DIAGNOSTIC: Ref assignment tracking
   useEffect(() => {
     const checkInterval = setInterval(() => {
-      logger.dev('[DIAGNOSTIC] Ref Check', {
+      console.log('[DIAGNOSTIC] Ref Check', {
         containerRef: containerRef.current ? 'ASSIGNED' : 'NULL',
         canvasRef: canvasRef.current ? 'ASSIGNED' : 'NULL',
         containerInDOM: containerRef.current ? document.contains(containerRef.current) : false,
@@ -71,7 +71,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
   // DIAGNOSTIC: Visibility state tracking
   useEffect(() => {
-    logger.dev('[DIAGNOSTIC] Visibility State Changed', {
+    console.log('[DIAGNOSTIC] Visibility State Changed', {
       isVisible,
       containerExists: !!containerRef.current,
       canvasExists: !!canvasRef.current,
@@ -81,21 +81,21 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
   // Initialize Three.js scene
   useEffect(() => {
-    logger.dev('[DIAGNOSTIC] Three.js Init Effect Running', {
+    console.log('[DIAGNOSTIC] Three.js Init Effect Running', {
       hasContainerRef: !!containerRef.current,
       hasCanvasRef: !!canvasRef.current,
       timestamp: Date.now()
     });
 
     if (!canvasRef.current || !containerRef.current) {
-      logger.dev('[DIAGNOSTIC] Three.js Init BLOCKED - Refs not ready', {
+      console.log('[DIAGNOSTIC] Three.js Init BLOCKED - Refs not ready', {
         containerRef: containerRef.current ? 'OK' : 'MISSING',
         canvasRef: canvasRef.current ? 'OK' : 'MISSING'
       });
       return;
     }
 
-    logger.dev('[Jubee3DDirect] Initializing Three.js scene');
+    console.log('[Jubee3DDirect] Initializing Three.js scene');
 
     // Create scene
     const scene = new THREE.Scene();
@@ -177,7 +177,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
     // Cleanup
     return () => {
-      logger.dev('[Jubee3DDirect] Cleaning up Three.js scene');
+      console.log('[Jubee3DDirect] Cleaning up Three.js scene');
       window.removeEventListener('resize', handleResize);
       
       if (animationFrameRef.current) {
@@ -206,20 +206,20 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   // Update animation state
   useEffect(() => {
     if (jubeeGroupRef.current) {
-      logger.dev('[Jubee3DDirect] Animation changed:', currentAnimation);
+      console.log('[Jubee3DDirect] Animation changed:', currentAnimation);
     }
   }, [currentAnimation, currentMood]);
 
   // DIAGNOSTIC: Render tracking
   useEffect(() => {
-    logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDER COMPLETE', {
+    console.log('[DIAGNOSTIC] JubeeCanvas3DDirect RENDER COMPLETE', {
       containerAttached: containerRef.current && document.contains(containerRef.current),
       canvasAttached: canvasRef.current && document.contains(canvasRef.current),
       timestamp: Date.now()
     });
   });
 
-  logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDERING', {
+  console.log('[DIAGNOSTIC] JubeeCanvas3DDirect RENDERING', {
     isVisible,
     containerPosition,
     timestamp: Date.now()
@@ -229,7 +229,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     <div
       ref={(el) => {
         containerRef.current = el;
-        logger.dev('[DIAGNOSTIC] Container Ref Callback Executed', {
+        console.log('[DIAGNOSTIC] Container Ref Callback Executed', {
           element: el ? 'ELEMENT RECEIVED' : 'NULL',
           elementTag: el?.tagName,
           inDOM: el ? document.contains(el) : false,
@@ -255,7 +255,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
       <canvas
         ref={(el) => {
           canvasRef.current = el;
-          logger.dev('[DIAGNOSTIC] Canvas Ref Callback Executed', {
+          console.log('[DIAGNOSTIC] Canvas Ref Callback Executed', {
             element: el ? 'ELEMENT RECEIVED' : 'NULL',
             elementTag: el?.tagName,
             inDOM: el ? document.contains(el) : false,
