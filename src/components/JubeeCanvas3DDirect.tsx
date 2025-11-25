@@ -12,10 +12,11 @@
  * - More reliable state synchronization
  */
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { logger } from '@/lib/logger';
+import { validatePosition as validateContainerPosition } from '@/core/jubee/JubeePositionManager';
 
 interface JubeeCanvas3DDirectProps {
   className?: string;
@@ -35,8 +36,12 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     isVisible, 
     currentAnimation, 
     gender,
-    currentMood 
+    currentMood,
+    setContainerPosition,
   } = useJubeeStore();
+
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ x: number; y: number; startBottom: number; startRight: number } | null>(null);
 
   // DIAGNOSTIC: Component lifecycle tracking
   useEffect(() => {
@@ -210,6 +215,93 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     }
   }, [currentAnimation, currentMood]);
 
+  // Dragging handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      startBottom: containerPosition.bottom,
+      startRight: containerPosition.right,
+    };
+    console.log('[Jubee3DDirect] Drag started', dragStartRef.current);
+  }, [containerPosition]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !dragStartRef.current) return;
+
+    const deltaX = e.clientX - dragStartRef.current.x;
+    const deltaY = e.clientY - dragStartRef.current.y;
+
+    const newPosition = validateContainerPosition({
+      bottom: dragStartRef.current.startBottom - deltaY,
+      right: dragStartRef.current.startRight - deltaX,
+    });
+
+    setContainerPosition(newPosition);
+  }, [isDragging, setContainerPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDragging) {
+      setIsDragging(false);
+      dragStartRef.current = null;
+      console.log('[Jubee3DDirect] Drag ended');
+    }
+  }, [isDragging]);
+
+  // Touch handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      startBottom: containerPosition.bottom,
+      startRight: containerPosition.right,
+    };
+  }, [containerPosition]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isDragging || !dragStartRef.current) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - dragStartRef.current.x;
+    const deltaY = touch.clientY - dragStartRef.current.y;
+
+    const newPosition = validateContainerPosition({
+      bottom: dragStartRef.current.startBottom - deltaY,
+      right: dragStartRef.current.startRight - deltaX,
+    });
+
+    setContainerPosition(newPosition);
+  }, [isDragging, setContainerPosition]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (isDragging) {
+      setIsDragging(false);
+      dragStartRef.current = null;
+    }
+  }, [isDragging]);
+
+  // Attach global mouse/touch listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
+
   // DIAGNOSTIC: Render tracking
   useEffect(() => {
     console.log('[DIAGNOSTIC] JubeeCanvas3DDirect RENDER COMPLETE', {
@@ -245,12 +337,15 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         height: '450px',
         pointerEvents: isVisible ? 'auto' : 'none',
         opacity: isVisible ? 1 : 0,
-        transition: 'opacity 0.3s ease',
+        transition: isDragging ? 'none' : 'opacity 0.3s ease',
         zIndex: 9999,
-        cursor: 'grab',
+        cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
+        userSelect: 'none',
       }}
       data-jubee-container="true"
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
       <canvas
         ref={(el) => {
