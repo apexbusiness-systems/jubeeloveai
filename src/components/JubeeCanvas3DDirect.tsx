@@ -390,9 +390,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
   // Get colors based on gender - ULTRA bright, vibrant, lively bee colors
   const colors = {
-    body: gender === 'male' ? 0xFFD700 : 0xFF69B4,  // Pure gold / hot pink
+    body: gender === 'male' ? 0xFFD700 : 0xFFC300,  // Pure gold / bright amber yellow
     stripe: 0x2C2C2C,  // Dark charcoal for strong contrast
-    accent: gender === 'male' ? 0x00FFFF : 0xFF1493,  // Cyan / deep pink
+    accent: gender === 'male' ? 0x00FFFF : 0xFFAA00,  // Cyan / orange-yellow
     eye: 0xFFFFFF,
     pupil: 0x000000,
   };
