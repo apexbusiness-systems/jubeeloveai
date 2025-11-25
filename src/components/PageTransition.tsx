@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useJubeePageTransition } from '@/hooks/useJubeePageTransition';
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -12,6 +13,9 @@ export function PageTransition({ children }: PageTransitionProps) {
   const { triggerAnimation } = useJubeeStore();
   const prefersReducedMotion = useReducedMotion();
   const [displayLocation, setDisplayLocation] = useState(location);
+
+  // Animate Jubee flying across screen during transitions
+  useJubeePageTransition();
 
   useEffect(() => {
     // Trigger Jubee's transition animation when page changes

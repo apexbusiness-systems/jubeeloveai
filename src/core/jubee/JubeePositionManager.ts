@@ -44,9 +44,9 @@ export function getResponsiveContainerDimensions(): ContainerDimensions {
   }
 }
 
-// Legacy constants for backward compatibility
-export const JUBEE_CONTAINER_WIDTH = 400;
-export const JUBEE_CONTAINER_HEIGHT = 450;
+// Legacy constants for backward compatibility (10% smaller)
+export const JUBEE_CONTAINER_WIDTH = 360;
+export const JUBEE_CONTAINER_HEIGHT = 405;
 
 /**
  * Get current viewport dimensions
