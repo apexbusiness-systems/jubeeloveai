@@ -289,7 +289,16 @@ function AppShell() {
         )}
 
         {/* Jubee 3D Mascot - Direct Canvas Rendering (No Portal) */}
-        {!isAuthRoute && <JubeeCanvas3DDirect />}
+        {!isAuthRoute && (() => {
+          console.log('[DIAGNOSTIC] App.tsx - Rendering JubeeCanvas3DDirect', {
+            isAuthRoute,
+            shouldRender: !isAuthRoute,
+            isVisible,
+            containerPosition,
+            timestamp: Date.now()
+          });
+          return <JubeeCanvas3DDirect />;
+        })()}
 
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}

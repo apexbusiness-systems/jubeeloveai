@@ -38,9 +38,62 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     currentMood 
   } = useJubeeStore();
 
+  // DIAGNOSTIC: Component lifecycle tracking
+  useEffect(() => {
+    logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT MOUNTED', {
+      isVisible,
+      containerPosition,
+      currentAnimation,
+      timestamp: Date.now()
+    });
+
+    return () => {
+      logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect COMPONENT UNMOUNTING', {
+        timestamp: Date.now()
+      });
+    };
+  }, []); // Empty deps - mount/unmount only
+
+  // DIAGNOSTIC: Ref assignment tracking
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      logger.dev('[DIAGNOSTIC] Ref Check', {
+        containerRef: containerRef.current ? 'ASSIGNED' : 'NULL',
+        canvasRef: canvasRef.current ? 'ASSIGNED' : 'NULL',
+        containerInDOM: containerRef.current ? document.contains(containerRef.current) : false,
+        canvasInDOM: canvasRef.current ? document.contains(canvasRef.current) : false,
+        timestamp: Date.now()
+      });
+    }, 2000);
+
+    return () => clearInterval(checkInterval);
+  }, []);
+
+  // DIAGNOSTIC: Visibility state tracking
+  useEffect(() => {
+    logger.dev('[DIAGNOSTIC] Visibility State Changed', {
+      isVisible,
+      containerExists: !!containerRef.current,
+      canvasExists: !!canvasRef.current,
+      timestamp: Date.now()
+    });
+  }, [isVisible]);
+
   // Initialize Three.js scene
   useEffect(() => {
-    if (!canvasRef.current || !containerRef.current) return;
+    logger.dev('[DIAGNOSTIC] Three.js Init Effect Running', {
+      hasContainerRef: !!containerRef.current,
+      hasCanvasRef: !!canvasRef.current,
+      timestamp: Date.now()
+    });
+
+    if (!canvasRef.current || !containerRef.current) {
+      logger.dev('[DIAGNOSTIC] Three.js Init BLOCKED - Refs not ready', {
+        containerRef: containerRef.current ? 'OK' : 'MISSING',
+        canvasRef: canvasRef.current ? 'OK' : 'MISSING'
+      });
+      return;
+    }
 
     logger.dev('[Jubee3DDirect] Initializing Three.js scene');
 
@@ -157,9 +210,32 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     }
   }, [currentAnimation, currentMood]);
 
+  // DIAGNOSTIC: Render tracking
+  useEffect(() => {
+    logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDER COMPLETE', {
+      containerAttached: containerRef.current && document.contains(containerRef.current),
+      canvasAttached: canvasRef.current && document.contains(canvasRef.current),
+      timestamp: Date.now()
+    });
+  });
+
+  logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDERING', {
+    isVisible,
+    containerPosition,
+    timestamp: Date.now()
+  });
+
   return (
     <div
-      ref={containerRef}
+      ref={(el) => {
+        containerRef.current = el;
+        logger.dev('[DIAGNOSTIC] Container Ref Callback Executed', {
+          element: el ? 'ELEMENT RECEIVED' : 'NULL',
+          elementTag: el?.tagName,
+          inDOM: el ? document.contains(el) : false,
+          timestamp: Date.now()
+        });
+      }}
       className={`jubee-container ${className || ''}`}
       style={{
         position: 'fixed',
@@ -177,7 +253,15 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
       data-jubee-container="true"
     >
       <canvas
-        ref={canvasRef}
+        ref={(el) => {
+          canvasRef.current = el;
+          logger.dev('[DIAGNOSTIC] Canvas Ref Callback Executed', {
+            element: el ? 'ELEMENT RECEIVED' : 'NULL',
+            elementTag: el?.tagName,
+            inDOM: el ? document.contains(el) : false,
+            timestamp: Date.now()
+          });
+        }}
         className="jubee-canvas"
         style={{
           width: '100%',
