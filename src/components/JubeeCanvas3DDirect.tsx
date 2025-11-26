@@ -22,6 +22,8 @@ import {
 } from '@/core/jubee/JubeePositionManager';
 import { useJubeeRenderingGuard } from '@/hooks/useJubeeRenderingGuard';
 import { validateJubeeState } from '@/core/jubee/JubeeStateValidator';
+import { useWebGLContextRecovery } from '@/hooks/useWebGLContextRecovery';
+import { jubeeErrorRecovery } from '@/core/jubee/JubeeErrorRecovery';
 
 interface JubeeCanvas3DDirectProps {
   className?: string;
@@ -78,6 +80,18 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     getWebGLContext,
     handleRecoveryNeeded
   );
+
+  // WebGL context recovery
+  const webglRecovery = useWebGLContextRecovery(canvasRef, {
+    onContextLost: () => {
+      logger.error('[Jubee3DDirect] WebGL context lost');
+      jubeeErrorRecovery.attemptRecovery(new Error('WebGL context lost'));
+    },
+    onContextRestored: () => {
+      logger.info('[Jubee3DDirect] WebGL context restored');
+      jubeeErrorRecovery.reset();
+    },
+  });
 
   // Update dimensions on resize
   useEffect(() => {

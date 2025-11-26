@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from './indexedDB'
 import { syncQueue } from './syncQueue'
 import { conflictResolver } from './conflictResolver'
+import { offlineQueue } from './offlineQueue'
 import type { Json } from '@/integrations/supabase/types'
 
 /**
@@ -58,8 +59,22 @@ class SyncService {
     this.syncInterval = setInterval(() => {
       if (this.isOnline() && !this.isSyncing) {
         this.syncAll().catch(console.error)
+        offlineQueue.processQueue().catch(console.error)
       }
     }, intervalMs)
+
+    // Register for background sync if available
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(registration => {
+        // @ts-ignore - Background Sync API may not be available in all browsers
+        if (registration.sync) {
+          // @ts-ignore
+          registration.sync.register('jubee-sync').catch(err => {
+            console.warn('Background sync registration failed:', err)
+          })
+        }
+      })
+    }
   }
 
   /**
