@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useNavigate } from 'react-router-dom';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
+import { VolumeControlDialog } from '@/components/VolumeControlDialog';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -238,6 +239,21 @@ export default function SettingsPage() {
                 </Button>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-4 border-primary/30">
+          <CardHeader>
+            <CardTitle className="text-primary flex items-center gap-2">
+              <Volume2 className="w-6 h-6" />
+              Volume Controls
+            </CardTitle>
+            <CardDescription className="text-primary">
+              Adjust Jubee's sound effects and voice independently
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <VolumeControlDialog />
           </CardContent>
         </Card>
 

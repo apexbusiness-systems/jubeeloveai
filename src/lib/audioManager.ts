@@ -258,13 +258,14 @@ class AudioManager {
   /**
    * Play audio from URL or Blob
    */
-  async playAudio(source: string | Blob, stopCurrent = true): Promise<void> {
+  async playAudio(source: string | Blob, stopCurrent = true, volume = 1.0): Promise<void> {
     if (stopCurrent) {
       this.stopCurrentAudio();
     }
 
     const audioUrl = typeof source === 'string' ? source : URL.createObjectURL(source);
     const audio = new Audio(audioUrl);
+    audio.volume = Math.max(0, Math.min(1, volume));
     this.currentAudio = audio;
 
     return new Promise((resolve, reject) => {

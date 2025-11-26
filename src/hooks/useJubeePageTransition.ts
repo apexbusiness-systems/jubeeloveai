@@ -181,8 +181,12 @@ export function useJubeePageTransition() {
         if (animation) {
           triggerAnimation(animation);
         }
-        // Play mood-appropriate sound effect
-        playMoodSound(landingMood);
+        
+        // Get sound effects volume from store and play mood sound
+        const soundEffectsVolume = useJubeeStore.getState().soundEffectsVolume;
+        if (soundEffectsVolume > 0) {
+          playMoodSound(landingMood, soundEffectsVolume);
+        }
       }
     };
 

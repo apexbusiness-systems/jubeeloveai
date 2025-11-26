@@ -41,6 +41,8 @@ interface JubeeState {
   lastError: string | null
   isVisible: boolean
   interactionCount: number
+  soundEffectsVolume: number
+  voiceVolume: number
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: Position3D | null | undefined) => void
@@ -53,6 +55,8 @@ interface JubeeState {
   converse: (message: string, context?: ConversationContext) => Promise<string>
   cleanup: () => void
   toggleVisibility: () => void
+  setSoundEffectsVolume: (volume: number) => void
+  setVoiceVolume: (volume: number) => void
 }
 
 // Position bounds to prevent off-screen positioning
@@ -84,6 +88,8 @@ export const useJubeeStore = create<JubeeState>()(
       lastError: null,
       isVisible: true,
       interactionCount: 0,
+      soundEffectsVolume: 0.3,
+      voiceVolume: 1.0,
 
       setGender: (gender) => {
         console.log('[Jubee] Gender changed:', gender)
@@ -215,6 +221,15 @@ export const useJubeeStore = create<JubeeState>()(
         return;
       }
 
+      // Get current voice volume
+      const voiceVolume = get().voiceVolume;
+      
+      // If volume is 0, don't play anything
+      if (voiceVolume === 0) {
+        console.log('[Jubee] Voice muted, skipping speech');
+        return;
+      }
+
       // Stop any current audio first
       audioManager.stopCurrentAudio()
       
@@ -239,7 +254,7 @@ export const useJubeeStore = create<JubeeState>()(
       // Check cache first for instant playback
       const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
       if (cachedAudio) {
-        await audioManager.playAudio(cachedAudio, true) // Explicitly stop current
+        await audioManager.playAudio(cachedAudio, true, voiceVolume)
         set((state) => { state.speechText = '' })
         return
       }
@@ -256,7 +271,7 @@ export const useJubeeStore = create<JubeeState>()(
         // Cache for future use
         audioManager.cacheAudio(text, audioBlob, voice, mood)
         
-        await audioManager.playAudio(audioBlob, true) // Explicitly stop current
+        await audioManager.playAudio(audioBlob, true, voiceVolume)
         set((state) => { state.speechText = '' })
         return
       } catch (error) {
@@ -265,7 +280,7 @@ export const useJubeeStore = create<JubeeState>()(
 
       // All retries failed, use browser speech fallback
       set((state) => { state.lastError = 'TTS_FALLBACK' })
-      browserSpeech(text, gender, mood)
+      browserSpeech(text, gender, mood, voiceVolume)
       const timer = setTimeout(() => {
         set((state) => { state.speechText = '' })
         timers.delete('speech')
@@ -366,6 +381,18 @@ export const useJubeeStore = create<JubeeState>()(
         if ('speechSynthesis' in window) {
           speechSynthesis.cancel()
         }
+      },
+
+      setSoundEffectsVolume: (volume) => {
+        const clampedVolume = Math.max(0, Math.min(1, volume))
+        console.log('[Jubee] Sound effects volume changed:', clampedVolume)
+        set((state) => { state.soundEffectsVolume = clampedVolume })
+      },
+
+      setVoiceVolume: (volume) => {
+        const clampedVolume = Math.max(0, Math.min(1, volume))
+        console.log('[Jubee] Voice volume changed:', clampedVolume)
+        set((state) => { state.voiceVolume = clampedVolume })
       }
     })),
     {
@@ -378,6 +405,8 @@ export const useJubeeStore = create<JubeeState>()(
         position: state.position,
         isVisible: state.isVisible,
         currentAnimation: state.currentAnimation,
+        soundEffectsVolume: state.soundEffectsVolume,
+        voiceVolume: state.voiceVolume,
         // Persist last known good state for recovery
         lastError: null, // Reset errors on persist
         isProcessing: false, // Reset processing state
@@ -496,12 +525,13 @@ if (typeof window !== 'undefined') {
 }
 
 // Browser speech fallback helper with mood support
-function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy') {
+function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy', volume: number = 1.0) {
   if ('speechSynthesis' in window) {
     // CRITICAL: Cancel any ongoing browser speech to prevent overlap
     speechSynthesis.cancel()
     
     const utterance = new SpeechSynthesisUtterance(text)
+    utterance.volume = Math.max(0, Math.min(1, volume));
     
     // Set language based on i18n
     const language = window.i18nextLanguage || 'en'

@@ -129,19 +129,19 @@ export const playHappyChirp = (volume: number = 0.25) => {
 /**
  * Play sound effect based on mood
  */
-export const playMoodSound = (mood: string) => {
+export const playMoodSound = (mood: string, volume?: number) => {
   switch (mood) {
     case 'excited':
-      playCheerfulBuzz();
+      playCheerfulBuzz(volume);
       break;
     case 'curious':
-      playGentleHum();
+      playGentleHum(volume);
       break;
     case 'tired':
-      playYawnSound();
+      playYawnSound(volume);
       break;
     case 'happy':
-      playHappyChirp();
+      playHappyChirp(volume);
       break;
     default:
       // No sound for other moods
