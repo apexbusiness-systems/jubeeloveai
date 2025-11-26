@@ -46,6 +46,7 @@ interface JubeeState {
   updatePosition: (position: Position3D | null | undefined) => void
   setContainerPosition: (position: { bottom: number, right: number }) => void
   setIsDragging: (isDragging: boolean) => void
+  setMood: (mood: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired') => void
   triggerAnimation: (animation: string) => void
   triggerPageTransition: () => void
   speak: (text: string, mood?: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired') => void
@@ -127,6 +128,11 @@ export const useJubeeStore = create<JubeeState>()(
         set((state) => {
           state.isDragging = isDragging
         })
+      },
+
+      setMood: (mood) => {
+        console.log('[Jubee] Mood changed:', mood)
+        set((state) => { state.currentMood = mood })
       },
 
       toggleVisibility: () => {

@@ -11,6 +11,47 @@ import { useLocation } from 'react-router-dom';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { getViewportBounds } from '@/core/jubee/JubeeDom';
 
+/**
+ * Map routes to contextual moods and animations
+ */
+const ROUTE_MOODS: Record<string, { mood: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired'; animation?: string }> = {
+  '/games': { mood: 'excited', animation: 'celebrate' },
+  '/games-menu': { mood: 'excited', animation: 'celebrate' },
+  '/story': { mood: 'curious', animation: 'float' },
+  '/story-time': { mood: 'curious', animation: 'float' },
+  '/reading': { mood: 'curious', animation: 'float' },
+  '/settings': { mood: 'tired', animation: 'idle' },
+  '/parental-controls': { mood: 'tired', animation: 'idle' },
+  '/parent': { mood: 'tired', animation: 'idle' },
+  '/music': { mood: 'happy', animation: 'pulse' },
+  '/shapes': { mood: 'happy', animation: 'float' },
+  '/writing': { mood: 'curious', animation: 'float' },
+  '/stickers': { mood: 'excited', animation: 'celebrate' },
+  '/gallery': { mood: 'happy', animation: 'float' },
+  '/progress': { mood: 'happy', animation: 'float' },
+  '/': { mood: 'happy', animation: 'float' },
+};
+
+/**
+ * Get mood and animation for a given route path
+ */
+function getRouteMood(pathname: string): { mood: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired'; animation?: string } {
+  // Check exact match first
+  if (ROUTE_MOODS[pathname]) {
+    return ROUTE_MOODS[pathname];
+  }
+  
+  // Check if pathname starts with any known route
+  for (const route in ROUTE_MOODS) {
+    if (pathname.startsWith(route)) {
+      return ROUTE_MOODS[route];
+    }
+  }
+  
+  // Default to happy/float
+  return { mood: 'happy', animation: 'float' };
+}
+
 interface TransitionState {
   isAnimating: boolean;
   startTime: number;
@@ -69,7 +110,7 @@ function getRandomLandingPosition(): { bottom: number; right: number } {
 
 export function useJubeePageTransition() {
   const location = useLocation();
-  const { containerPosition, setContainerPosition, isVisible } = useJubeeStore();
+  const { containerPosition, setContainerPosition, isVisible, setMood, triggerAnimation } = useJubeeStore();
   const transitionStateRef = useRef<TransitionState | null>(null);
   const animationFrameRef = useRef<number>();
   const previousPathnameRef = useRef(location.pathname);
@@ -89,6 +130,13 @@ export function useJubeePageTransition() {
       cancelAnimationFrame(animationFrameRef.current);
     }
 
+    // Get contextual mood and animation for destination route
+    const { mood, animation } = getRouteMood(location.pathname);
+    console.log('[Jubee Transition] Destination route mood:', mood, 'animation:', animation);
+    
+    // Set mood immediately for the destination
+    setMood(mood);
+    
     // Start new transition animation
     const fromPosition = { ...containerPosition };
     const toPosition = getRandomLandingPosition();
@@ -126,6 +174,12 @@ export function useJubeePageTransition() {
       } else {
         console.log('[Jubee Transition] Fly animation complete');
         transitionStateRef.current = null;
+        
+        // Trigger contextual animation when landing
+        const { animation } = getRouteMood(location.pathname);
+        if (animation) {
+          triggerAnimation(animation);
+        }
       }
     };
 
@@ -144,5 +198,5 @@ export function useJubeePageTransition() {
         transitionStateRef.current.isAnimating = false;
       }
     };
-  }, [location.pathname, isVisible, containerPosition, setContainerPosition]);
+  }, [location.pathname, isVisible, containerPosition, setContainerPosition, setMood, triggerAnimation]);
 }
