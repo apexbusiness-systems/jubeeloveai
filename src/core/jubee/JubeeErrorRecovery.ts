@@ -176,3 +176,39 @@ export function validateStateChange(
     safeChanges
   }
 }
+
+/**
+ * Error Recovery Manager Class
+ */
+class JubeeErrorRecovery {
+  private recoveryAttempts = 0;
+  private maxAttempts = 3;
+  private lastRecoveryTime = 0;
+
+  async attemptRecovery(error: Error): Promise<boolean> {
+    const now = Date.now();
+    if (now - this.lastRecoveryTime < 2000) {
+      console.warn('[Jubee Error Recovery] Throttling recovery attempts');
+      return false;
+    }
+
+    if (this.recoveryAttempts >= this.maxAttempts) {
+      console.error('[Jubee Error Recovery] Max recovery attempts reached');
+      return false;
+    }
+
+    this.recoveryAttempts++;
+    this.lastRecoveryTime = now;
+    console.log(`[Jubee Error Recovery] Attempting recovery (${this.recoveryAttempts}/${this.maxAttempts})`);
+
+    return true;
+  }
+
+  reset() {
+    this.recoveryAttempts = 0;
+    console.log('[Jubee Error Recovery] Recovery state reset');
+  }
+}
+
+// Singleton instance
+export const jubeeErrorRecovery = new JubeeErrorRecovery();
