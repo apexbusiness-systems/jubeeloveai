@@ -20,6 +20,8 @@ import {
   validatePosition as validateContainerPosition,
   getContainerDimensions 
 } from '@/core/jubee/JubeePositionManager';
+import { useJubeeRenderingGuard } from '@/hooks/useJubeeRenderingGuard';
+import { validateJubeeState } from '@/core/jubee/JubeeStateValidator';
 
 interface JubeeCanvas3DDirectProps {
   className?: string;
@@ -48,6 +50,34 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   
   // Get responsive container dimensions
   const [containerDimensions, setContainerDimensions] = useState(() => getContainerDimensions());
+
+  // Rendering guard setup
+  const getWebGLContext = useCallback(() => {
+    return rendererRef.current?.getContext() || null;
+  }, []);
+
+  const handleRecoveryNeeded = useCallback(() => {
+    logger.warn('[Jubee3DDirect] Recovery triggered - resetting position');
+    
+    // Validate and reset to safe position
+    const validation = validateJubeeState({
+      containerPosition: { bottom: 200, right: 100 },
+      position: { x: 0, y: 0, z: 0 },
+      isVisible: true,
+      currentAnimation: 'idle',
+    });
+
+    if (validation.valid || validation.sanitizedState) {
+      setContainerPosition(validation.sanitizedState.containerPosition || { bottom: 200, right: 100 });
+    }
+  }, [setContainerPosition]);
+
+  const renderingGuard = useJubeeRenderingGuard(
+    containerRef,
+    canvasRef,
+    getWebGLContext,
+    handleRecoveryNeeded
+  );
 
   // Update dimensions on resize
   useEffect(() => {
@@ -185,12 +215,26 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
       const delta = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
 
+      // Validate rendering state before each frame
+      if (renderingGuard) {
+        renderingGuard.validateContainer(containerRef.current);
+        renderingGuard.validateCanvas(canvasRef.current);
+        if (renderer) {
+          renderingGuard.validateWebGL(renderer.getContext());
+        }
+      }
+
       // Update animations based on mood and state
       updateJubeeAnimation(jubeeGroup, currentAnimation, currentMood, delta);
 
       // Render scene
       if (renderer && scene && camera) {
         renderer.render(scene, camera);
+        
+        // Record successful render
+        if (renderingGuard) {
+          renderingGuard.recordRender();
+        }
       }
     };
 
@@ -250,12 +294,22 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     const deltaX = e.clientX - dragStartRef.current.x;
     const deltaY = e.clientY - dragStartRef.current.y;
 
-    const newPosition = validateContainerPosition({
+    const proposedPosition = {
       bottom: dragStartRef.current.startBottom - deltaY,
       right: dragStartRef.current.startRight - deltaX,
+    };
+
+    // Double validation: position manager + state validator
+    const validation = validateJubeeState({
+      containerPosition: proposedPosition,
     });
 
-    setContainerPosition(newPosition);
+    if (validation.valid || validation.sanitizedState.containerPosition) {
+      const safePosition = validation.sanitizedState.containerPosition || proposedPosition;
+      setContainerPosition(safePosition);
+    } else {
+      logger.warn('[Jubee3DDirect] Invalid drag position rejected', validation.errors);
+    }
   }, [isDragging, setContainerPosition]);
 
   const handleMouseUp = useCallback(() => {
