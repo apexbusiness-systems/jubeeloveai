@@ -542,6 +542,65 @@ function updateJubeeAnimation(
     body.material.emissiveIntensity = pulseIntensity;
   }
 
+  // Facial expression changes based on mood
+  const leftEye = group.getObjectByName('leftEye');
+  const rightEye = group.getObjectByName('rightEye');
+  const leftPupil = group.getObjectByName('leftPupil');
+  const rightPupil = group.getObjectByName('rightPupil');
+
+  if (leftEye && rightEye && leftPupil && rightPupil) {
+    let eyeScaleY = 1;
+    let eyeOffsetY = 0;
+    let pupilOffsetY = 0;
+
+    // Facial expressions for different moods
+    switch (mood) {
+      case 'excited':
+        // Wide eyes - scale up vertically
+        eyeScaleY = 1.4;
+        eyeOffsetY = 0.02;
+        pupilOffsetY = 0.02;
+        break;
+      case 'tired':
+        // Droopy eyes - scale down and move down
+        eyeScaleY = 0.5;
+        eyeOffsetY = -0.08;
+        pupilOffsetY = -0.08;
+        break;
+      case 'curious':
+        // Slightly wide eyes
+        eyeScaleY = 1.2;
+        eyeOffsetY = 0.01;
+        pupilOffsetY = 0.01;
+        break;
+      case 'happy':
+        // Normal happy eyes
+        eyeScaleY = 1;
+        eyeOffsetY = 0;
+        pupilOffsetY = 0;
+        break;
+      default:
+        eyeScaleY = 1;
+        eyeOffsetY = 0;
+        pupilOffsetY = 0;
+    }
+
+    // Smooth interpolation for eye scaling and position
+    const lerpSpeed = delta * 5; // Smooth transition speed
+    leftEye.scale.y += (eyeScaleY - leftEye.scale.y) * lerpSpeed;
+    rightEye.scale.y += (eyeScaleY - rightEye.scale.y) * lerpSpeed;
+
+    const targetLeftEyeY = 1.6 + eyeOffsetY;
+    const targetRightEyeY = 1.6 + eyeOffsetY;
+    leftEye.position.y += (targetLeftEyeY - leftEye.position.y) * lerpSpeed;
+    rightEye.position.y += (targetRightEyeY - rightEye.position.y) * lerpSpeed;
+
+    const targetLeftPupilY = 1.6 + pupilOffsetY;
+    const targetRightPupilY = 1.6 + pupilOffsetY;
+    leftPupil.position.y += (targetLeftPupilY - leftPupil.position.y) * lerpSpeed;
+    rightPupil.position.y += (targetRightPupilY - rightPupil.position.y) * lerpSpeed;
+  }
+
   // Wing flapping
   const leftWing = group.getObjectByName('leftWing');
   const rightWing = group.getObjectByName('rightWing');
@@ -554,14 +613,57 @@ function updateJubeeAnimation(
     rightWing.rotation.y = -Math.PI / 6 - flapAngle;
   }
 
-  // Antenna wave
+  // Antenna animation - contextual based on mood
   const leftAntenna = group.getObjectByName('leftAntenna');
   const rightAntenna = group.getObjectByName('rightAntenna');
+  const leftBulb = group.getObjectByName('leftBulb');
+  const rightBulb = group.getObjectByName('rightBulb');
 
-  if (leftAntenna && rightAntenna) {
-    const wave = Math.sin(time * 3) * 0.1;
-    leftAntenna.rotation.z = -Math.PI / 8 + wave;
-    rightAntenna.rotation.z = Math.PI / 8 - wave;
+  if (leftAntenna && rightAntenna && leftBulb && rightBulb) {
+    let antennaBaseRotation = -Math.PI / 8;
+    let antennaWaveAmount = 0.1;
+    let bulbYOffset = 0;
+
+    // Contextual antenna animations
+    switch (mood) {
+      case 'curious':
+        // Raised antennae - perked up
+        antennaBaseRotation = -Math.PI / 6;
+        antennaWaveAmount = 0.15;
+        bulbYOffset = 0.15;
+        break;
+      case 'excited':
+        // Wiggling antennae
+        antennaBaseRotation = -Math.PI / 8;
+        antennaWaveAmount = 0.2;
+        bulbYOffset = 0.05;
+        break;
+      case 'tired':
+        // Droopy antennae
+        antennaBaseRotation = -Math.PI / 12;
+        antennaWaveAmount = 0.05;
+        bulbYOffset = -0.1;
+        break;
+      default:
+        antennaBaseRotation = -Math.PI / 8;
+        antennaWaveAmount = 0.1;
+        bulbYOffset = 0;
+    }
+
+    const wave = Math.sin(time * 3) * antennaWaveAmount;
+    const lerpSpeed = delta * 4;
+    
+    // Smooth antenna rotation
+    const targetLeftRotZ = antennaBaseRotation + wave;
+    const targetRightRotZ = -antennaBaseRotation - wave;
+    leftAntenna.rotation.z += (targetLeftRotZ - leftAntenna.rotation.z) * lerpSpeed;
+    rightAntenna.rotation.z += (targetRightRotZ - rightAntenna.rotation.z) * lerpSpeed;
+
+    // Smooth bulb position
+    const targetLeftBulbY = 2.5 + bulbYOffset;
+    const targetRightBulbY = 2.5 + bulbYOffset;
+    leftBulb.position.y += (targetLeftBulbY - leftBulb.position.y) * lerpSpeed;
+    rightBulb.position.y += (targetRightBulbY - rightBulb.position.y) * lerpSpeed;
   }
 
   // Excited bounce
