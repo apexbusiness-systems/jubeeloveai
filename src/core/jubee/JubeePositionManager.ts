@@ -34,13 +34,13 @@ export function getResponsiveContainerDimensions(): ContainerDimensions {
   
   if (viewport.width < 768) {
     // Mobile: smaller to fit within viewport
-    return { width: 300, height: 360 };
+    return { width: 270, height: 324 }; // 10% smaller than original mobile
   } else if (viewport.width < 1024) {
     // Tablet: medium size
-    return { width: 350, height: 400 };
+    return { width: 315, height: 360 }; // 10% smaller than original tablet
   } else {
-    // Desktop: full size
-    return { width: 400, height: 450 };
+    // Desktop: reduced size (10% smaller from baseline)
+    return { width: 360, height: 405 };
   }
 }
 
