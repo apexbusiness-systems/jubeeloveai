@@ -21,6 +21,25 @@ Comprehensive anti-regression system that proactively monitors, validates, and a
 - **Monitoring**: Visibility, position validity, animation state, gender/voice consistency
 - **Auto-Recovery**: Position reset, animation state recovery, visibility restoration
 
+#### 🔒 **LOCKED PRODUCTION BASELINE: Jubee Sizing**
+
+**Container Dimensions** (by breakpoint):
+- Mobile (< 768px): `270px × 324px`
+- Tablet (768-1023px): `315px × 360px`
+- Desktop (≥ 1024px): `360px × 405px`
+
+**3D Model Scale Ratio**: `0.9` (90% scale applied to all axes)
+
+**Implementation Locations**:
+- Container sizing: `src/core/jubee/JubeePositionManager.ts` - `getResponsiveContainerDimensions()`
+- Model scale: `src/components/JubeeCanvas3DDirect.tsx` - `jubeeGroup.scale.set(0.9, 0.9, 0.9)`
+
+**⚠️ CRITICAL REGRESSION PREVENTION**:
+- Container dimension changes MUST be accompanied by proportional 3D model scale adjustments
+- Current scale ratio (0.9) matches 10% container size reduction from original dimensions
+- Any deviation will cause visual "enlargement" or "shrinking" regressions
+- Changes require explicit approval and visual verification across all breakpoints
+
 ### 2. **Storage System**
 - **Location**: `src/lib/regressionGuards/storageRegressionGuard.ts`
 - **Guards**:

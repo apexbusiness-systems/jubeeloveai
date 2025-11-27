@@ -32,15 +32,23 @@ Full Tailwind breakpoint system available:
 ## Responsive Component Sizing
 
 ### Jubee Mascot Container
-Dynamic sizing based on viewport (`JubeePositionManager.ts`):
+**🔒 LOCKED PRODUCTION BASELINE - DO NOT MODIFY WITHOUT EXPLICIT APPROVAL**
 
-| Viewport | Container Size | Implementation |
-|----------|---------------|----------------|
-| Mobile (< 768px) | 300px × 360px | Compact for small screens |
-| Tablet (768-1023px) | 350px × 400px | Medium size |
-| Desktop (≥ 1024px) | 400px × 450px | Full size experience |
+Dynamic sizing based on viewport with 10% reduction applied:
 
-**Location:** `src/core/jubee/JubeePositionManager.ts` - `getResponsiveContainerDimensions()`
+| Viewport | Container Size | 3D Model Scale | Implementation |
+|----------|---------------|----------------|----------------|
+| Mobile (< 768px) | **270px × 324px** | 0.9 | Compact for small screens |
+| Tablet (768-1023px) | **315px × 360px** | 0.9 | Medium size |
+| Desktop (≥ 1024px) | **360px × 405px** | 0.9 | Balanced size |
+
+**Critical Scale Ratio:** 3D model geometry is scaled to `0.9` (90%) to match container size reduction, preventing visual enlargement.
+
+**Locations:**
+- Container dimensions: `src/core/jubee/JubeePositionManager.ts` - `getResponsiveContainerDimensions()`
+- 3D model scale: `src/components/JubeeCanvas3DDirect.tsx` - `jubeeGroup.scale.set(0.9, 0.9, 0.9)`
+
+**Regression Prevention:** Any changes to container dimensions MUST be accompanied by proportional 3D model scale adjustments to maintain visual consistency.
 
 ### Layout Constraints
 
