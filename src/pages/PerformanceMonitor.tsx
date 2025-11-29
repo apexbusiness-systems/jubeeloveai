@@ -10,7 +10,8 @@ import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle, FlaskConical } from 'lucide-react';
+import { runProductionBatteryTest } from '@/test/productionBatteryTest';
 
 export default function PerformanceMonitor() {
   const { getAllMetrics, getSlowComponents, generateReport, resetMetrics } = usePerformanceMonitor();
@@ -38,6 +39,12 @@ export default function PerformanceMonitor() {
     alert('Performance report generated! Check the console.');
   };
 
+  const handleRunBatteryTest = async () => {
+    console.clear();
+    console.log('🔋 Starting Production Battery Test...\n');
+    await runProductionBatteryTest();
+  };
+
   if (import.meta.env.MODE !== 'development') {
     return (
       <div className="container mx-auto p-8">
@@ -63,6 +70,10 @@ export default function PerformanceMonitor() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={handleRunBatteryTest} variant="default">
+            <FlaskConical className="mr-2 h-4 w-4" />
+            Run Battery Test
+          </Button>
           <Button onClick={handleGenerateReport} variant="outline">
             Generate Report
           </Button>
@@ -72,6 +83,44 @@ export default function PerformanceMonitor() {
           </Button>
         </div>
       </div>
+
+      <Card className="border-primary">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FlaskConical className="h-5 w-5 text-primary" />
+            Production Battery Test
+          </CardTitle>
+          <CardDescription>
+            Run comprehensive production readiness validation across all critical systems
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm">
+              The battery test validates 8 critical categories:
+            </p>
+            <ul className="text-sm space-y-1 ml-4 list-disc">
+              <li>System Health (all regression guards)</li>
+              <li>Jubee Critical Systems (position, validation)</li>
+              <li>Jubee Sizing Validation (container + 3D model scale)</li>
+              <li>Browser API Safety (no unsafe window access)</li>
+              <li>Error Handling (global handlers)</li>
+              <li>Performance Metrics (load times)</li>
+              <li>Data Persistence (storage mechanisms)</li>
+              <li>Security Configuration (HTTPS, CSP)</li>
+            </ul>
+            <div className="pt-2">
+              <Button onClick={handleRunBatteryTest} variant="default" className="w-full">
+                <FlaskConical className="mr-2 h-4 w-4" />
+                Run Full Production Battery Test
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Results will be printed to the browser console
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {slowComponents.length > 0 && (
         <Card className="border-destructive">
