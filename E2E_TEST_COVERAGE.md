@@ -10,13 +10,19 @@ Comprehensive end-to-end test suite for Jubee.Love using Playwright.
 2. **navigation.spec.ts** - App navigation, route access, header/footer
 3. **parent-hub.spec.ts** - Authentication flow, protected routes
 
-### New Coverage (Added)
+### Feature Tests
 4. **games.spec.ts** - All 7 game modules, score tracking
 5. **creative-activities.spec.ts** - Writing canvas, shape sorter, gallery
 6. **story-reading.spec.ts** - Story library, reader, audio narration
 7. **rewards-achievements.spec.ts** - Stickers, progress tracking, achievements
 8. **onboarding.spec.ts** - First-time user tutorial flow
 9. **settings.spec.ts** - Settings page, Jubee customization, language/voice
+
+### User Journey Tests
+10. **parent-user-journey.spec.ts** - Complete realistic parent flows:
+    - First-time parent: onboarding → story selection → full reading
+    - Quick explorer: skip onboarding → immediate story preview
+    - Curious parent: onboarding → explore all sections → stories
 
 ## Running Tests
 
