@@ -447,6 +447,8 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
           });
         }}
         className="jubee-canvas"
+        data-jubee-canvas="true"
+        data-jubee-scale="0.9"
         style={{
           width: '100%',
           height: '100%',

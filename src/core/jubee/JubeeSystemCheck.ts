@@ -7,6 +7,7 @@
 
 import { validatePosition, getSafeDefaultPosition } from './JubeePositionValidator'
 import { validatePosition as validatePosManager, getSafeDefaultPosition as getSafeDefaultPosManager } from './JubeePositionManager'
+import { validateJubeeSizing } from './JubeeSizingValidator'
 
 interface SystemCheckResult {
   passed: boolean
@@ -171,6 +172,68 @@ export function runJubeeSystemCheck(): SystemCheckResult[] {
       system: 'ViewportBounds',
       message: `Viewport bounds check failed: ${error}`,
       critical: false
+    })
+  }
+  
+  // Check 6: Container dimensions match baseline
+  try {
+    const sizingValidation = validateJubeeSizing()
+    
+    if (!sizingValidation.containerDimensions.valid) {
+      results.push({
+        passed: false,
+        system: 'JubeeContainerDimensions',
+        message: sizingValidation.containerDimensions.message,
+        critical: true
+      })
+    } else {
+      results.push({
+        passed: true,
+        system: 'JubeeContainerDimensions',
+        message: sizingValidation.containerDimensions.message,
+        critical: true
+      })
+    }
+    
+    // Check 7: Model scale matches baseline
+    if (!sizingValidation.modelScale.valid) {
+      results.push({
+        passed: false,
+        system: 'JubeeModelScale',
+        message: sizingValidation.modelScale.message,
+        critical: true
+      })
+    } else {
+      results.push({
+        passed: true,
+        system: 'JubeeModelScale',
+        message: sizingValidation.modelScale.message,
+        critical: true
+      })
+    }
+    
+    // Check 8: Scale ratio matches container reduction
+    if (!sizingValidation.scaleRatio.valid) {
+      results.push({
+        passed: false,
+        system: 'JubeeScaleRatio',
+        message: sizingValidation.scaleRatio.message,
+        critical: true
+      })
+    } else {
+      results.push({
+        passed: true,
+        system: 'JubeeScaleRatio',
+        message: sizingValidation.scaleRatio.message,
+        critical: true
+      })
+    }
+  } catch (error) {
+    results.push({
+      passed: false,
+      system: 'JubeeSizingValidation',
+      message: `Sizing validation failed: ${error}`,
+      critical: true
     })
   }
   
