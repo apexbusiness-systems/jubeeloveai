@@ -7,8 +7,6 @@ import { runMigrations } from "./lib/storageVersion";
 import { logger } from "./lib/logger";
 import { initializeGlobalErrorHandlers } from "./lib/globalErrorHandlers";
 import { initSentry } from "./lib/sentry";
-import "./performance/verifyParentJourneyClient"; // Load console commands
-
 // Initialize Sentry for error tracking
 initSentry();
 
@@ -77,3 +75,8 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ThemeProvider>
 );
+
+// Lazy load console commands after React renders to avoid circular dependencies
+setTimeout(() => {
+  import("./performance/verifyParentJourneyClient");
+}, 0);
