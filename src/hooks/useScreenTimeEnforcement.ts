@@ -34,7 +34,10 @@ export function useScreenTimeEnforcement() {
   const alertSentRef = useRef<Set<number>>(new Set());
 
   // Send email alert to parent
-  const sendEmailAlert = useCallback(async (alertType: 'approaching_limit' | 'time_request', data: any) => {
+  const sendEmailAlert = useCallback(async (
+    alertType: 'approaching_limit' | 'time_request', 
+    data: { childName: string; timeRemaining?: number; requestedMinutes?: number }
+  ) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user?.email) return;
@@ -66,7 +69,7 @@ export function useScreenTimeEnforcement() {
     const currentTime = now.getHours() * 60 + now.getMinutes();
 
     // Check if current time falls within any allowed schedule
-    return settings.schedules.some((schedule: any) => {
+    return settings.schedules.some((schedule: { day: number; startTime: string; endTime: string }) => {
       if (schedule.day !== currentDay) return false;
       
       const [startHour, startMin] = schedule.startTime.split(':').map(Number);
@@ -147,7 +150,10 @@ export function useScreenTimeEnforcement() {
         // Send email alert at 10 and 5 minutes (only once per threshold)
         if ((remainingMinutes === 10 || remainingMinutes === 5) && !alertSentRef.current.has(remainingMinutes)) {
           alertSentRef.current.add(remainingMinutes);
-          sendEmailAlert('approaching_limit', { remainingMinutes });
+          sendEmailAlert('approaching_limit', { 
+            childName: activeChild.name,
+            timeRemaining: remainingMinutes 
+          });
         }
       }
     };
@@ -203,7 +209,10 @@ export function useScreenTimeEnforcement() {
       });
 
       // Send email notification to parent
-      await sendEmailAlert('time_request', { requestedMinutes });
+      await sendEmailAlert('time_request', { 
+        childName: activeChild.name,
+        requestedMinutes 
+      });
 
       toast({
         title: "Request Sent!",

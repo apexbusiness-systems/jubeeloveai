@@ -72,14 +72,24 @@ export async function verifyQuickJourney() {
 
 // Expose functions globally for browser console access
 if (typeof window !== 'undefined') {
-  (window as any).verifyParentJourney = verifyParentJourney;
-  (window as any).verifyQuickJourney = verifyQuickJourney;
-  (window as any).viewJourneyScreenshots = () => parentJourneyVerifier.viewScreenshots();
-  (window as any).downloadJourneyScreenshots = () => parentJourneyVerifier.downloadScreenshots();
+  interface WindowWithVerifier extends Window {
+    verifyParentJourney: typeof verifyParentJourney;
+    verifyQuickJourney: typeof verifyQuickJourney;
+    viewJourneyScreenshots: () => void;
+    downloadJourneyScreenshots: () => void;
+  }
   
-  console.log('🎯 Parent Journey Verifier loaded. Available commands:');
-  console.log('   - await verifyParentJourney()');
-  console.log('   - await verifyQuickJourney()');
-  console.log('   - viewJourneyScreenshots()');
-  console.log('   - downloadJourneyScreenshots()');
+  const w = window as unknown as WindowWithVerifier;
+  w.verifyParentJourney = verifyParentJourney;
+  w.verifyQuickJourney = verifyQuickJourney;
+  w.viewJourneyScreenshots = () => parentJourneyVerifier.viewScreenshots();
+  w.downloadJourneyScreenshots = () => parentJourneyVerifier.downloadScreenshots();
+  
+  if (import.meta.env.DEV) {
+    console.log('🎯 Parent Journey Verifier loaded. Available commands:');
+    console.log('   - await verifyParentJourney()');
+    console.log('   - await verifyQuickJourney()');
+    console.log('   - viewJourneyScreenshots()');
+    console.log('   - downloadJourneyScreenshots()');
+  }
 }
