@@ -71,10 +71,10 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
       {pressing && longPressPath && (
         <div className="absolute inset-0 rounded-full border-4 border-primary animate-pulse" />
       )}
-      <div className="w-8 h-8 text-white flex items-center justify-center" aria-hidden="true">
+      <div className="w-8 h-8 text-red-500 flex items-center justify-center" aria-hidden="true">
         {icon}
       </div>
-      <span className="text-xs font-bold text-white">{label}</span>
+      <span className="text-xs font-bold text-red-500">{label}</span>
     </button>
   );
 }
