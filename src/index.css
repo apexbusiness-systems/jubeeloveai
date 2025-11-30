@@ -266,6 +266,19 @@ All colors MUST be HSL.
   min-height: 44px; /* Touch target */
 }
 
+.footer-glow {
+  text-shadow: 
+    0 0 8px white,
+    0 0 16px white,
+    0 0 2px rgba(0, 0, 0, 0.8),
+    0 0 4px hsl(var(--accent));
+  filter: 
+    drop-shadow(0 0 8px white)
+    drop-shadow(0 0 16px white)
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))
+    drop-shadow(0 0 4px hsl(var(--accent)));
+}
+
 .writing-canvas-container {
   @apply max-w-4xl mx-auto p-6;
   padding-top: 2rem;
