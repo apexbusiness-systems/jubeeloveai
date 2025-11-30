@@ -6,6 +6,7 @@
  */
 
 import { getContainerDimensions, getViewportBounds } from './JubeeDom'
+import { logger } from '@/lib/logger'
 
 export type RecoveryAction = 'none' | 'position_reset' | 'animation_reset' | 'full_reset' | 'force_visibility'
 
@@ -94,7 +95,7 @@ export function executeRecovery(
   action: RecoveryAction,
   setState: StateUpdater
 ): void {
-  console.log('[Jubee Recovery] Executing:', action)
+  logger.dev('[Jubee Recovery] Executing:', action)
 
   switch (action) {
     case 'position_reset':
@@ -102,21 +103,21 @@ export function executeRecovery(
         containerPosition: { bottom: 200, right: 100 },
         position: { x: 2.5, y: -1.5, z: 0 }
       })
-      console.log('[Jubee Recovery] Position reset complete')
+      logger.dev('[Jubee Recovery] Position reset complete')
       break
 
     case 'animation_reset':
       setState({
         currentAnimation: 'idle'
       })
-      console.log('[Jubee Recovery] Animation reset complete')
+      logger.dev('[Jubee Recovery] Animation reset complete')
       break
 
     case 'force_visibility':
       setState({
         isVisible: true
       })
-      console.log('[Jubee Recovery] Visibility restored')
+      logger.dev('[Jubee Recovery] Visibility restored')
       break
 
     case 'full_reset':
@@ -127,7 +128,7 @@ export function executeRecovery(
         isVisible: true,
         isDragging: false
       })
-      console.log('[Jubee Recovery] Full reset complete')
+      logger.dev('[Jubee Recovery] Full reset complete')
       break
 
     case 'none':
@@ -166,7 +167,7 @@ export function validateStateChange(
   if (proposedChanges.currentAnimation) {
     const validAnimations = ['idle', 'excited', 'celebrate', 'pageTransition']
     if (!validAnimations.includes(proposedChanges.currentAnimation)) {
-      console.warn('[Jubee Validation] Invalid animation rejected:', proposedChanges.currentAnimation)
+      logger.warn('[Jubee Validation] Invalid animation rejected:', proposedChanges.currentAnimation)
       safeChanges.currentAnimation = 'idle'
     }
   }
@@ -188,25 +189,25 @@ class JubeeErrorRecovery {
   async attemptRecovery(error: Error): Promise<boolean> {
     const now = Date.now();
     if (now - this.lastRecoveryTime < 2000) {
-      console.warn('[Jubee Error Recovery] Throttling recovery attempts');
+      logger.warn('[Jubee Error Recovery] Throttling recovery attempts');
       return false;
     }
 
     if (this.recoveryAttempts >= this.maxAttempts) {
-      console.error('[Jubee Error Recovery] Max recovery attempts reached');
+      logger.error('[Jubee Error Recovery] Max recovery attempts reached');
       return false;
     }
 
     this.recoveryAttempts++;
     this.lastRecoveryTime = now;
-    console.log(`[Jubee Error Recovery] Attempting recovery (${this.recoveryAttempts}/${this.maxAttempts})`);
+    logger.dev(`[Jubee Error Recovery] Attempting recovery (${this.recoveryAttempts}/${this.maxAttempts})`);
 
     return true;
   }
 
   reset() {
     this.recoveryAttempts = 0;
-    console.log('[Jubee Error Recovery] Recovery state reset');
+    logger.dev('[Jubee Error Recovery] Recovery state reset');
   }
 }
 
