@@ -262,7 +262,6 @@ All colors MUST be HSL.
   padding: 8px 12px;
   min-width: 60px;
   min-height: 44px; /* Touch target */
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .writing-canvas-container {
