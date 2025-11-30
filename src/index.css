@@ -249,7 +249,7 @@ All colors MUST be HSL.
   @apply overflow-x-auto;
   z-index: 1000;
   height: 80px;
-  background: hsl(var(--primary));
+  background: hsl(var(--card) / 0.9);
   border-top: 3px solid hsl(var(--primary) / 0.3);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
