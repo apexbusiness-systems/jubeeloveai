@@ -249,7 +249,7 @@ All colors MUST be HSL.
   @apply overflow-x-auto;
   z-index: 1000;
   height: 80px;
-  background: linear-gradient(135deg, hsl(var(--accent) / 0.95), hsl(var(--primary) / 0.95));
+  background: linear-gradient(135deg, hsl(var(--accent) / 0.76), hsl(var(--primary) / 0.76));
   border-top: 3px solid hsl(var(--primary) / 0.3);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
