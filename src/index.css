@@ -11,10 +11,10 @@ All colors MUST be HSL.
     --background: 45 100% 96%;
     --foreground: 0 85% 50%;
 
-    --card: 45 95% 93%;
+    --card: 0 0% 100%;
     --card-foreground: 0 85% 50%;
 
-    --popover: 45 95% 93%;
+    --popover: 0 0% 100%;
     --popover-foreground: 0 85% 50%;
 
     --primary: 0 85% 60%;
@@ -249,8 +249,10 @@ All colors MUST be HSL.
   @apply overflow-x-auto;
   z-index: 1000;
   height: 80px;
-  background: hsl(var(--secondary));
-  border-top: 3px solid hsl(var(--primary));
+  background: linear-gradient(135deg, hsl(var(--accent) / 0.95), hsl(var(--primary) / 0.95));
+  border-top: 3px solid hsl(var(--primary) / 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   /* Safe area support for iOS notch/home indicator */
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -262,6 +264,7 @@ All colors MUST be HSL.
   padding: 8px 12px;
   min-width: 60px;
   min-height: 44px; /* Touch target */
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .writing-canvas-container {

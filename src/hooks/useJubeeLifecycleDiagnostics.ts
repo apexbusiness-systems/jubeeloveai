@@ -86,44 +86,42 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
   const prevStateRef = useRef<ReturnType<typeof useJubeeStore.getState> | null>(null)
   const { isVisible, containerPosition, position, currentAnimation, isDragging } = useJubeeStore()
   
-  // Track all state changes (DEV only)
+  // Track all state changes
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      const snapshot = captureSnapshot('STATE_CHANGE', containerRef)
-      const prevState = prevStateRef.current
+    const snapshot = captureSnapshot('STATE_CHANGE', containerRef)
+    const prevState = prevStateRef.current
+    
+    if (prevState) {
+      const changes: string[] = []
       
-      if (prevState) {
-        const changes: string[] = []
-        
-        if (prevState.isVisible !== isVisible) {
-          changes.push(`isVisible: ${prevState.isVisible} → ${isVisible}`)
-        }
-        if (prevState.containerPosition.bottom !== containerPosition.bottom || 
-            prevState.containerPosition.right !== containerPosition.right) {
-          changes.push(`containerPosition: {${prevState.containerPosition.bottom},${prevState.containerPosition.right}} → {${containerPosition.bottom},${containerPosition.right}}`)
-        }
-        if (prevState.currentAnimation !== currentAnimation) {
-          changes.push(`animation: ${prevState.currentAnimation} → ${currentAnimation}`)
-        }
-        if (prevState.isDragging !== isDragging) {
-          changes.push(`isDragging: ${prevState.isDragging} → ${isDragging}`)
-        }
-        
-        if (changes.length > 0) {
-          console.group('[🔍 DIAGNOSTIC] State Change Detected')
-          console.log('Changes:', changes.join(', '))
-          console.log('Snapshot:', snapshot)
-          console.groupEnd()
-        }
+      if (prevState.isVisible !== isVisible) {
+        changes.push(`isVisible: ${prevState.isVisible} → ${isVisible}`)
+      }
+      if (prevState.containerPosition.bottom !== containerPosition.bottom || 
+          prevState.containerPosition.right !== containerPosition.right) {
+        changes.push(`containerPosition: {${prevState.containerPosition.bottom},${prevState.containerPosition.right}} → {${containerPosition.bottom},${containerPosition.right}}`)
+      }
+      if (prevState.currentAnimation !== currentAnimation) {
+        changes.push(`animation: ${prevState.currentAnimation} → ${currentAnimation}`)
+      }
+      if (prevState.isDragging !== isDragging) {
+        changes.push(`isDragging: ${prevState.isDragging} → ${isDragging}`)
       }
       
-      prevStateRef.current = useJubeeStore.getState()
+      if (changes.length > 0) {
+        console.group('[🔍 DIAGNOSTIC] State Change Detected')
+        console.log('Changes:', changes.join(', '))
+        console.log('Snapshot:', snapshot)
+        console.groupEnd()
+      }
     }
+    
+    prevStateRef.current = useJubeeStore.getState()
   }, [isVisible, containerPosition, position, currentAnimation, isDragging, containerRef])
   
-  // Track DOM mutations (DEV only)
+  // Track DOM mutations
   useEffect(() => {
-    if (!import.meta.env.DEV || !containerRef.current) return
+    if (!containerRef.current) return
     
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -148,9 +146,9 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
     return () => observer.disconnect()
   }, [containerRef])
   
-  // Track visibility in viewport (DEV only)
+  // Track visibility in viewport
   useEffect(() => {
-    if (!import.meta.env.DEV || !containerRef.current) return
+    if (!containerRef.current) return
     
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -171,11 +169,8 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
     return () => observer.disconnect()
   }, [containerRef])
   
-  // Periodic health check (DEV only, less frequent in prod)
+  // Periodic health check
   useEffect(() => {
-    // Skip health checks in production
-    if (!import.meta.env.DEV) return
-    
     const interval = setInterval(() => {
       const snapshot = captureSnapshot('HEALTH_CHECK', containerRef)
       
@@ -184,6 +179,7 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
       
       if (snapshot.state.isVisible && !snapshot.dom.containerExists) {
         issues.push('CRITICAL: isVisible true but container does not exist in live DOM tree')
+        // Attempt immediate recovery
         console.error('[DIAGNOSTIC] Jubee container missing from DOM - attempting recovery')
       }
       
@@ -214,7 +210,7 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
         console.log('Snapshot:', snapshot)
         console.groupEnd()
       }
-    }, 5000)
+    }, 5000) // Check every 5 seconds
     
     return () => clearInterval(interval)
   }, [containerRef])

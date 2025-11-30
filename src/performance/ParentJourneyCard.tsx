@@ -36,15 +36,13 @@ export function ParentJourneyCard() {
 
   const handleViewScreenshots = () => {
     if (typeof window !== 'undefined') {
-      const w = window as { viewJourneyScreenshots?: () => void };
-      w.viewJourneyScreenshots?.();
+      (window as any).viewJourneyScreenshots?.();
     }
   };
 
   const handleDownloadScreenshots = () => {
     if (typeof window !== 'undefined') {
-      const w = window as { downloadJourneyScreenshots?: () => void };
-      w.downloadJourneyScreenshots?.();
+      (window as any).downloadJourneyScreenshots?.();
     }
   };
 

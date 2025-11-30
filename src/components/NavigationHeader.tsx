@@ -19,7 +19,7 @@ export const NavigationHeader = memo(function NavigationHeader({
   const children = useParentalStore(state => state.children);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[9999] bg-secondary border-b-4 border-primary">
+    <header className="fixed top-0 left-0 right-0 z-[9999] glass-effect border-b border-border/20">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold text-primary logo-text">
