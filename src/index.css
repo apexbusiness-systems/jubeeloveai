@@ -249,7 +249,7 @@ All colors MUST be HSL.
   @apply overflow-x-auto;
   z-index: 1000;
   height: 80px;
-  background: linear-gradient(135deg, hsl(var(--accent) / 0.76), hsl(var(--primary) / 0.76));
+  background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
   border-top: 3px solid hsl(var(--primary) / 0.3);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -267,16 +267,7 @@ All colors MUST be HSL.
 }
 
 .footer-glow {
-  text-shadow: 
-    0 0 8px white,
-    0 0 16px white,
-    0 0 2px rgba(0, 0, 0, 0.8),
-    0 0 4px hsl(var(--accent));
-  filter: 
-    drop-shadow(0 0 8px white)
-    drop-shadow(0 0 16px white)
-    drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))
-    drop-shadow(0 0 4px hsl(var(--accent)));
+  /* Shadows removed for clean icon/text appearance */
 }
 
 .glass-effect {
