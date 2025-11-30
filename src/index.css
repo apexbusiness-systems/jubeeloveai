@@ -249,12 +249,8 @@ All colors MUST be HSL.
   @apply overflow-x-auto;
   z-index: 1000;
   height: 80px;
-  background: hsl(var(--card) / 0.9);
+  background: hsl(var(--card));
   border-top: 3px solid hsl(var(--primary) / 0.3);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transform: translateZ(0);
-  will-change: transform;
   /* Safe area support for iOS notch/home indicator */
   padding-bottom: env(safe-area-inset-bottom);
 }
