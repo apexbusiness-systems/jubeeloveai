@@ -74,7 +74,7 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
       <div className="w-8 h-8 text-[hsl(var(--footer-text))] flex items-center justify-center [filter:drop-shadow(0_0_4px_white)_drop-shadow(0_0_10px_rgba(255,255,255,0.9))_drop-shadow(0_2px_4px_rgba(255,255,255,0.8))]" aria-hidden="true">
         {icon}
       </div>
-      <span className="text-xs font-bold text-[hsl(var(--footer-text))] [text-shadow:0_1px_3px_white,0_0_8px_rgba(255,255,255,0.6)]">{label}</span>
+      <span className="text-xs font-bold text-[hsl(var(--footer-text))] [text-shadow:0_0_4px_white,0_0_10px_rgba(255,255,255,0.9),0_2px_4px_rgba(255,255,255,0.8)]">{label}</span>
     </button>
   );
 }
