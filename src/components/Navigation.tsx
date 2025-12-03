@@ -62,7 +62,7 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
       onTouchCancel={handlePressEnd}
-      className={`tab-item min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all relative ${
+      className={`tab-item group min-h-[44px] min-w-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all relative ${
         isActive ? 'scale-110' : ''
       } ${pressing ? 'scale-125 ring-4 ring-primary' : ''}`}
       aria-label={`Navigate to ${label}`}
@@ -71,10 +71,10 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
       {pressing && longPressPath && (
         <div className="absolute inset-0 rounded-full border-4 border-primary animate-pulse" />
       )}
-      <div className="w-8 h-8 text-[hsl(var(--footer-text))] flex items-center justify-center [filter:drop-shadow(0_0_4px_white)_drop-shadow(0_0_10px_rgba(255,255,255,0.9))_drop-shadow(0_2px_4px_rgba(255,255,255,0.8))]" aria-hidden="true">
+      <div className="w-8 h-8 text-[hsl(var(--footer-text))] flex items-center justify-center transition-all duration-200 [filter:drop-shadow(0_0_4px_white)_drop-shadow(0_0_10px_rgba(255,255,255,0.9))_drop-shadow(0_2px_4px_rgba(255,255,255,0.8))] group-hover:[filter:drop-shadow(0_0_6px_white)_drop-shadow(0_0_16px_rgba(255,255,255,1))_drop-shadow(0_2px_8px_rgba(255,255,255,1))]" aria-hidden="true">
         {icon}
       </div>
-      <span className="text-xs font-bold text-[hsl(var(--footer-text))] [text-shadow:0_0_4px_white,0_0_10px_rgba(255,255,255,0.9),0_2px_4px_rgba(255,255,255,0.8)]">{label}</span>
+      <span className="text-xs font-bold text-[hsl(var(--footer-text))] transition-all duration-200 [text-shadow:0_0_4px_white,0_0_10px_rgba(255,255,255,0.9),0_2px_4px_rgba(255,255,255,0.8)] group-hover:[text-shadow:0_0_6px_white,0_0_16px_rgba(255,255,255,1),0_2px_8px_rgba(255,255,255,1)]">{label}</span>
     </button>
   );
 }
