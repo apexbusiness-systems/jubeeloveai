@@ -78,6 +78,9 @@ All colors MUST be HSL.
     --shadow-elevated: 0 10px 40px hsl(0 100% 59% / 0.3);
     --shadow-reward: 0 20px 60px hsl(0 100% 59% / 0.5);
     
+    /* Footer navigation */
+    --footer-text: 357 96% 58%;
+    
     /* Jubee mascot colors */
     --jubee-body: 45 100% 60%;
     --jubee-body-glow: 45 100% 75%;
