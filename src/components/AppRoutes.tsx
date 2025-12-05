@@ -32,6 +32,7 @@ const ParentHub = lazy(() => import('../pages/ParentHub'));
 const ConversationAnalytics = lazy(() => import('../pages/ConversationAnalytics'));
 const StyleGuide = lazy(() => import('../pages/StyleGuide'));
 const HomePage = lazy(() => import('../pages/Home'));
+const OAuthConsent = lazy(() => import('../pages/OAuthConsent'));
 const GamesMenu = lazy(() => import('../pages/GamesMenu'));
 
 export function AppRoutes() {
@@ -39,6 +40,7 @@ export function AppRoutes() {
     <Routes>
       {/* Public routes - No auth required for toddlers */}
       <Route path="/auth" element={<Suspense fallback={<SettingsSkeleton />}><AuthPage /></Suspense>} />
+      <Route path="/oauth/consent" element={<Suspense fallback={<SettingsSkeleton />}><OAuthConsent /></Suspense>} />
       <Route path="/" element={<Suspense fallback={<GameSkeleton />}><HomePage /></Suspense>} />
       <Route path="/write" element={<Suspense fallback={<GameSkeleton />}><WritingCanvas /></Suspense>} />
       <Route path="/gallery" element={<Suspense fallback={<GallerySkeleton />}><Gallery /></Suspense>} />
