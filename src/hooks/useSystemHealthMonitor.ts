@@ -108,20 +108,30 @@ export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}
 
         // Log results in dev mode or if explicitly enabled
         if (finalConfig.logResults || import.meta.env.DEV) {
+          // Log health check summary
+          const statusIcon = 
+            filteredReport.overallHealth === 'healthy' ? '✅' :
+            filteredReport.overallHealth === 'degraded' ? '⚠️' :
+            '❌';
+          
           if (filteredReport.overallHealth !== 'healthy') {
-            logger.group('[System Health Monitor] Health Check Results')
-            logger.info(`Overall Health: ${filteredReport.overallHealth}`)
-            logger.info(`Critical Failures: ${filteredReport.criticalFailures}`)
-            logger.info(`Warnings: ${filteredReport.warnings}`)
+            logger.group('[System Health Check]');
+            logger.info(`${statusIcon} Overall Health: ${filteredReport.overallHealth.toUpperCase()}`);
+            logger.info(`Critical Failures: ${filteredReport.criticalFailures}`);
+            logger.info(`Warnings: ${filteredReport.warnings}`);
             
             filteredReport.results
               .filter(r => !r.passed)
               .forEach(result => {
-                const level = result.severity === 'critical' ? 'error' : 'warn'
-                logger[level](`[${result.system}] ${result.message}`)
-              })
+                const level = result.severity === 'critical' ? 'error' : 'warn';
+                logger[level](`[${result.system}] ${result.message}`);
+              });
             
-            logger.groupEnd()
+            logger.groupEnd();
+            
+            if (filteredReport.overallHealth === 'critical') {
+              logger.error('[System Health] CRITICAL FAILURES DETECTED - Immediate attention required');
+            }
           }
         }
       } catch (error) {

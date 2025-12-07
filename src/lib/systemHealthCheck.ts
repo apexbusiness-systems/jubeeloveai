@@ -74,7 +74,9 @@ export async function runSystemHealthCheck(): Promise<SystemHealthReport> {
     timestamp
   }
   
-  logHealthReport(report)
+  // Note: Logging is now handled by useSystemHealthMonitor after route-aware filtering
+  // to prevent false positive "CRITICAL FAILURES" on routes where Jubee is not rendered.
+  // Raw report is returned for the hook to filter and log appropriately.
   
   return report
 }

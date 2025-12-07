@@ -11,6 +11,7 @@ import { useLocation } from 'react-router-dom';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { playMoodSound } from '@/lib/jubeeAudioEffects';
 import { getViewportBounds } from '@/core/jubee/JubeeDom';
+import { logger } from '@/lib/logger';
 
 /**
  * Map routes to contextual moods and animations
@@ -133,7 +134,7 @@ export function useJubeePageTransition() {
 
     // Get contextual mood and animation for destination route
     const { mood, animation } = getRouteMood(location.pathname);
-    console.log('[Jubee Transition] Destination route mood:', mood, 'animation:', animation);
+    logger.info('[Jubee Transition] Destination route mood:', mood, 'animation:', animation);
     
     // Set mood immediately for the destination
     setMood(mood);
@@ -149,7 +150,7 @@ export function useJubeePageTransition() {
       toPosition,
     };
 
-    console.log('[Jubee Transition] Starting fly animation from', fromPosition, 'to', toPosition);
+    logger.info('[Jubee Transition] Starting fly animation from', fromPosition, 'to', toPosition);
 
     // Animation loop
     const animate = () => {
@@ -173,7 +174,7 @@ export function useJubeePageTransition() {
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        console.log('[Jubee Transition] Fly animation complete');
+        logger.dev('[Jubee Transition] Fly animation complete');
         transitionStateRef.current = null;
         
         // Trigger contextual animation and sound when landing

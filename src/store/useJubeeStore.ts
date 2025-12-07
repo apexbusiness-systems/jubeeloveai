@@ -92,12 +92,12 @@ export const useJubeeStore = create<JubeeState>()(
       voiceVolume: 1.0,
 
       setGender: (gender) => {
-        console.log('[Jubee] Gender changed:', gender)
+        logger.info('[Jubee] Gender changed:', gender)
         set((state) => { state.gender = gender })
       },
 
       setVoice: (voice) => {
-        console.log('[Jubee] Voice changed:', voice)
+        logger.info('[Jubee] Voice changed:', voice)
         set((state) => { state.voice = voice })
       },
 
@@ -118,15 +118,12 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       setContainerPosition: (position) => {
-        console.group('[🔍 DIAGNOSTIC] Container Position Update')
-        console.log('Requested position:', position)
-        console.log('Viewport:', { width: window.innerWidth, height: window.innerHeight })
-        console.groupEnd()
+        logger.dev('[Jubee] Container position requested:', position)
         
         set((state) => {
           const validated = validatePosition(undefined, position)
           state.containerPosition = validated.container
-          console.log('[Jubee] Container position validated:', validated.container)
+          logger.dev('[Jubee] Container position validated:', validated.container)
         })
       },
 
@@ -137,7 +134,7 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       setMood: (mood) => {
-        console.log('[Jubee] Mood changed:', mood)
+        logger.info('[Jubee] Mood changed:', mood)
         set((state) => { state.currentMood = mood })
       },
 
@@ -145,29 +142,15 @@ export const useJubeeStore = create<JubeeState>()(
         const currentVisibility = get().isVisible
         const newVisibility = !currentVisibility
         
-        console.group('[🔍 DIAGNOSTIC] Jubee Visibility Toggle')
-        console.log('Previous state:', currentVisibility)
-        console.log('New state:', newVisibility)
-        console.log('Stack trace:', new Error().stack)
-        console.groupEnd()
+        logger.dev('[Jubee] Visibility toggled:', { from: currentVisibility, to: newVisibility })
         
         set((state) => {
           state.isVisible = newVisibility
         })
-        
-        // Log state after update
-        setTimeout(() => {
-          const finalState = get()
-          console.log('[🔍 DIAGNOSTIC] Visibility update complete:', {
-            isVisible: finalState.isVisible,
-            containerPosition: finalState.containerPosition,
-            position: finalState.position
-          })
-        }, 0)
       },
 
       triggerAnimation: (animation) => {
-        console.log('[Jubee] Animation triggered:', animation)
+        logger.info('[Jubee] Animation triggered:', animation)
         // Clear existing animation timer
         const existingTimer = timers.get('animation')
         if (existingTimer && typeof existingTimer !== 'object') {
@@ -179,14 +162,14 @@ export const useJubeeStore = create<JubeeState>()(
         const timer = setTimeout(() => {
           set((state) => { state.currentAnimation = 'idle' })
           timers.delete('animation')
-          console.log('[Jubee] Animation reset to idle')
+          logger.info('[Jubee] Animation reset to idle')
         }, 2000)
         
         timers.set('animation', timer)
       },
 
       triggerPageTransition: () => {
-        console.log('[Jubee] Page transition started')
+        logger.dev('[Jubee] Page transition started')
         // Clear existing transition timer
         const existingTimer = timers.get('transition')
         if (existingTimer && typeof existingTimer !== 'object') {
@@ -204,7 +187,7 @@ export const useJubeeStore = create<JubeeState>()(
             state.currentAnimation = 'idle'
           })
           timers.delete('transition')
-          console.log('[Jubee] Page transition complete')
+          logger.dev('[Jubee] Page transition complete')
         }, 1200)
         
         timers.set('transition', timer)
@@ -226,7 +209,7 @@ export const useJubeeStore = create<JubeeState>()(
       
       // If volume is 0, don't play anything
       if (voiceVolume === 0) {
-        console.log('[Jubee] Voice muted, skipping speech');
+        logger.dev('[Jubee] Voice muted, skipping speech');
         return;
       }
 
@@ -367,7 +350,7 @@ export const useJubeeStore = create<JubeeState>()(
     },
 
       cleanup: () => {
-        console.log('[Jubee] Cleanup called')
+        logger.dev('[Jubee] Cleanup called')
         timers.forEach((timer) => {
           // Only clear actual timeout timers, not TimerEntry objects
           if (!('time' in timer)) {
@@ -385,13 +368,13 @@ export const useJubeeStore = create<JubeeState>()(
 
       setSoundEffectsVolume: (volume) => {
         const clampedVolume = Math.max(0, Math.min(1, volume))
-        console.log('[Jubee] Sound effects volume changed:', clampedVolume)
+        logger.dev('[Jubee] Sound effects volume changed:', clampedVolume)
         set((state) => { state.soundEffectsVolume = clampedVolume })
       },
 
       setVoiceVolume: (volume) => {
         const clampedVolume = Math.max(0, Math.min(1, volume))
-        console.log('[Jubee] Voice volume changed:', clampedVolume)
+        logger.dev('[Jubee] Voice volume changed:', clampedVolume)
         set((state) => { state.voiceVolume = clampedVolume })
       }
     })),
@@ -414,7 +397,7 @@ export const useJubeeStore = create<JubeeState>()(
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
-          console.error('[Jubee] Storage rehydration error:', error)
+          logger.error('[Jubee] Storage rehydration error:', error)
           // Fallback to safe defaults
           if (state) {
             const safeDefaults = getSafeDefaultPosition()
@@ -428,7 +411,7 @@ export const useJubeeStore = create<JubeeState>()(
         
         if (state) {
           // Comprehensive state validation on load
-          console.log('[Jubee] Rehydrating state from storage')
+          logger.dev('[Jubee] Rehydrating state from storage')
           
           // Validate and fix position
           const validated = validatePosition(state.position, state.containerPosition)
@@ -463,7 +446,7 @@ export const useJubeeStore = create<JubeeState>()(
           state.speechText = ''
           state.isDragging = false
           
-          console.log('[Jubee] Rehydrated with validated state:', {
+          logger.dev('[Jubee] Rehydrated with validated state:', {
             containerPosition: state.containerPosition,
             position: state.position,
             isVisible: state.isVisible,
@@ -494,7 +477,7 @@ if (typeof window !== 'undefined') {
       }
     })
   }).catch((error) => {
-    console.error('[Jubee] Failed to initialize backup service:', error)
+    logger.error('[Jubee] Failed to initialize backup service:', error)
   })
 
   // Periodic health check with backup on issues
@@ -503,7 +486,7 @@ if (typeof window !== 'undefined') {
     const health = performHealthCheck(state)
     
     if (!health.isHealthy) {
-      console.warn('[Jubee Health] Issues detected:', health.issues)
+      logger.warn('[Jubee Health] Issues detected:', health.issues)
       
       // Create emergency backup before recovery
       jubeeStateBackupService.createBackup({
