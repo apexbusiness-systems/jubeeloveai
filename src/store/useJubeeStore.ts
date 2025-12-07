@@ -40,6 +40,7 @@ interface JubeeState {
   isProcessing: boolean
   lastError: string | null
   isVisible: boolean
+  isMinimized: boolean
   interactionCount: number
   soundEffectsVolume: number
   voiceVolume: number
@@ -55,6 +56,7 @@ interface JubeeState {
   converse: (message: string, context?: ConversationContext) => Promise<string>
   cleanup: () => void
   toggleVisibility: () => void
+  toggleMinimized: () => void
   setSoundEffectsVolume: (volume: number) => void
   setVoiceVolume: (volume: number) => void
 }
@@ -87,6 +89,7 @@ export const useJubeeStore = create<JubeeState>()(
       isProcessing: false,
       lastError: null,
       isVisible: true,
+      isMinimized: false,
       interactionCount: 0,
       soundEffectsVolume: 0.3,
       voiceVolume: 1.0,
@@ -146,6 +149,17 @@ export const useJubeeStore = create<JubeeState>()(
         
         set((state) => {
           state.isVisible = newVisibility
+        })
+      },
+
+      toggleMinimized: () => {
+        const currentMinimized = get().isMinimized
+        const newMinimized = !currentMinimized
+        
+        logger.dev('[Jubee] Minimized toggled:', { from: currentMinimized, to: newMinimized })
+        
+        set((state) => {
+          state.isMinimized = newMinimized
         })
       },
 
@@ -387,6 +401,7 @@ export const useJubeeStore = create<JubeeState>()(
         containerPosition: state.containerPosition,
         position: state.position,
         isVisible: state.isVisible,
+        isMinimized: state.isMinimized,
         currentAnimation: state.currentAnimation,
         soundEffectsVolume: state.soundEffectsVolume,
         voiceVolume: state.voiceVolume,
