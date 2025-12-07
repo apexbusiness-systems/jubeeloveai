@@ -14,7 +14,7 @@ import {
   Star
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
-import jubeeLogo from '@/assets/jubee-logo.svg';
+import jubeeLogo from '@/assets/jubee-logo.png';
 
 const FIRST_VISIT_KEY = 'jubee_has_visited';
 
