@@ -104,7 +104,7 @@ export default function Landing() {
               <img 
                 src={jubeeLogo} 
                 alt="Jubee - Your learning companion" 
-                className="w-40 h-40 mx-auto rounded-3xl shadow-2xl"
+                className="w-40 h-40 mx-auto"
               />
             </motion.div>
             
