@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BrowserRouter, useLocation } from 'react-router-dom';
+import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
+import { isFirstTimeVisitor } from './pages/Landing';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { motion, useSpring } from 'framer-motion';
@@ -65,23 +66,32 @@ function AppShell() {
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   // Routes where parent auth experience should be clean (no Jubee, nav, or onboarding)
   const isAuthRoute = location.pathname.startsWith('/auth');
+  const isLandingRoute = location.pathname === '/landing';
+
+  // Redirect first-time visitors to landing page
+  useEffect(() => {
+    if (location.pathname === '/' && isFirstTimeVisitor()) {
+      navigate('/landing', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   // Monitor all systems for regressions (dev only)
   useSystemHealthMonitor();
 
   // Start onboarding for first-time users only on main kid-facing routes
   useEffect(() => {
-    if (!hasCompletedOnboarding && !isAuthRoute) {
+    if (!hasCompletedOnboarding && !isAuthRoute && !isLandingRoute) {
       const timer = setTimeout(() => {
         startOnboarding();
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [hasCompletedOnboarding, startOnboarding, isAuthRoute]);
+  }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
   const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
@@ -176,16 +186,19 @@ function AppShell() {
     }
   }, [children.length, activeChildId]);
 
-  const mainTopPadding = isAuthRoute ? 'pt-6' : 'pt-[76px] sm:pt-[80px]';
-  const mainBottomPadding = isAuthRoute ? 'pb-8' : 'pb-[88px]';
+  const mainTopPadding = (isAuthRoute || isLandingRoute) ? 'pt-6' : 'pt-[76px] sm:pt-[80px]';
+  const mainBottomPadding = (isAuthRoute || isLandingRoute) ? 'pb-8' : 'pb-[88px]';
+
+  // Hide app shell UI on auth and landing routes
+  const showAppShellUI = !isAuthRoute && !isLandingRoute;
 
   return (
     <>
       <AchievementTracker />
       <SEO />
       <div className="app min-h-screen w-full" data-theme={currentTheme}>
-        {/* Header with score and action buttons - hidden on auth route for clean landing */}
-        {!isAuthRoute && (
+        {/* Header with score and action buttons - hidden on auth and landing routes */}
+        {showAppShellUI && (
           <header 
             className="
               fixed top-0 left-0 right-0 z-40
@@ -277,7 +290,7 @@ function AppShell() {
         )}
 
         {/* Jubee 3D Mascot - Direct Canvas Rendering (No Portal) */}
-        {!isAuthRoute && (() => {
+        {showAppShellUI && (() => {
           console.log('[DIAGNOSTIC] App.tsx - Rendering JubeeCanvas3DDirect', {
             isAuthRoute,
             shouldRender: !isAuthRoute,
@@ -305,7 +318,7 @@ function AppShell() {
           style={{
             paddingLeft: 'max(1rem, env(safe-area-inset-left))',
             paddingRight: 'max(1rem, env(safe-area-inset-right))',
-            paddingBottom: isAuthRoute
+            paddingBottom: (isAuthRoute || isLandingRoute)
               ? 'max(2rem, env(safe-area-inset-bottom))'
               : 'max(88px, calc(88px + env(safe-area-inset-bottom)))',
           }}
@@ -319,11 +332,11 @@ function AppShell() {
           </div>
         </main>
 
-        {/* Navigation with safe area support - hidden on auth route */}
-        {!isAuthRoute && <Navigation />}
+        {/* Navigation with safe area support - hidden on auth and landing routes */}
+        {showAppShellUI && <Navigation />}
 
         {/* Modals and overlays - only relevant on kid-facing routes */}
-        {!isAuthRoute && (
+        {showAppShellUI && (
           <>
             {showPersonalization && (
               <JubeePersonalization 

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion } from 'framer-motion';
@@ -14,6 +14,8 @@ import {
   Star
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
+
+const FIRST_VISIT_KEY = 'jubee_has_visited';
 
 const features = [
   {
@@ -48,7 +50,29 @@ const features = [
   }
 ];
 
+export function markAsReturningVisitor() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(FIRST_VISIT_KEY, 'true');
+  }
+}
+
+export function isFirstTimeVisitor(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(FIRST_VISIT_KEY) !== 'true';
+}
+
 export default function Landing() {
+  const navigate = useNavigate();
+
+  const handleStartLearning = () => {
+    markAsReturningVisitor();
+    navigate('/');
+  };
+
+  const handleParentHub = () => {
+    markAsReturningVisitor();
+    navigate('/parent');
+  };
   return (
     <>
       <SEO 
@@ -96,18 +120,23 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/">
-                <Button size="lg" className="text-lg px-8 py-6 rounded-2xl shadow-xl hover:scale-105 transition-transform">
-                  <Heart className="w-5 h-5 mr-2" />
-                  Start Learning
-                </Button>
-              </Link>
-              <Link to="/parent">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6 rounded-2xl border-2 hover:scale-105 transition-transform">
-                  <Shield className="w-5 h-5 mr-2" />
-                  Parent Hub
-                </Button>
-              </Link>
+              <Button 
+                size="lg" 
+                className="text-lg px-8 py-6 rounded-2xl shadow-xl hover:scale-105 transition-transform"
+                onClick={handleStartLearning}
+              >
+                <Heart className="w-5 h-5 mr-2" />
+                Start Learning
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-6 rounded-2xl border-2 hover:scale-105 transition-transform"
+                onClick={handleParentHub}
+              >
+                <Shield className="w-5 h-5 mr-2" />
+                Parent Hub
+              </Button>
             </div>
           </motion.div>
           
@@ -220,12 +249,14 @@ export default function Landing() {
             <p className="text-lg text-muted-foreground mb-8">
               Join thousands of families who trust Jubee.Love for their children's early education journey.
             </p>
-            <Link to="/">
-              <Button size="lg" className="text-xl px-10 py-7 rounded-2xl shadow-2xl hover:scale-105 transition-transform">
-                <Sparkles className="w-6 h-6 mr-2" />
-                Let's Go!
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="text-xl px-10 py-7 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
+              onClick={handleStartLearning}
+            >
+              <Sparkles className="w-6 h-6 mr-2" />
+              Let's Go!
+            </Button>
           </motion.div>
         </section>
         
