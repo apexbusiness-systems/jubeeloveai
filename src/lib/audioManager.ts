@@ -15,10 +15,80 @@ class AudioManager {
   private audioCache: Map<string, CachedAudio> = new Map();
   private readonly MAX_CACHE_SIZE = 50; // Max cached audio items
   private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
+  private audioContext: AudioContext | null = null;
+  private isAudioUnlocked = false;
 
   constructor() {
     this.preloadSoundEffects();
     this.preloadCommonPhrases();
+    this.setupAudioUnlock();
+  }
+
+  /**
+   * Setup user interaction listeners to unlock audio on mobile
+   * Required for PWA/mobile where audio is blocked until user interaction
+   */
+  private setupAudioUnlock(): void {
+    if (typeof window === 'undefined') return;
+
+    const unlockAudio = async () => {
+      if (this.isAudioUnlocked) return;
+
+      try {
+        // Create and resume AudioContext
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+
+        if (this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+
+        // Play a silent buffer to unlock audio
+        const buffer = this.audioContext.createBuffer(1, 1, 22050);
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.audioContext.destination);
+        source.start(0);
+
+        this.isAudioUnlocked = true;
+        console.log('✓ Audio unlocked for PWA/mobile');
+
+        // Remove listeners once unlocked
+        document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('touchend', unlockAudio);
+        document.removeEventListener('click', unlockAudio);
+      } catch (error) {
+        console.warn('Audio unlock failed:', error);
+      }
+    };
+
+    // Listen for user interaction to unlock audio
+    document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
+    document.addEventListener('touchend', unlockAudio, { once: false, passive: true });
+    document.addEventListener('click', unlockAudio, { once: false, passive: true });
+  }
+
+  /**
+   * Ensure audio is ready for playback
+   */
+  async ensureAudioReady(): Promise<boolean> {
+    if (this.isAudioUnlocked) return true;
+
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
+      this.isAudioUnlocked = this.audioContext.state === 'running';
+      return this.isAudioUnlocked;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -259,6 +329,9 @@ class AudioManager {
    * Play audio from URL or Blob
    */
   async playAudio(source: string | Blob, stopCurrent = true, volume = 1.0): Promise<void> {
+    // Ensure audio is unlocked before playing
+    await this.ensureAudioReady();
+
     if (stopCurrent) {
       this.stopCurrentAudio();
     }
@@ -266,6 +339,11 @@ class AudioManager {
     const audioUrl = typeof source === 'string' ? source : URL.createObjectURL(source);
     const audio = new Audio(audioUrl);
     audio.volume = Math.max(0, Math.min(1, volume));
+    
+    // Set attributes for mobile compatibility
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    
     this.currentAudio = audio;
 
     return new Promise((resolve, reject) => {
@@ -278,6 +356,7 @@ class AudioManager {
       };
 
       audio.onerror = (error) => {
+        console.error('Audio playback error:', error);
         if (typeof source !== 'string' && audioUrl.startsWith('blob:')) {
           URL.revokeObjectURL(audioUrl);
         }
@@ -285,7 +364,13 @@ class AudioManager {
         reject(error);
       };
 
-      audio.play().catch(reject);
+      audio.play().catch((err) => {
+        console.error('Audio play failed:', err);
+        // Try to unlock and retry once
+        this.ensureAudioReady().then(() => {
+          audio.play().catch(reject);
+        });
+      });
     });
   }
 

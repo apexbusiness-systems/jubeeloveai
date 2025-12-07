@@ -73,12 +73,25 @@ export function useVoiceCommands(options: VoiceCommandOptions = {}) {
 
   const startListening = useCallback(async () => {
     try {
+      // Check for microphone support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast({
+          title: "Not Supported",
+          description: "Microphone is not supported on this device or browser",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Request microphone with mobile-compatible settings
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           channelCount: 1,
           sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true,
         } 
-      })
+      });
       
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm'
@@ -150,9 +163,21 @@ export function useVoiceCommands(options: VoiceCommandOptions = {}) {
       })
     } catch (error) {
       console.error('Microphone access error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Provide specific error messages
+      let description = "Could not access microphone";
+      if (errorMessage.includes('Permission denied') || errorMessage.includes('NotAllowedError')) {
+        description = "Microphone permission denied. Please enable in Settings.";
+      } else if (errorMessage.includes('NotFoundError')) {
+        description = "No microphone found on this device";
+      } else if (errorMessage.includes('NotSupportedError')) {
+        description = "Microphone not supported in this browser";
+      }
+      
       toast({
-        title: "Error",
-        description: "Could not access microphone",
+        title: "Microphone Error",
+        description,
         variant: "destructive"
       })
     }
