@@ -42,10 +42,12 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const { 
     containerPosition, 
     isVisible, 
+    isMinimized,
     currentAnimation, 
     gender,
     currentMood,
     setContainerPosition,
+    toggleMinimized,
   } = useJubeeStore();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -427,39 +429,80 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         position: 'fixed',
         bottom: `${containerPosition.bottom}px`,
         right: `${containerPosition.right}px`,
-        width: `${containerDimensions.width}px`,
-        height: `${containerDimensions.height}px`,
+        width: isMinimized ? '48px' : `${containerDimensions.width}px`,
+        height: isMinimized ? '48px' : `${containerDimensions.height}px`,
         pointerEvents: isVisible ? 'auto' : 'none',
         opacity: isVisible ? 1 : 0,
-        transition: isDragging ? 'none' : 'opacity 0.3s ease',
+        transition: isDragging ? 'none' : 'all 0.3s ease',
         zIndex: 9999,
         cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
         userSelect: 'none',
       }}
       data-jubee-container="true"
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
+      onMouseDown={isMinimized ? undefined : handleMouseDown}
+      onTouchStart={isMinimized ? undefined : handleTouchStart}
     >
-      <canvas
-        ref={(el) => {
-          canvasRef.current = el;
-          logger.dev('[DIAGNOSTIC] Canvas Ref Callback Executed', {
-            element: el ? 'ELEMENT RECEIVED' : 'NULL',
-            elementTag: el?.tagName,
-            inDOM: el ? document.contains(el) : false,
-            timestamp: Date.now()
-          });
+      {/* Minimize/Expand Toggle Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleMinimized();
         }}
-        className="jubee-canvas"
-        data-jubee-canvas="true"
-        data-jubee-scale="0.45"
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'block',
-        }}
-      />
+        className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground flex items-center justify-center shadow-md z-10 transition-all hover:scale-110"
+        style={{ pointerEvents: 'auto' }}
+        aria-label={isMinimized ? 'Expand Jubee' : 'Minimize Jubee'}
+        title={isMinimized ? 'Expand Jubee' : 'Minimize Jubee'}
+      >
+        {isMinimized ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="4 14 10 14 10 20"></polyline>
+            <polyline points="20 10 14 10 14 4"></polyline>
+            <line x1="14" y1="10" x2="21" y2="3"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        )}
+      </button>
+
+      {/* Minimized icon state */}
+      {isMinimized ? (
+        <div 
+          className="w-full h-full rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition-transform"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleMinimized();
+          }}
+        >
+          <span className="text-2xl">🐝</span>
+        </div>
+      ) : (
+        <canvas
+          ref={(el) => {
+            canvasRef.current = el;
+            logger.dev('[DIAGNOSTIC] Canvas Ref Callback Executed', {
+              element: el ? 'ELEMENT RECEIVED' : 'NULL',
+              elementTag: el?.tagName,
+              inDOM: el ? document.contains(el) : false,
+              timestamp: Date.now()
+            });
+          }}
+          className="jubee-canvas"
+          data-jubee-canvas="true"
+          data-jubee-scale="0.45"
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'block',
+          }}
+        />
+      )}
     </div>
   );
 }
