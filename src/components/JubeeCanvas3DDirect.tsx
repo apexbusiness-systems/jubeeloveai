@@ -197,9 +197,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Create Jubee 3D model
     const jubeeGroup = new THREE.Group();
     
-    // CRITICAL: Scale model by 0.9 to match 10% container size reduction
+    // CRITICAL: Scale model by 0.45 to match 50% container size reduction
     // This prevents Jubee from appearing "enlarged" in the smaller container
-    jubeeGroup.scale.set(0.9, 0.9, 0.9);
+    jubeeGroup.scale.set(0.45, 0.45, 0.45);
     
     sceneRef.current.add(jubeeGroup);
     jubeeGroupRef.current = jubeeGroup;
@@ -453,7 +453,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         }}
         className="jubee-canvas"
         data-jubee-canvas="true"
-        data-jubee-scale="0.9"
+        data-jubee-scale="0.45"
         style={{
           width: '100%',
           height: '100%',
