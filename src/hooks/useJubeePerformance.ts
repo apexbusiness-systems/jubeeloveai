@@ -5,7 +5,8 @@
  * Ensures smooth experience across all devices.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 
 interface PerformanceProfile {
   quality: 'low' | 'medium' | 'high'
@@ -55,7 +56,7 @@ export function useJubeePerformance() {
   const frameCountRef = useRef(0)
 
   // Measure FPS
-  const measureFPS = (): number => {
+  const measureFPS = useCallback((): number => {
     const now = performance.now()
     const delta = now - lastFrameTimeRef.current
     lastFrameTimeRef.current = now
@@ -73,63 +74,66 @@ export function useJubeePerformance() {
     frameCountRef.current++
 
     return fps
-  }
+  }, [])
 
   // Calculate average FPS
-  const getAverageFPS = (): number => {
+  const getAverageFPS = useCallback((): number => {
     if (fpsHistoryRef.current.length === 0) return 60
 
     const sum = fpsHistoryRef.current.reduce((a, b) => a + b, 0)
     return sum / fpsHistoryRef.current.length
-  }
+  }, [])
 
   // Adaptive quality adjustment
-  const adjustQuality = () => {
+  const adjustQuality = useCallback(() => {
     const avgFPS = getAverageFPS()
 
-    if (avgFPS < FPS_THRESHOLD_DOWNGRADE && profile.quality !== 'low') {
-      console.log('[Performance] Downgrading quality due to low FPS:', avgFPS)
-      
-      if (profile.quality === 'high') {
-        setProfile(PERFORMANCE_PROFILES.medium)
-      } else if (profile.quality === 'medium') {
-        setProfile(PERFORMANCE_PROFILES.low)
+    setProfile(currentProfile => {
+      if (avgFPS < FPS_THRESHOLD_DOWNGRADE && currentProfile.quality !== 'low') {
+        logger.dev('[Performance] Downgrading quality due to low FPS:', avgFPS)
+        
+        if (currentProfile.quality === 'high') {
+          return PERFORMANCE_PROFILES.medium
+        } else if (currentProfile.quality === 'medium') {
+          return PERFORMANCE_PROFILES.low
+        }
+      } else if (avgFPS > FPS_THRESHOLD_UPGRADE && currentProfile.quality !== 'high') {
+        logger.dev('[Performance] Upgrading quality due to high FPS:', avgFPS)
+        
+        if (currentProfile.quality === 'low') {
+          return PERFORMANCE_PROFILES.medium
+        } else if (currentProfile.quality === 'medium') {
+          return PERFORMANCE_PROFILES.high
+        }
       }
-    } else if (avgFPS > FPS_THRESHOLD_UPGRADE && profile.quality !== 'high') {
-      console.log('[Performance] Upgrading quality due to high FPS:', avgFPS)
-      
-      if (profile.quality === 'low') {
-        setProfile(PERFORMANCE_PROFILES.medium)
-      } else if (profile.quality === 'medium') {
-        setProfile(PERFORMANCE_PROFILES.high)
-      }
-    }
-  }
+      return currentProfile
+    })
+  }, [getAverageFPS])
 
   // Manual quality override
-  const setQuality = (quality: 'low' | 'medium' | 'high') => {
-    console.log('[Performance] Manual quality override:', quality)
+  const setQuality = useCallback((quality: 'low' | 'medium' | 'high') => {
+    logger.dev('[Performance] Manual quality override:', quality)
     setProfile(PERFORMANCE_PROFILES[quality])
-  }
+  }, [])
 
   // Throttled animation update
-  const shouldUpdateAnimation = (lastUpdateTime: number): boolean => {
+  const shouldUpdateAnimation = useCallback((lastUpdateTime: number): boolean => {
     const elapsed = performance.now() - lastUpdateTime
     return elapsed >= profile.animationThrottle
-  }
+  }, [profile.animationThrottle])
 
   // Periodic performance monitoring
   useEffect(() => {
     const intervalId = setInterval(() => {
       adjustQuality()
 
-      // Log performance metrics
+      // Log performance metrics in dev mode only
       const avgFPS = getAverageFPS()
-      console.log('[Performance] Current FPS:', avgFPS.toFixed(1), 'Profile:', profile.quality)
+      logger.dev('[Performance] Current FPS:', avgFPS.toFixed(1), 'Profile:', profile.quality)
     }, PERFORMANCE_CHECK_INTERVAL)
 
     return () => clearInterval(intervalId)
-  }, [profile, adjustQuality])
+  }, [profile.quality, adjustQuality, getAverageFPS])
 
   return {
     profile,

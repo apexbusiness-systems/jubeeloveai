@@ -3,11 +3,18 @@
  * 
  * Continuous monitoring of all critical systems with automatic recovery.
  * Integrates all regression guards and failsafes into a unified health monitoring system.
+ * 
+ * Route-aware: Skips Jubee-specific checks on routes where Jubee is not rendered
+ * (e.g., /landing, /auth) to prevent false positive "critical failures."
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { runSystemHealthCheck, autoFixSystemIssues, type SystemHealthReport } from '@/lib/systemHealthCheck'
 import { logger } from '@/lib/logger'
+
+// Routes where Jubee is intentionally not rendered
+const JUBEE_EXCLUDED_ROUTES = ['/landing', '/auth', '/oauth/consent']
 
 interface HealthMonitorConfig {
   enabled: boolean
@@ -24,6 +31,18 @@ const DEFAULT_CONFIG: HealthMonitorConfig = {
 }
 
 export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}) {
+  // Get current route to filter Jubee-specific checks
+  let currentRoute = '/'
+  try {
+    // useLocation may throw if not in Router context
+    const location = useLocation()
+    currentRoute = location.pathname
+  } catch {
+    // Not in Router context, use default
+  }
+  
+  const isJubeeExcludedRoute = JUBEE_EXCLUDED_ROUTES.some(route => currentRoute.startsWith(route))
+  
   const finalConfig = { ...DEFAULT_CONFIG, ...config }
   const [healthReport, setHealthReport] = useState<SystemHealthReport | null>(null)
   const [isHealthy, setIsHealthy] = useState(true)
@@ -52,11 +71,29 @@ export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}
         // Run comprehensive health check
         const report = await runSystemHealthCheck()
         
-        setHealthReport(report)
-        setIsHealthy(report.overallHealth !== 'critical')
+        // Filter out Jubee-related failures on excluded routes to prevent false positives
+        const filteredReport: SystemHealthReport = isJubeeExcludedRoute
+          ? {
+              ...report,
+              results: report.results.filter(r => !r.system.toLowerCase().includes('jubee')),
+              criticalFailures: report.results
+                .filter(r => !r.system.toLowerCase().includes('jubee'))
+                .filter(r => r.severity === 'critical' && !r.passed).length,
+              warnings: report.results
+                .filter(r => !r.system.toLowerCase().includes('jubee'))
+                .filter(r => r.severity === 'warning' && !r.passed).length,
+            }
+          : report
+        
+        // Recalculate overall health for filtered report
+        const filteredCritical = filteredReport.criticalFailures
+        filteredReport.overallHealth = filteredCritical > 0 ? 'critical' : filteredReport.warnings > 0 ? 'degraded' : 'healthy'
+        
+        setHealthReport(filteredReport)
+        setIsHealthy(filteredReport.overallHealth !== 'critical')
 
         // Auto-fix if enabled and issues detected
-        if (finalConfig.autoFixEnabled && report.criticalFailures > 0) {
+        if (finalConfig.autoFixEnabled && filteredReport.criticalFailures > 0) {
           logger.warn('[System Health Monitor] Critical failures detected - attempting auto-fix')
           const fixed = await autoFixSystemIssues()
           
@@ -71,13 +108,13 @@ export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}
 
         // Log results in dev mode or if explicitly enabled
         if (finalConfig.logResults || import.meta.env.DEV) {
-          if (report.overallHealth !== 'healthy') {
+          if (filteredReport.overallHealth !== 'healthy') {
             logger.group('[System Health Monitor] Health Check Results')
-            logger.info(`Overall Health: ${report.overallHealth}`)
-            logger.info(`Critical Failures: ${report.criticalFailures}`)
-            logger.info(`Warnings: ${report.warnings}`)
+            logger.info(`Overall Health: ${filteredReport.overallHealth}`)
+            logger.info(`Critical Failures: ${filteredReport.criticalFailures}`)
+            logger.info(`Warnings: ${filteredReport.warnings}`)
             
-            report.results
+            filteredReport.results
               .filter(r => !r.passed)
               .forEach(result => {
                 const level = result.severity === 'critical' ? 'error' : 'warn'
@@ -115,7 +152,7 @@ export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       logger.dev('[System Health Monitor] Stopped')
     }
-  }, [finalConfig.enabled, finalConfig.checkIntervalMs, finalConfig.autoFixEnabled, finalConfig.logResults])
+  }, [finalConfig.enabled, finalConfig.checkIntervalMs, finalConfig.autoFixEnabled, finalConfig.logResults, isJubeeExcludedRoute])
 
   return {
     healthReport,
