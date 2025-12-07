@@ -19,7 +19,7 @@ export function VoiceCommandButton() {
       variant={isListening ? "default" : "outline"}
       size="icon"
       className={cn(
-        "fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all",
+        "fixed bottom-24 left-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all",
         isListening && "animate-pulse bg-primary"
       )}
       aria-label={isListening ? "Stop listening" : "Start voice command"}
