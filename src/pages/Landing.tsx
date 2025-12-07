@@ -14,6 +14,7 @@ import {
   Star
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
+import jubeeLogo from '@/assets/jubee-logo.svg';
 
 const FIRST_VISIT_KEY = 'jubee_has_visited';
 
@@ -100,9 +101,11 @@ export default function Landing() {
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center shadow-2xl">
-                <Sparkles className="w-16 h-16 text-primary-foreground" />
-              </div>
+              <img 
+                src={jubeeLogo} 
+                alt="Jubee - Your learning companion" 
+                className="w-40 h-40 mx-auto rounded-3xl shadow-2xl"
+              />
             </motion.div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4">
