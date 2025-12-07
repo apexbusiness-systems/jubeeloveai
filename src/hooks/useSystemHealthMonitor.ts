@@ -13,8 +13,8 @@ import { useLocation } from 'react-router-dom'
 import { runSystemHealthCheck, autoFixSystemIssues, type SystemHealthReport } from '@/lib/systemHealthCheck'
 import { logger } from '@/lib/logger'
 
-// Routes where Jubee is intentionally not rendered
-const JUBEE_EXCLUDED_ROUTES = ['/landing', '/auth', '/oauth/consent']
+// Routes where Jubee is intentionally not rendered (includes root since it redirects to /landing)
+const JUBEE_EXCLUDED_ROUTES = ['/landing', '/auth', '/oauth/consent', '/']
 
 interface HealthMonitorConfig {
   enabled: boolean
