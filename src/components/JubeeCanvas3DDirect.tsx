@@ -48,7 +48,14 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     currentMood,
     setContainerPosition,
     toggleMinimized,
+    speak,
+    triggerAnimation,
+    setMood,
+    interactionCount,
   } = useJubeeStore();
+  
+  // Track interaction for greeting variations
+  const interactionCountRef = useRef(0);
 
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; startBottom: number; startRight: number } | null>(null);
@@ -199,9 +206,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Create Jubee 3D model
     const jubeeGroup = new THREE.Group();
     
-    // CRITICAL: Scale model by 0.45 to match 50% container size reduction
+    // CRITICAL: Scale model by 0.36 to match 60% container size reduction
     // This prevents Jubee from appearing "enlarged" in the smaller container
-    jubeeGroup.scale.set(0.45, 0.45, 0.45);
+    jubeeGroup.scale.set(0.36, 0.36, 0.36);
     
     sceneRef.current.add(jubeeGroup);
     jubeeGroupRef.current = jubeeGroup;
@@ -381,6 +388,46 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     }
   }, [isDragging]);
 
+  // Click handler for Jubee interaction - triggers greeting and animation
+  const handleJubeeClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    // Don't trigger click if we just finished dragging
+    if (isDragging) return;
+    
+    // Prevent if this was a drag gesture (moved more than 5px)
+    if (dragStartRef.current) return;
+    
+    e.stopPropagation();
+    
+    // Increment interaction count
+    interactionCountRef.current += 1;
+    const count = interactionCountRef.current;
+    
+    // Trigger excited animation
+    triggerAnimation('excited');
+    setMood('excited');
+    
+    // Generate greeting based on interaction count
+    const greetings = [
+      "Hi there! I'm Jubee! 🐝",
+      "Buzz buzz! Let's play!",
+      "Yay! You found me!",
+      "Hello friend! Ready to learn?",
+      "Wheee! That tickles!",
+      "Let's have fun together!",
+    ];
+    
+    const greeting = greetings[(count - 1) % greetings.length];
+    speak(greeting, 'excited');
+    
+    logger.dev('[Jubee3DDirect] Click interaction', { count, greeting });
+    
+    // Reset mood after a delay
+    setTimeout(() => {
+      setMood('happy');
+      triggerAnimation('idle');
+    }, 3000);
+  }, [isDragging, speak, triggerAnimation, setMood]);
+
   // Attach global mouse/touch listeners for dragging
   useEffect(() => {
     if (isDragging) {
@@ -495,11 +542,13 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
           }}
           className="jubee-canvas"
           data-jubee-canvas="true"
-          data-jubee-scale="0.45"
+          data-jubee-scale="0.36"
+          onClick={handleJubeeClick}
           style={{
             width: '100%',
             height: '100%',
             display: 'block',
+            cursor: 'pointer',
           }}
         />
       )}
