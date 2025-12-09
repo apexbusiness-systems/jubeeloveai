@@ -33,6 +33,16 @@ export type JourneyStep = VerificationResult; // Alias for external consumers
 
 export type ParentJourneyResult = JourneyReport; // Alias for external consumers
 
+declare global {
+  interface Window {
+    parentJourneyVerifier: ParentJourneyVerifier;
+    verifyParentJourney?: (captureScreenshots?: boolean) => Promise<ParentJourneyResult>;
+    verifyQuickJourney?: (captureScreenshots?: boolean) => Promise<ParentJourneyResult>;
+    viewJourneyScreenshots?: () => void;
+    downloadJourneyScreenshots?: () => void;
+  }
+}
+
 type ScreenshotOptions = {
   captureScreenshots: boolean;
   screenshotQuality: number; // 0-1
@@ -615,25 +625,25 @@ class ParentJourneyVerifier {
 export const parentJourneyVerifier = new ParentJourneyVerifier();
 
 if (typeof window !== 'undefined') {
-  (window as any).parentJourneyVerifier = parentJourneyVerifier;
+  window.parentJourneyVerifier = parentJourneyVerifier;
   
-  (window as any).verifyParentJourney = async (captureScreenshots = true) => {
+  window.verifyParentJourney = async (captureScreenshots = true) => {
     const report = await parentJourneyVerifier.runCompleteJourney({ captureScreenshots });
     console.log('\n' + parentJourneyVerifier.getDetailedReport());
     return report;
   };
 
-  (window as any).verifyQuickJourney = async (captureScreenshots = true) => {
+  window.verifyQuickJourney = async (captureScreenshots = true) => {
     const report = await parentJourneyVerifier.runQuickJourney({ captureScreenshots });
     console.log('\n' + parentJourneyVerifier.getDetailedReport());
     return report;
   };
   
-  (window as any).viewJourneyScreenshots = () => {
+  window.viewJourneyScreenshots = () => {
     parentJourneyVerifier.viewScreenshots();
   };
   
-  (window as any).downloadJourneyScreenshots = () => {
+  window.downloadJourneyScreenshots = () => {
     parentJourneyVerifier.downloadScreenshots();
   };
 }

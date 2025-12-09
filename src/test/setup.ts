@@ -31,18 +31,18 @@ vi.mock('@/integrations/supabase/client', () => ({
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
-  root = null
+  root: Element | Document | null = null
   rootMargin = ''
-  thresholds = []
+  thresholds: ReadonlyArray<number> = []
   
   constructor() {}
   disconnect() {}
   observe() {}
-  takeRecords() {
+  takeRecords(): IntersectionObserverEntry[] {
     return []
   }
   unobserve() {}
-} as any
+} as unknown as typeof globalThis.IntersectionObserver
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -86,7 +86,7 @@ global.AudioContext = class AudioContext {
   sampleRate = 48000
   currentTime = 0
   state = 'running' as AudioContextState
-  destination = {} as any
+  destination = {} as unknown as AudioDestinationNode
   
   createGain = vi.fn(() => ({
     connect: vi.fn(),
@@ -105,4 +105,4 @@ global.AudioContext = class AudioContext {
   createMediaElementSource = vi.fn()
   createMediaStreamDestination = vi.fn()
   createMediaStreamSource = vi.fn()
-} as any
+} as unknown as typeof globalThis.AudioContext

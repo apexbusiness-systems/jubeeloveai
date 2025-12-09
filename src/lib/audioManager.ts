@@ -9,6 +9,12 @@ interface CachedAudio {
   timestamp: number;
 }
 
+type ExtendedWindow = Window &
+  typeof globalThis & {
+    webkitAudioContext?: typeof AudioContext;
+    requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+  };
+
 class AudioManager {
   private currentAudio: HTMLAudioElement | null = null;
   private soundEffects: Map<string, HTMLAudioElement> = new Map();
@@ -36,8 +42,11 @@ class AudioManager {
 
       try {
         // Create and resume AudioContext
+        const extendedWindow = window as ExtendedWindow;
         if (!this.audioContext) {
-          this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const AudioContextCtor = extendedWindow.AudioContext || extendedWindow.webkitAudioContext;
+          if (!AudioContextCtor) return;
+          this.audioContext = new AudioContextCtor();
         }
 
         if (this.audioContext.state === 'suspended') {
@@ -76,8 +85,13 @@ class AudioManager {
     if (this.isAudioUnlocked) return true;
 
     try {
+      const extendedWindow = window as ExtendedWindow;
       if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextCtor = extendedWindow.AudioContext || extendedWindow.webkitAudioContext;
+        if (!AudioContextCtor) {
+          return false;
+        }
+        this.audioContext = new AudioContextCtor();
       }
 
       if (this.audioContext.state === 'suspended') {
@@ -217,8 +231,9 @@ class AudioManager {
       await executePreload()
     } else {
       // Use idle callback for low priority
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(executePreload, { timeout: 5000 })
+      const extendedWindow = window as ExtendedWindow;
+      if (extendedWindow.requestIdleCallback) {
+        extendedWindow.requestIdleCallback(executePreload, { timeout: 5000 });
       } else {
         setTimeout(executePreload, 100)
       }

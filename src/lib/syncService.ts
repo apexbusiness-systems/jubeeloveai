@@ -9,11 +9,15 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
-import { jubeeDB } from './indexedDB'
+import { jubeeDB, type DBSchema } from './indexedDB'
 import { syncQueue } from './syncQueue'
 import { conflictResolver } from './conflictResolver'
 import { offlineQueue } from './offlineQueue'
 import type { Json } from '@/integrations/supabase/types'
+
+type SyncManager = {
+  register: (tag: string) => Promise<void>
+}
 
 /**
  * Result of a sync operation
@@ -66,10 +70,9 @@ class SyncService {
     // Register for background sync if available
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then(registration => {
-        // @ts-ignore - Background Sync API may not be available in all browsers
-        if (registration.sync) {
-          // @ts-ignore
-          registration.sync.register('jubee-sync').catch(err => {
+        const syncEnabledRegistration = registration as ServiceWorkerRegistration & { sync?: SyncManager }
+        if (syncEnabledRegistration.sync) {
+          syncEnabledRegistration.sync.register('jubee-sync').catch(err => {
             console.warn('Background sync registration failed:', err)
           })
         }
@@ -533,6 +536,7 @@ class SyncService {
             last_activity: data.lastActivity as string,
             updated_at: data.updatedAt as string,
           })
+          await jubeeDB.put('gameProgress', { ...data, synced: true } as DBSchema['gameProgress']['value'])
           break
 
         case 'achievements':
@@ -541,6 +545,7 @@ class SyncService {
             achievement_id: data.achievementId as string,
             unlocked_at: data.unlockedAt as string,
           })
+          await jubeeDB.put('achievements', { ...data, synced: true } as DBSchema['achievements']['value'])
           break
 
         case 'drawings':
@@ -551,6 +556,7 @@ class SyncService {
             created_at: data.createdAt as string,
             updated_at: data.updatedAt as string,
           })
+          await jubeeDB.put('drawings', { ...data, synced: true } as DBSchema['drawings']['value'])
           break
 
         case 'stickers':
@@ -559,6 +565,7 @@ class SyncService {
             sticker_id: data.stickerId as string,
             unlocked_at: data.unlockedAt as string,
           })
+          await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
           break
 
         case 'childrenProfiles':
@@ -572,14 +579,12 @@ class SyncService {
             settings: (data.settings as Json) ?? null,
             updated_at: data.updatedAt as string,
           }])
+          await jubeeDB.put('childrenProfiles', { ...data, synced: true } as DBSchema['childrenProfiles']['value'])
           break
 
         default:
           throw new Error(`Unknown store: ${storeName}`)
       }
-
-      // Mark as synced in IndexedDB
-      await jubeeDB.put(storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', { ...data, synced: true } as any)
     })
   }
 

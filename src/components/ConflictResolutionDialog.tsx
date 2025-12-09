@@ -13,11 +13,43 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver';
-import { jubeeDB } from '@/lib/indexedDB';
+import { jubeeDB, type DBSchema } from '@/lib/indexedDB';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { logger } from '@/lib/logger';
+
+type StoreName = keyof DBSchema;
+
+const STORE_NAMES: StoreName[] = ['gameProgress', 'achievements', 'drawings', 'stickers', 'childrenProfiles'];
+
+const isStoreName = (name: string): name is StoreName =>
+  STORE_NAMES.includes(name as StoreName);
+
+const saveToLocalStore = async (storeName: string, data: Record<string, unknown>) => {
+  if (!isStoreName(storeName)) {
+    logger.warn('[ConflictResolution] Unknown store name, skipping local save', storeName);
+    return;
+  }
+
+  switch (storeName) {
+    case 'gameProgress':
+      await jubeeDB.put('gameProgress', data as DBSchema['gameProgress']['value']);
+      break;
+    case 'achievements':
+      await jubeeDB.put('achievements', data as DBSchema['achievements']['value']);
+      break;
+    case 'drawings':
+      await jubeeDB.put('drawings', data as DBSchema['drawings']['value']);
+      break;
+    case 'stickers':
+      await jubeeDB.put('stickers', data as DBSchema['stickers']['value']);
+      break;
+    case 'childrenProfiles':
+      await jubeeDB.put('childrenProfiles', data as DBSchema['childrenProfiles']['value']);
+      break;
+  }
+};
 
 export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
@@ -61,10 +93,10 @@ export function ConflictResolutionDialog() {
       const resolvedData = conflictResolver.resolveConflict(currentConflict.id, choice)
 
       // Update local database
-      await jubeeDB.put(currentConflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', resolvedData as any)
+      await saveToLocalStore(currentConflict.storeName, resolvedData)
       
       // If keeping local or merge, sync to server
-      if (choice === 'local' || choice === 'merge') {
+      if ((choice === 'local' || choice === 'merge') && isStoreName(currentConflict.storeName)) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           await syncToServer(currentConflict.storeName, resolvedData, user.id)
@@ -111,9 +143,10 @@ export function ConflictResolutionDialog() {
       if (user && (choice === 'local' || choice === 'merge')) {
         const syncPromises = resolvedDataArray.map((data, index) => {
           const conflict = conflicts[index]
-          if (conflict) {
+          if (conflict && isStoreName(conflict.storeName)) {
             return syncToServer(conflict.storeName, data, user.id)
           }
+          return undefined
         })
         await Promise.all(syncPromises.filter(Boolean))
       }
@@ -123,7 +156,7 @@ export function ConflictResolutionDialog() {
         const data = resolvedDataArray[i]
         const conflict = conflicts[i]
         if (conflict) {
-          await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
+          await saveToLocalStore(conflict.storeName, data)
         }
       }
 
@@ -179,8 +212,8 @@ export function ConflictResolutionDialog() {
         for (let i = 0; i < resolvedDataArray.length; i++) {
           const data = resolvedDataArray[i]
           const conflict = conflicts[i]
-          if (conflict) {
-            await jubeeDB.put(conflict.storeName as 'gameProgress' | 'achievements' | 'drawings' | 'stickers' | 'childrenProfiles', data as any)
+          if (conflict && isStoreName(conflict.storeName)) {
+            await saveToLocalStore(conflict.storeName, data)
 
             if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
               await syncToServer(conflict.storeName, data, user.id)
@@ -207,7 +240,7 @@ export function ConflictResolutionDialog() {
     }
   }
 
-  const syncToServer = async (storeName: string, data: Record<string, unknown>, userId: string) => {
+  const syncToServer = async (storeName: StoreName, data: Record<string, unknown>, userId: string) => {
     switch (storeName) {
       case 'gameProgress':
         await supabase.from('game_progress').upsert([{

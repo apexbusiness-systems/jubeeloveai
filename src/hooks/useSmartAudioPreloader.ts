@@ -107,8 +107,11 @@ export function useSmartAudioPreloader() {
     }
 
     // Use idle callback to avoid blocking UI
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(preloadForRoute, { timeout: 3000 })
+    const extendedWindow = window as Window &
+      typeof globalThis & { requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number };
+
+    if (extendedWindow.requestIdleCallback) {
+      extendedWindow.requestIdleCallback(preloadForRoute, { timeout: 3000 })
     } else {
       setTimeout(preloadForRoute, 500)
     }

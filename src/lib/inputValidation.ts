@@ -149,7 +149,7 @@ export function validatePassword(password: string): {
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
     
     const criteriaCount = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
     

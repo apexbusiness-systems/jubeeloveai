@@ -15,7 +15,7 @@ const DB_VERSION = 1
  * IndexedDB Schema Definition
  * Defines all object stores and their data structures
  */
-interface DBSchema {
+export interface DBSchema {
   gameProgress: {
     key: string
     value: {

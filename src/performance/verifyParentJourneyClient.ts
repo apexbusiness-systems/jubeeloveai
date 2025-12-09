@@ -70,12 +70,21 @@ export async function verifyQuickJourney() {
   }
 }
 
+declare global {
+  interface Window {
+    verifyParentJourney?: typeof verifyParentJourney;
+    verifyQuickJourney?: typeof verifyQuickJourney;
+    viewJourneyScreenshots?: () => void;
+    downloadJourneyScreenshots?: () => void;
+  }
+}
+
 // Expose functions globally for browser console access
 if (typeof window !== 'undefined') {
-  (window as any).verifyParentJourney = verifyParentJourney;
-  (window as any).verifyQuickJourney = verifyQuickJourney;
-  (window as any).viewJourneyScreenshots = () => parentJourneyVerifier.viewScreenshots();
-  (window as any).downloadJourneyScreenshots = () => parentJourneyVerifier.downloadScreenshots();
+  window.verifyParentJourney = verifyParentJourney;
+  window.verifyQuickJourney = verifyQuickJourney;
+  window.viewJourneyScreenshots = () => parentJourneyVerifier.viewScreenshots();
+  window.downloadJourneyScreenshots = () => parentJourneyVerifier.downloadScreenshots();
   
   console.log('🎯 Parent Journey Verifier loaded. Available commands:');
   console.log('   - await verifyParentJourney()');

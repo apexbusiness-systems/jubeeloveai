@@ -10,7 +10,7 @@ import { isNetworkError, getNetworkErrorMessage } from './networkErrorHandler';
 
 export interface EdgeFunctionOptions {
   functionName: string;
-  body?: Record<string, any>;
+  body?: Record<string, unknown>;
   retries?: number;
   timeout?: number;
   onRetry?: (attempt: number, error: Error) => void;
@@ -19,7 +19,7 @@ export interface EdgeFunctionOptions {
 /**
  * Call an edge function with automatic retry and error handling
  */
-export async function callEdgeFunction<T = any>(
+export async function callEdgeFunction<T = unknown>(
   options: EdgeFunctionOptions
 ): Promise<T> {
   const {
