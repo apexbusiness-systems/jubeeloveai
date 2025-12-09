@@ -9,7 +9,7 @@ import { logger } from './logger';
 export interface NetworkRequestOptions {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
   timeout?: number;
   retries?: number;
@@ -19,7 +19,7 @@ export interface NetworkRequestOptions {
 /**
  * Make a network request with automatic retry and timeout handling
  */
-export async function resilientFetch<T = any>(
+export async function resilientFetch<T = unknown>(
   options: NetworkRequestOptions
 ): Promise<T> {
   const {

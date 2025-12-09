@@ -7,7 +7,7 @@
 
 import { useEffect } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
-import { isPositionSafe } from './JubeePositionValidator'
+import { isPositionSafe, getSafeDefaultPosition } from './JubeePositionValidator'
 import { isPositionVisible } from './JubeePositionManager'
 import { logger } from '@/lib/logger'
 
@@ -124,7 +124,6 @@ export function autoFixRegressions(): boolean {
       // Attempt to fix critical issues
       if (result.issue.includes('Container position')) {
         logger.warn('[Jubee Regression] Auto-fixing container position')
-        const { getSafeDefaultPosition } = require('./JubeePositionValidator')
         state.setContainerPosition(getSafeDefaultPosition())
         fixed = true
       }

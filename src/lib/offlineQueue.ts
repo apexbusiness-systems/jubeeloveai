@@ -11,7 +11,7 @@ interface QueuedOperation {
   id: string;
   type: 'sync' | 'upload' | 'delete' | 'update';
   storeName: string;
-  data: any;
+  data: unknown;
   priority: number; // 1-10, higher = more important
   timestamp: number;
   retries: number;

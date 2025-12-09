@@ -13,6 +13,13 @@ import { CheckCircle, XCircle, Loader2, Eye, Download } from 'lucide-react';
 import { verifyParentJourney } from './verifyParentJourneyClient';
 import type { ParentJourneyResult } from './verifyParentJourneyClient';
 
+declare global {
+  interface Window {
+    viewJourneyScreenshots?: () => void;
+    downloadJourneyScreenshots?: () => void;
+  }
+}
+
 export function ParentJourneyCard() {
   const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState<ParentJourneyResult | null>(null);
@@ -36,13 +43,13 @@ export function ParentJourneyCard() {
 
   const handleViewScreenshots = () => {
     if (typeof window !== 'undefined') {
-      (window as any).viewJourneyScreenshots?.();
+      window.viewJourneyScreenshots?.();
     }
   };
 
   const handleDownloadScreenshots = () => {
     if (typeof window !== 'undefined') {
-      (window as any).downloadJourneyScreenshots?.();
+      window.downloadJourneyScreenshots?.();
     }
   };
 

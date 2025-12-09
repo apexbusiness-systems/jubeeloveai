@@ -5,9 +5,16 @@
 
 let audioContext: AudioContext | null = null;
 
+type AudioContextWindow = Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext };
+
 const getAudioContext = (): AudioContext => {
   if (!audioContext) {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioWindow = window as AudioContextWindow;
+    const AudioContextCtor = audioWindow.AudioContext || audioWindow.webkitAudioContext;
+    if (!AudioContextCtor) {
+      throw new Error('AudioContext not supported in this environment');
+    }
+    audioContext = new AudioContextCtor();
   }
   return audioContext;
 };

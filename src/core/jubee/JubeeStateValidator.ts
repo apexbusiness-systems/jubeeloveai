@@ -8,19 +8,29 @@
 import { logger } from '@/lib/logger';
 import { getViewportBounds, getContainerDimensions } from './JubeeDom';
 
-export interface ValidationResult {
+export interface ValidationResult<T = unknown> {
   valid: boolean;
   errors: string[];
   warnings: string[];
-  sanitizedValue?: any;
+  sanitizedValue?: T;
 }
+
+export interface JubeeState {
+  containerPosition?: { bottom: number; right: number };
+  position?: { x: number; y: number; z: number };
+  currentAnimation?: string;
+  currentMood?: string;
+  isVisible?: boolean;
+}
+
+type SanitizedJubeeState = Partial<JubeeState>;
 
 /**
  * Validate container position
  */
 export function validateContainerPosition(
   position: { bottom: number; right: number }
-): ValidationResult {
+): ValidationResult<{ right: number; bottom: number }> {
   const errors: string[] = [];
   const warnings: string[] = [];
   
@@ -77,7 +87,7 @@ export function validateContainerPosition(
  */
 export function validateCanvasPosition(
   position: { x: number; y: number; z: number }
-): ValidationResult {
+): ValidationResult<{ x: number; y: number; z: number }> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -180,7 +190,7 @@ export function validateAnimation(animation: string): ValidationResult {
  */
 export function validateMood(
   mood: string
-): ValidationResult {
+): ValidationResult<string> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -217,7 +227,7 @@ export function validateMood(
 /**
  * Validate boolean visibility state
  */
-export function validateVisibility(isVisible: any): ValidationResult {
+export function validateVisibility(isVisible: unknown): ValidationResult<boolean> {
   const errors: string[] = [];
   const warnings: string[] = [];
 
@@ -242,21 +252,15 @@ export function validateVisibility(isVisible: any): ValidationResult {
 /**
  * Comprehensive state validation
  */
-export function validateJubeeState(state: {
-  containerPosition?: { bottom: number; right: number };
-  position?: { x: number; y: number; z: number };
-  currentAnimation?: string;
-  currentMood?: string;
-  isVisible?: boolean;
-}): {
+export function validateJubeeState(state: JubeeState): {
   valid: boolean;
   errors: string[];
   warnings: string[];
-  sanitizedState: any;
+  sanitizedState: SanitizedJubeeState;
 } {
   const allErrors: string[] = [];
   const allWarnings: string[] = [];
-  const sanitizedState: any = {};
+  const sanitizedState: SanitizedJubeeState = {};
 
   // Validate each field if present
   if (state.containerPosition) {

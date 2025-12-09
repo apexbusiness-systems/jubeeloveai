@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useAuth } from '../useAuth'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 
 describe('useAuth', () => {
@@ -18,7 +19,7 @@ describe('useAuth', () => {
 
   it('should handle successful session', async () => {
     const mockUser = { id: '123', email: 'test@example.com' }
-    const mockSession = { 
+    const mockSession: Session = { 
       user: mockUser,
       access_token: 'mock-token',
       refresh_token: 'mock-refresh',
@@ -28,7 +29,7 @@ describe('useAuth', () => {
     }
     
     vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({
-      data: { session: mockSession as any },
+      data: { session: mockSession },
       error: null,
     })
 

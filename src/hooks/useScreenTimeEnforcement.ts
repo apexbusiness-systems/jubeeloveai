@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParentalStore } from '@/store/useParentalStore';
+import { useParentalStore, type ChildSettings, type Schedule } from '@/store/useParentalStore';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -33,8 +33,10 @@ export function useScreenTimeEnforcement() {
   const activeChild = children.find(c => c.id === activeChildId);
   const alertSentRef = useRef<Set<number>>(new Set());
 
+  type AlertPayload = { remainingMinutes?: number; requestedMinutes?: number };
+
   // Send email alert to parent
-  const sendEmailAlert = useCallback(async (alertType: 'approaching_limit' | 'time_request', data: any) => {
+  const sendEmailAlert = useCallback(async (alertType: 'approaching_limit' | 'time_request', data: AlertPayload) => {
     try {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user?.email) return;
@@ -56,7 +58,7 @@ export function useScreenTimeEnforcement() {
   const checkSchedule = useCallback((): boolean => {
     if (!activeChild) return true;
     
-    const settings = activeChild.settings as any;
+    const settings: ChildSettings | undefined = activeChild.settings;
     if (!settings?.enforceSchedule || !settings?.schedules?.length) {
       return true; // No schedule restrictions
     }
@@ -66,7 +68,7 @@ export function useScreenTimeEnforcement() {
     const currentTime = now.getHours() * 60 + now.getMinutes();
 
     // Check if current time falls within any allowed schedule
-    return settings.schedules.some((schedule: any) => {
+    return settings.schedules.some((schedule: Schedule) => {
       if (schedule.day !== currentDay) return false;
       
       const [startHour, startMin] = schedule.startTime.split(':').map(Number);

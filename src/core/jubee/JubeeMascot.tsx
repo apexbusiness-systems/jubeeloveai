@@ -373,7 +373,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
     <a.group
       ref={group}
       position={position}
-      // @ts-ignore - react-spring types
+      // @ts-expect-error react-spring animated tuple for scale
       scale={scale.to(s => [s * hoverScale.get(), s * hoverScale.get(), s * hoverScale.get()])}
       onClick={handleClick}
       onPointerOver={handlePointerOver}
@@ -447,7 +447,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
         <a.mesh 
           ref={leftEyeRef} 
           position={[-0.15, expressionSpring.eyeY, 0.28]} 
-          // @ts-ignore
+          // @ts-expect-error react-spring animated tuple for scale
           scale={expressionSpring.eyeScale.to(s => [s, s, s])}
           castShadow
         >
@@ -495,7 +495,7 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
         <a.mesh 
           ref={rightEyeRef} 
           position={[0.15, expressionSpring.eyeY, 0.28]} 
-          // @ts-ignore
+          // @ts-expect-error react-spring animated tuple for scale
           scale={expressionSpring.eyeScale.to(s => [s, s, s])}
           castShadow
         >

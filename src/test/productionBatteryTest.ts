@@ -581,9 +581,15 @@ function printBatteryTestReport(report: BatteryTestReport): void {
   }
 }
 
+declare global {
+  interface Window {
+    runProductionBatteryTest?: typeof runProductionBatteryTest;
+  }
+}
+
 /**
  * Export for console access
  */
 if (typeof window !== 'undefined') {
-  (window as any).runProductionBatteryTest = runProductionBatteryTest;
+  window.runProductionBatteryTest = runProductionBatteryTest;
 }

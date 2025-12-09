@@ -10,6 +10,16 @@
 import { useEffect, useRef } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
 
+declare global {
+  interface Window {
+    jubeeDebug?: {
+      getHistory: () => LifecycleSnapshot[]
+      printHistory: () => void
+      printLatest: () => void
+    }
+  }
+}
+
 interface LifecycleSnapshot {
   timestamp: number
   event: string
@@ -237,7 +247,7 @@ export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLD
 
 // Global diagnostic utilities
 if (typeof window !== 'undefined') {
-  (window as any).jubeeDebug = {
+  window.jubeeDebug = {
     getHistory: () => lifecycleHistory,
     printHistory: () => {
       console.group('[🔍 DIAGNOSTIC] Lifecycle History')
