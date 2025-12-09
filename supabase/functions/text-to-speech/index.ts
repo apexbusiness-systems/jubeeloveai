@@ -49,11 +49,18 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
 }
 
 // SECURITY: Input validation constants
-const MAX_TEXT_LENGTH = 4096; // OpenAI TTS limit
+const MAX_TEXT_LENGTH = 4096;
 const MIN_TEXT_LENGTH = 1;
-const ALLOWED_VOICES = ['shimmer', 'nova', 'alloy', 'echo', 'fable', 'onyx'];
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
+
+// ElevenLabs Voice IDs - Using Lily as primary (child-friendly, balanced)
+const ELEVENLABS_VOICES = {
+  lily: 'pFZP5JQG7iQjIQuC4Bku',      // Default - Lily (child-friendly, warm)
+  charlotte: 'XB0fDUnXU5powFXDhCwa',  // Charlotte (nurturing)
+  aria: '9BWtsMINqrJLrRacOk9x',       // Aria (expressive)
+  sarah: 'EXAVITQu4vr4xnSDxMaL',      // Sarah (warm)
+};
 
 function sanitizeText(text: string): string {
   if (typeof text !== 'string') return '';
@@ -63,16 +70,154 @@ function sanitizeText(text: string): string {
     .trim();
 }
 
-function validateVoice(voice: string): string {
-  return ALLOWED_VOICES.includes(voice) ? voice : 'shimmer';
-}
-
 function validateMood(mood: string): string {
   return ALLOWED_MOODS.includes(mood) ? mood : 'happy';
 }
 
 function validateLanguage(lang: string): string {
   return ALLOWED_LANGUAGES.includes(lang) ? lang : 'en';
+}
+
+// ElevenLabs TTS with Lily voice - balanced, child-friendly
+async function synthesizeWithElevenLabs(
+  text: string,
+  mood: string,
+  _language: string
+): Promise<ArrayBuffer | null> {
+  const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
+  
+  if (!ELEVENLABS_API_KEY) {
+    console.log('ElevenLabs API key not configured, falling back to OpenAI');
+    return null;
+  }
+
+  // Use Lily as default voice (balanced, child-friendly)
+  const voiceId = ELEVENLABS_VOICES.lily;
+
+  // Balanced voice settings for child-friendly, warm delivery
+  // Adjust stability and style based on mood
+  let stability = 0.35;
+  let similarityBoost = 0.75;
+  let style = 0.45;
+  
+  if (mood === 'excited') {
+    stability = 0.25;     // More variation for excitement
+    style = 0.65;         // More expressive
+  } else if (mood === 'happy') {
+    stability = 0.30;
+    style = 0.55;
+  } else if (mood === 'curious') {
+    stability = 0.40;
+    style = 0.50;
+  } else if (mood === 'frustrated') {
+    stability = 0.50;     // More stable for gentle reassurance
+    style = 0.35;         // Calmer
+  } else if (mood === 'tired') {
+    stability = 0.55;     // Very stable for soothing
+    style = 0.25;         // Gentle
+  }
+
+  try {
+    console.log(`ElevenLabs TTS: voice=lily, mood=${mood}, stability=${stability}, style=${style}`);
+    
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: 'eleven_turbo_v2_5', // Fast, high-quality multilingual
+          voice_settings: {
+            stability: stability,
+            similarity_boost: similarityBoost,
+            style: style,
+            use_speaker_boost: true,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ElevenLabs error:', response.status, errorText);
+      return null; // Fall back to OpenAI
+    }
+
+    const audioData = await response.arrayBuffer();
+    console.log('ElevenLabs TTS success, audio size:', audioData.byteLength);
+    return audioData;
+  } catch (error) {
+    console.error('ElevenLabs TTS failed:', error);
+    return null; // Fall back to OpenAI
+  }
+}
+
+// OpenAI TTS fallback
+async function synthesizeWithOpenAI(
+  text: string,
+  mood: string,
+  gender: string | undefined,
+  language: string
+): Promise<ArrayBuffer> {
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+  
+  if (!OPENAI_API_KEY) {
+    throw new Error('Speech synthesis service unavailable');
+  }
+
+  // Voice selection for OpenAI fallback
+  let voice = 'shimmer';
+  if (gender === 'male') {
+    voice = mood === 'excited' || mood === 'happy' ? 'fable' : 'onyx';
+  } else {
+    voice = mood === 'curious' ? 'nova' : 'shimmer';
+  }
+  
+  // Language-specific optimization
+  if (language === 'zh' || language === 'hi') {
+    voice = 'shimmer';
+  }
+  
+  // Speed based on mood
+  let speed = 1.15;
+  if (mood === 'excited') speed = 1.35;
+  else if (mood === 'happy') speed = 1.25;
+  else if (mood === 'curious') speed = 1.1;
+  else if (mood === 'frustrated') speed = 0.9;
+  else if (mood === 'tired') speed = 0.85;
+  
+  // Clamp speed to valid range
+  speed = Math.max(0.25, Math.min(4.0, speed));
+
+  console.log('OpenAI TTS fallback: voice=', voice, 'speed=', speed);
+
+  const response = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'tts-1-hd',
+      input: text,
+      voice: voice,
+      speed: speed,
+      response_format: 'mp3',
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('OpenAI TTS error:', response.status, error);
+    throw new Error('Speech synthesis failed');
+  }
+
+  return response.arrayBuffer();
 }
 
 serve(async (req) => {
@@ -112,7 +257,7 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
-    const { text, gender, language = 'en', mood = 'happy', voice: selectedVoice } = body;
+    const { text, gender, language = 'en', mood = 'happy' } = body;
     
     // SECURITY: Validate text input
     if (!text || typeof text !== 'string') {
@@ -130,142 +275,36 @@ serve(async (req) => {
     const sanitizedText = sanitizeText(text);
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedMood = validateMood(mood);
-    
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY not configured');
-      throw new Error('Speech synthesis service unavailable');
-    }
 
-    // WHIMSICAL VOICE MAPPING - More expressive and animated!
-    // SECURITY: Validate voice selection
-    let voice = selectedVoice ? validateVoice(selectedVoice) : 'shimmer';
-    
-    if (!selectedVoice) {
-      // FEMALE VOICES - High energy, playful, expressive
-      if (gender === 'female') {
-        if (sanitizedMood === 'excited' || sanitizedMood === 'happy') {
-          voice = 'shimmer';
-        } else if (sanitizedMood === 'curious') {
-          voice = 'nova';
-        } else {
-          voice = 'shimmer';
-        }
-      } 
-      // MALE VOICES - Warm, friendly, animated
-      else {
-        if (sanitizedMood === 'excited' || sanitizedMood === 'happy') {
-          voice = 'fable';
-        } else if (sanitizedMood === 'curious') {
-          voice = 'onyx';
-        } else if (sanitizedMood === 'frustrated' || sanitizedMood === 'tired') {
-          voice = 'echo';
-        } else {
-          voice = 'fable';
-        }
-      }
-      
-      // Language-specific optimization
-      if (sanitizedLanguage === 'zh' || sanitizedLanguage === 'hi') {
-        voice = 'shimmer';
-      } else if (sanitizedLanguage === 'es') {
-        voice = gender === 'female' ? 'shimmer' : 'fable';
-      } else if (sanitizedLanguage === 'fr') {
-        voice = gender === 'female' ? 'nova' : 'onyx';
-      }
+    // Try ElevenLabs first (Lily voice - balanced, child-friendly)
+    let audioData = await synthesizeWithElevenLabs(
+      sanitizedText,
+      sanitizedMood,
+      sanitizedLanguage
+    );
+
+    // Fall back to OpenAI if ElevenLabs fails
+    if (!audioData) {
+      console.log('Falling back to OpenAI TTS');
+      audioData = await synthesizeWithOpenAI(
+        sanitizedText,
+        sanitizedMood,
+        gender,
+        sanitizedLanguage
+      );
     }
     
-    // ENHANCED DYNAMIC SPEED with sentiment awareness
-    let speed = 1.15;
-    if (sanitizedMood === 'excited') {
-      speed = 1.35;
-    } else if (sanitizedMood === 'happy') {
-      speed = 1.25;
-    } else if (sanitizedMood === 'curious') {
-      speed = 1.1;
-    } else if (sanitizedMood === 'frustrated') {
-      speed = 0.9; // Slower, more patient
-    } else if (sanitizedMood === 'tired') {
-      speed = 0.85; // Gentle and calm
+    if (!audioData || audioData.byteLength === 0) {
+      throw new Error('Invalid audio response');
     }
     
-    // SENTIMENT-BASED ADJUSTMENTS for even more empathy
-    // If text contains comforting words, slow down for warmth
-    const comfortingPhrases = ['hear you', 'understand', 'okay', "it's alright", 'together', 'here for you'];
-    const isComforting = comfortingPhrases.some(phrase => sanitizedText.toLowerCase().includes(phrase));
-    if (isComforting) {
-      speed = Math.max(0.85, speed - 0.15); // Slower, more reassuring
-    }
-    
-    // If celebrating or excited, speed up
-    const celebrationPhrases = ['wow', 'amazing', 'awesome', 'fantastic', 'love it', 'incredible'];
-    const isCelebrating = celebrationPhrases.some(phrase => sanitizedText.toLowerCase().includes(phrase));
-    if (isCelebrating) {
-      speed = Math.min(1.4, speed + 0.1); // Faster, more energetic
-    }
-
-    // Clamp speed to valid range
-    speed = Math.max(0.25, Math.min(4.0, speed));
-
-    console.log('TTS with empathetic speed:', speed, 'for mood:', sanitizedMood, 'isComforting:', isComforting, 'isCelebrating:', isCelebrating);
-
-    // SECURITY: Send to OpenAI with timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-    try {
-      const response = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'tts-1-hd',
-          input: sanitizedText,
-          voice: voice,
-          speed: speed,
-          response_format: 'mp3',
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const error = await response.text();
-        console.error('OpenAI TTS error:', response.status, error);
-        
-        if (response.status === 429) {
-          throw new Error('Rate limit exceeded. Please try again shortly.');
-        } else if (response.status === 401) {
-          throw new Error('Authentication failed');
-        }
-        throw new Error('Speech synthesis failed');
-      }
-
-      const audioData = await response.arrayBuffer();
-      
-      // SECURITY: Validate response size
-      if (audioData.byteLength === 0) {
-        throw new Error('Invalid audio response');
-      }
-      
-      return new Response(audioData, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'audio/mpeg',
-          'Content-Length': audioData.byteLength.toString(),
-        },
-      });
-    } catch (error) {
-      clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout. Please try again.');
-      }
-      throw error;
-    }
+    return new Response(audioData, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': audioData.byteLength.toString(),
+      },
+    });
   } catch (error) {
     console.error('Error in text-to-speech function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
