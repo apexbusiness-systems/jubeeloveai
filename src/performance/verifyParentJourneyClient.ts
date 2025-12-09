@@ -70,14 +70,7 @@ export async function verifyQuickJourney() {
   }
 }
 
-declare global {
-  interface Window {
-    verifyParentJourney?: typeof verifyParentJourney;
-    verifyQuickJourney?: typeof verifyQuickJourney;
-    viewJourneyScreenshots?: () => void;
-    downloadJourneyScreenshots?: () => void;
-  }
-}
+// Window interface already declared in src/test/parentJourneyVerification.ts
 
 // Expose functions globally for browser console access
 if (typeof window !== 'undefined') {

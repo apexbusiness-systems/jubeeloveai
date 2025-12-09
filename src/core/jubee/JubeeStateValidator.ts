@@ -281,7 +281,7 @@ export function validateJubeeState(state: JubeeState): {
     const result = validateAnimation(state.currentAnimation);
     allErrors.push(...result.errors);
     allWarnings.push(...result.warnings);
-    sanitizedState.currentAnimation = result.sanitizedValue;
+    sanitizedState.currentAnimation = result.sanitizedValue as string;
   }
 
   if (state.currentMood) {
