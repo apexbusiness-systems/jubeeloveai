@@ -59,6 +59,10 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; startBottom: number; startRight: number } | null>(null);
   
+  // Click feedback state - triggers pulse/glow animation
+  const [isClickActive, setIsClickActive] = useState(false);
+  const clickFeedbackTimeRef = useRef<number>(0);
+  
   // Get responsive container dimensions
   const [containerDimensions, setContainerDimensions] = useState(() => getContainerDimensions());
 
@@ -179,15 +183,15 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     scene.background = null; // Transparent background
     sceneRef.current = scene;
 
-    // Create camera
+    // Create camera - positioned closer for better visibility
     const camera = new THREE.PerspectiveCamera(
-      50,
+      45,  // Slightly narrower FOV for better framing
       1, // Will be updated on resize
       0.1,
       1000
     );
-    camera.position.set(0, 0, 8);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 0.5, 5);  // Closer to model, slightly elevated
+    camera.lookAt(0, 0.5, 0);  // Look at center of model
     cameraRef.current = camera;
 
     // Create renderer
@@ -204,9 +208,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Create Jubee 3D model
     const jubeeGroup = new THREE.Group();
     
-    // Scale model by 0.414 (15% increase from 0.36) to match container size increase
-    // This keeps Jubee proportional to the larger container
-    jubeeGroup.scale.set(0.414, 0.414, 0.414);
+    // Scale model larger for better visibility in the container
+    // Increased from 0.414 to 0.7 for vibrant, clearly visible rendering
+    jubeeGroup.scale.set(0.7, 0.7, 0.7);
     
     sceneRef.current.add(jubeeGroup);
     jubeeGroupRef.current = jubeeGroup;
@@ -214,13 +218,33 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Build Jubee geometry
     buildJubeeModel(jubeeGroup, gender);
 
-    // Add lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // Add lights - Enhanced for vibrant visibility
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(5, 5, 5);
+    // Main directional light - strong frontal lighting
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(3, 5, 8);
     scene.add(directionalLight);
+
+    // Fill light from the left - warm tone
+    const fillLight = new THREE.DirectionalLight(0xfff5e0, 0.8);
+    fillLight.position.set(-5, 3, 3);
+    scene.add(fillLight);
+
+    // Rim light from behind - creates edge definition
+    const rimLight = new THREE.DirectionalLight(0xffe080, 0.6);
+    rimLight.position.set(0, 2, -5);
+    scene.add(rimLight);
+
+    // Point light for glow effect - positioned in front
+    const glowLight = new THREE.PointLight(0xffcc00, 1.0, 15);
+    glowLight.position.set(0, 0, 4);
+    scene.add(glowLight);
+
+    // Hemisphere light for natural fill
+    const hemiLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 0.5);
+    scene.add(hemiLight);
 
     // Handle resize
     const handleResize = () => {
@@ -396,6 +420,15 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     
     e.stopPropagation();
     
+    // Trigger click feedback animation
+    setIsClickActive(true);
+    clickFeedbackTimeRef.current = performance.now();
+    
+    // Reset click feedback after animation completes
+    setTimeout(() => {
+      setIsClickActive(false);
+    }, 600);
+    
     // Increment interaction count
     interactionCountRef.current += 1;
     const count = interactionCountRef.current;
@@ -461,7 +494,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   return (
     <div
       ref={containerRef}
-      className={`jubee-container ${className || ''}`}
+      className={`jubee-container ${className || ''} ${isClickActive ? 'jubee-click-active' : ''}`}
       style={{
         position: 'fixed',
         bottom: `${containerPosition.bottom}px`,
@@ -475,6 +508,11 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         cursor: isDragging ? 'grabbing' : 'grab',
         touchAction: 'none',
         userSelect: 'none',
+        // Click feedback glow effect
+        filter: isClickActive 
+          ? 'drop-shadow(0 0 25px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 50px rgba(255, 200, 0, 0.7)) drop-shadow(0 0 75px rgba(255, 180, 0, 0.5))'
+          : undefined,
+        transform: isClickActive ? 'scale(1.15)' : undefined,
       }}
       data-jubee-container="true"
       onMouseDown={isMinimized ? undefined : handleMouseDown}
@@ -545,25 +583,46 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
   // Get colors based on gender - ULTRA bright, vibrant, lively bee colors
   const colors = {
     body: gender === 'male' ? 0xFFD700 : 0xFFC300,  // Pure gold / bright amber yellow
-    stripe: 0x2C2C2C,  // Dark charcoal for strong contrast
+    stripe: 0x1A1A1A,  // Deep black for maximum contrast
     accent: gender === 'male' ? 0x00FFFF : 0xFFAA00,  // Cyan / orange-yellow
     eye: 0xFFFFFF,
     pupil: 0x000000,
+    cheek: 0xFFB6C1,  // Light pink for cute cheeks
   };
 
-  // Body (ellipsoid)
-  const bodyGeometry = new THREE.SphereGeometry(1, 32, 32);
+  // Body (ellipsoid) - ENHANCED materials for vibrant visibility
+  const bodyGeometry = new THREE.SphereGeometry(1, 48, 48);
   bodyGeometry.scale(1, 1.3, 0.9);
   const bodyMaterial = new THREE.MeshPhongMaterial({ 
     color: colors.body,
-    shininess: 100,
+    shininess: 150,
     emissive: colors.body,
-    emissiveIntensity: 0.3,
-    specular: 0xFFFFFF,
+    emissiveIntensity: 0.5,  // Increased for visibility
+    specular: 0xFFFFAA,
+    reflectivity: 0.8,
   });
   const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
   body.name = 'body';
   group.add(body);
+
+  // Add cute cheeks for extra charm
+  const cheekGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+  const cheekMaterial = new THREE.MeshPhongMaterial({
+    color: colors.cheek,
+    emissive: colors.cheek,
+    emissiveIntensity: 0.4,
+    transparent: true,
+    opacity: 0.8,
+  });
+  const leftCheek = new THREE.Mesh(cheekGeometry, cheekMaterial);
+  leftCheek.position.set(-0.5, 1.35, 0.6);
+  leftCheek.name = 'leftCheek';
+  group.add(leftCheek);
+
+  const rightCheek = new THREE.Mesh(cheekGeometry, cheekMaterial);
+  rightCheek.position.set(0.5, 1.35, 0.6);
+  rightCheek.name = 'rightCheek';
+  group.add(rightCheek);
 
   // Stripes
   for (let i = 0; i < 3; i++) {
@@ -576,14 +635,14 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
     group.add(stripe);
   }
 
-  // Head
-  const headGeometry = new THREE.SphereGeometry(0.8, 32, 32);
+  // Head - ENHANCED for vibrant visibility
+  const headGeometry = new THREE.SphereGeometry(0.8, 48, 48);
   const headMaterial = new THREE.MeshPhongMaterial({ 
     color: colors.body,
-    shininess: 100,
+    shininess: 150,
     emissive: colors.body,
-    emissiveIntensity: 0.25,
-    specular: 0xFFFFFF,
+    emissiveIntensity: 0.45,  // Increased for visibility
+    specular: 0xFFFFAA,
   });
   const head = new THREE.Mesh(headGeometry, headMaterial);
   head.position.y = 1.5;

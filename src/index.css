@@ -219,6 +219,33 @@ All colors MUST be HSL.
   cursor: grabbing; /* Show grabbing cursor during drag */
 }
 
+/* Click feedback animation */
+.jubee-click-active {
+  animation: jubee-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes jubee-pulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));
+  }
+  25% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.9)) 
+            drop-shadow(0 0 80px rgba(255, 200, 0, 0.7)) 
+            drop-shadow(0 0 120px rgba(255, 180, 0, 0.5));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 35px rgba(255, 220, 0, 0.8)) 
+            drop-shadow(0 0 70px rgba(255, 200, 0, 0.6));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 30px hsl(var(--jubee-body) / 0.6));
+  }
+}
+
 .jubee-container canvas {
   width: 100% !important;
   height: 100% !important;
