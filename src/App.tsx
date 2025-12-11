@@ -91,7 +91,7 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const { isVisible, toggleVisibility, containerPosition } = useJubeeStore();
+  const { isVisible, containerPosition } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
 
   // Spring physics for container positioning
@@ -215,32 +215,6 @@ function AppShell() {
 
             {/* Action buttons - touch friendly */}
             <div className="flex gap-2 md:gap-3">
-              <button
-                onClick={toggleVisibility}
-                className="
-                  action-button
-                  px-4 py-2.5 sm:px-5 sm:py-3
-                  rounded-xl
-                  text-sm sm:text-base
-                  font-bold
-                  text-foreground
-                  bg-card/90
-                  backdrop-blur-sm
-                  border-2 border-primary/40
-                  shadow-lg
-                  transform hover:scale-105 active:scale-95
-                  transition-all duration-200
-                  min-h-[44px] min-w-[44px]
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-                "
-                aria-label={isVisible ? "Hide Jubee" : "Show Jubee"}
-                title={isVisible ? "Hide Jubee" : "Show Jubee"}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-lg sm:text-xl">{isVisible ? '👁️' : '👁️‍🗨️'}</span>
-                  <span className="font-extrabold hidden sm:inline">{isVisible ? 'Hide' : 'Show'}</span>
-                </span>
-              </button>
               <button
                 onClick={() => setShowPersonalization(true)}
                 className="
