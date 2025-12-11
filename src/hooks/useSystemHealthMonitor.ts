@@ -23,11 +23,15 @@ interface HealthMonitorConfig {
   logResults: boolean
 }
 
+const monitorEnabled =
+  import.meta.env.DEV ||
+  (import.meta.env.VITE_HEALTH_MONITOR_ENABLED === 'true')
+
 const DEFAULT_CONFIG: HealthMonitorConfig = {
-  enabled: true,
-  checkIntervalMs: 30000, // 30 seconds
-  autoFixEnabled: true,
-  logResults: false, // Only log in dev
+  enabled: monitorEnabled,
+  checkIntervalMs: 120000, // 2 minutes to reduce overhead
+  autoFixEnabled: import.meta.env.DEV, // safer to auto-fix only in dev
+  logResults: import.meta.env.DEV, // Only log in dev
 }
 
 export function useSystemHealthMonitor(config: Partial<HealthMonitorConfig> = {}) {

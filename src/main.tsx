@@ -23,7 +23,7 @@ try {
 // Register service worker for PWA (production only to avoid caching issues in dev)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const APP_VERSION = '1.0.1';
+    const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? 'dev';
     const VERSION_KEY = 'app_version';
     
     // Clear old caches silently if version changed
@@ -45,6 +45,11 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
       (registration) => {
         logger.dev('ServiceWorker registration successful:', registration.scope);
         
+        // Manual update hook for Settings/debug surfaces
+        (window as unknown as { checkForSwUpdate?: () => void }).checkForSwUpdate = () => {
+          registration.update();
+        };
+
         // Auto-update on new service worker
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -58,10 +63,10 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
           }
         });
         
-        // Check for updates every 5 minutes instead of every minute
+        // Check for updates every 15 minutes (reduced polling load)
         setInterval(() => {
           registration.update();
-        }, 300000); // Changed from 60000 (1min) to 300000 (5min)
+        }, 900000);
       },
       (err) => {
         logger.error('ServiceWorker registration failed:', err);
