@@ -4,6 +4,13 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Prefer build-time injected version (e.g., VITE_APP_VERSION/Git SHA)
+const appVersion =
+  process.env.VITE_APP_VERSION ||
+  process.env.GITHUB_SHA ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  "dev";
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -114,12 +121,17 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       },
+      // Avoid service worker in dev to prevent cache confusion
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module'
       }
     })
   ].filter(Boolean),
+  define: {
+    // Make the app version available at runtime
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
