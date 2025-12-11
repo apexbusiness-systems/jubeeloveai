@@ -22,24 +22,22 @@ export default tseslint.config(
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
-    overrides: [
-      {
-        files: ["e2e/**/*.{ts,tsx}", "src/**/*.{spec,test}.{ts,tsx}"],
-        rules: {
-          "@typescript-eslint/no-unused-vars": "off",
-          "react-hooks/exhaustive-deps": "off",
-        },
-      },
-      {
-        files: [
-          "src/components/ui/**/*.{ts,tsx}",
-          "src/pages/Landing.tsx",
-          "src/test/utils.tsx",
-        ],
-        rules: {
-          "react-refresh/only-export-components": "off",
-        },
-      },
+  },
+  {
+    files: ["e2e/**/*.{ts,tsx}", "src/**/*.{spec,test}.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off",
+    },
+  },
+  {
+    files: [
+      "src/components/ui/**/*.{ts,tsx}",
+      "src/pages/Landing.tsx",
+      "src/test/utils.tsx",
     ],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   },
 );
