@@ -157,7 +157,30 @@ async function synthesizeWithElevenLabs(
   }
 }
 
-// OpenAI TTS fallback
+// Preprocess text for more natural speech
+function preprocessTextForSpeech(text: string, mood: string): string {
+  let processed = text;
+  
+  // Add natural pauses with commas and ellipses
+  processed = processed.replace(/\. /g, '... ');
+  processed = processed.replace(/! /g, '!... ');
+  processed = processed.replace(/\? /g, '?... ');
+  
+  // Add emphasis for excitement
+  if (mood === 'excited' || mood === 'happy') {
+    // Add slight pause before exclamations
+    processed = processed.replace(/!/g, '!');
+  }
+  
+  // Add breathing pauses for tired mood
+  if (mood === 'tired') {
+    processed = processed.replace(/,/g, ',... ');
+  }
+  
+  return processed;
+}
+
+// OpenAI TTS fallback - optimized for natural sound
 async function synthesizeWithOpenAI(
   text: string,
   mood: string,
@@ -170,29 +193,37 @@ async function synthesizeWithOpenAI(
     throw new Error('Speech synthesis service unavailable');
   }
 
-  // Voice selection for OpenAI fallback
-  let voice = 'shimmer';
-  if (gender === 'male') {
-    voice = mood === 'excited' || mood === 'happy' ? 'fable' : 'onyx';
-  } else {
-    voice = mood === 'curious' ? 'nova' : 'shimmer';
+  // Use 'alloy' for most natural, warm sound - it's the most human-like
+  // 'nova' for curious/questioning - slightly more animated
+  // 'shimmer' for gentle/tired - soft and soothing
+  let voice = 'alloy'; // Default - most natural sounding
+  
+  if (mood === 'curious') {
+    voice = 'nova'; // More animated, questioning tone
+  } else if (mood === 'tired' || mood === 'frustrated') {
+    voice = 'shimmer'; // Softer, gentler
+  } else if (gender === 'male') {
+    voice = 'echo'; // Natural male voice
   }
   
-  // Language-specific optimization
+  // Language-specific - alloy works well across languages
   if (language === 'zh' || language === 'hi') {
-    voice = 'shimmer';
+    voice = 'alloy'; // Best multilingual support
   }
   
-  // Speed based on mood
-  let speed = 1.15;
-  if (mood === 'excited') speed = 1.35;
-  else if (mood === 'happy') speed = 1.25;
-  else if (mood === 'curious') speed = 1.1;
-  else if (mood === 'frustrated') speed = 0.9;
-  else if (mood === 'tired') speed = 0.85;
+  // Speed based on mood - keep closer to 1.0 for natural sound
+  let speed = 1.0; // Natural pace
+  if (mood === 'excited') speed = 1.15;
+  else if (mood === 'happy') speed = 1.08;
+  else if (mood === 'curious') speed = 1.0;
+  else if (mood === 'frustrated') speed = 0.95;
+  else if (mood === 'tired') speed = 0.9;
   
   // Clamp speed to valid range
   speed = Math.max(0.25, Math.min(4.0, speed));
+
+  // Preprocess text for more natural delivery
+  const processedText = preprocessTextForSpeech(text, mood);
 
   console.log('OpenAI TTS fallback: voice=', voice, 'speed=', speed);
 
@@ -203,8 +234,8 @@ async function synthesizeWithOpenAI(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'tts-1-hd',
-      input: text,
+      model: 'tts-1-hd', // HD model for better quality
+      input: processedText,
       voice: voice,
       speed: speed,
       response_format: 'mp3',
