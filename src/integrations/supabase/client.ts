@@ -2,15 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Load Supabase config from environment. This avoids hard-coding project keys
-// in the client bundle and allows rotation without code changes.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  // Fail fast with a clear error so misconfiguration surfaces during QA
-  throw new Error('[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
-}
+// Supabase configuration - hardcoded for Lovable platform compatibility
+const SUPABASE_URL = "https://kphdqgidwipqdthehckg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwaGRxZ2lkd2lwcWR0aGVoY2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMDkyMjYsImV4cCI6MjA3NDU4NTIyNn0.nrq7BccAJKuxU1UKk25w7wBlmCC3b8waskQOpxE-McM";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
