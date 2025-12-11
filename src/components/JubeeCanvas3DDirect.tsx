@@ -37,7 +37,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const jubeeGroupRef = useRef<THREE.Group | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
   
   const { 
     containerPosition, 
@@ -51,7 +51,6 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     speak,
     triggerAnimation,
     setMood,
-    interactionCount,
   } = useJubeeStore();
   
   // Track interaction for greeting variations
@@ -91,8 +90,8 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     handleRecoveryNeeded
   );
 
-  // WebGL context recovery
-  const webglRecovery = useWebGLContextRecovery(canvasRef, {
+  // WebGL context recovery (initialized but used internally for side effects)
+  useWebGLContextRecovery(canvasRef, {
     onContextLost: () => {
       logger.error('[Jubee3DDirect] WebGL context lost');
       jubeeErrorRecovery.attemptRecovery(new Error('WebGL context lost'));
@@ -113,9 +112,8 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // CRITICAL FIX: Integrate lifecycle diagnostics to monitor actual component refs
-  // This was previously disconnected - diagnostics monitored null ref from App.tsx
-  const lifecycleDiagnostics = useJubeeLifecycleDiagnostics(containerRef);
+  // Lifecycle diagnostics for monitoring (used internally for side effects)
+  useJubeeLifecycleDiagnostics(containerRef);
 
   // DIAGNOSTIC: Component lifecycle tracking
   useEffect(() => {
@@ -206,9 +204,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Create Jubee 3D model
     const jubeeGroup = new THREE.Group();
     
-    // CRITICAL: Scale model by 0.36 to match 60% container size reduction
-    // This prevents Jubee from appearing "enlarged" in the smaller container
-    jubeeGroup.scale.set(0.36, 0.36, 0.36);
+    // Scale model by 0.414 (15% increase from 0.36) to match container size increase
+    // This keeps Jubee proportional to the larger container
+    jubeeGroup.scale.set(0.414, 0.414, 0.414);
     
     sceneRef.current.add(jubeeGroup);
     jubeeGroupRef.current = jubeeGroup;
@@ -462,15 +460,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 
   return (
     <div
-      ref={(el) => {
-        containerRef.current = el;
-        logger.dev('[DIAGNOSTIC] Container Ref Callback Executed', {
-          element: el ? 'ELEMENT RECEIVED' : 'NULL',
-          elementTag: el?.tagName,
-          inDOM: el ? document.contains(el) : false,
-          timestamp: Date.now()
-        });
-      }}
+      ref={containerRef}
       className={`jubee-container ${className || ''}`}
       style={{
         position: 'fixed',
@@ -531,18 +521,10 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
         </div>
       ) : (
         <canvas
-          ref={(el) => {
-            canvasRef.current = el;
-            logger.dev('[DIAGNOSTIC] Canvas Ref Callback Executed', {
-              element: el ? 'ELEMENT RECEIVED' : 'NULL',
-              elementTag: el?.tagName,
-              inDOM: el ? document.contains(el) : false,
-              timestamp: Date.now()
-            });
-          }}
+          ref={canvasRef}
           className="jubee-canvas"
           data-jubee-canvas="true"
-          data-jubee-scale="0.36"
+          data-jubee-scale="0.414"
           onClick={handleJubeeClick}
           style={{
             width: '100%',

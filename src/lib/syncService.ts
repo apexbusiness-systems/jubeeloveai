@@ -463,11 +463,11 @@ class SyncService {
         
         await jubeeDB.put('gameProgress', {
           id: gameProgress.id,
-          score: gameProgress.score,
-          activitiesCompleted: gameProgress.activities_completed,
-          currentTheme: gameProgress.current_theme,
-          lastActivity: gameProgress.last_activity,
-          updatedAt: gameProgress.updated_at,
+          score: gameProgress.score ?? 0,
+          activitiesCompleted: gameProgress.activities_completed ?? 0,
+          currentTheme: gameProgress.current_theme ?? 'default',
+          lastActivity: gameProgress.last_activity ?? undefined,
+          updatedAt: gameProgress.updated_at ?? new Date().toISOString(),
           synced: true,
         })
       }
@@ -482,7 +482,7 @@ class SyncService {
           await jubeeDB.put('achievements', {
             id: achievement.id,
             achievementId: achievement.achievement_id,
-            unlockedAt: achievement.unlocked_at,
+            unlockedAt: achievement.unlocked_at ?? new Date().toISOString(),
             synced: true,
           })
         }
@@ -498,7 +498,7 @@ class SyncService {
           await jubeeDB.put('stickers', {
             id: sticker.id,
             stickerId: sticker.sticker_id,
-            unlockedAt: sticker.unlocked_at,
+            unlockedAt: sticker.unlocked_at ?? new Date().toISOString(),
             synced: true,
           })
         }

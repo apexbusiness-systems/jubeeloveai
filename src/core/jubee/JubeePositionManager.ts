@@ -25,29 +25,29 @@ export const JUBEE_SAFE_MARGIN = 20;
 
 /**
  * Get responsive container dimensions based on viewport size
- * Reduced by 60% from original (additional 20% from previous 50%)
- * Mobile: 108x130px
- * Tablet: 126x144px
- * Desktop: 144x162px
+ * Increased by 15% from previous size to give Jubee more room
+ * Mobile: 124x150px
+ * Tablet: 145x166px
+ * Desktop: 166x186px
  */
 export function getResponsiveContainerDimensions(): ContainerDimensions {
   const viewport = getViewportBounds();
   
   if (viewport.width < 768) {
-    // Mobile: 60% reduction from original
-    return { width: 108, height: 130 };
+    // Mobile: 15% larger than previous
+    return { width: 124, height: 150 };
   } else if (viewport.width < 1024) {
-    // Tablet: 60% reduction from original
-    return { width: 126, height: 144 };
+    // Tablet: 15% larger than previous
+    return { width: 145, height: 166 };
   } else {
-    // Desktop: 60% reduction from original
-    return { width: 144, height: 162 };
+    // Desktop: 15% larger than previous
+    return { width: 166, height: 186 };
   }
 }
 
-// Legacy constants for backward compatibility (60% smaller)
-export const JUBEE_CONTAINER_WIDTH = 144;
-export const JUBEE_CONTAINER_HEIGHT = 162;
+// Legacy constants for backward compatibility (updated)
+export const JUBEE_CONTAINER_WIDTH = 166;
+export const JUBEE_CONTAINER_HEIGHT = 186;
 
 /**
  * Get current viewport dimensions

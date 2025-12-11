@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 
@@ -63,7 +63,7 @@ export default function AlphabetGame() {
         'X': ['❌ X-ray', '🎄 Xylophone', '⚔️ X marks'],
         'Y': ['💛 Yellow', '🧘 Yoga', '🤸 Yell'],
         'Z': ['🦓 Zebra', '0️⃣ Zero', '⚡ Zip']
-      }
+      } as Record<string, string[]>
       
       const letterWords = words[letter] || ['Word']
       correctAnswer = letterWords[0]

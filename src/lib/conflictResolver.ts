@@ -51,8 +51,8 @@ class ConflictResolver {
     }
 
     // Compare timestamps
-    const localTimestamp = localData.updatedAt || localData.updated_at || localData.createdAt || localData.created_at
-    const serverTimestamp = serverData.updated_at || serverData.created_at
+    const localTimestamp = String(localData.updatedAt || localData.updated_at || localData.createdAt || localData.created_at || '')
+    const serverTimestamp = String(serverData.updated_at || serverData.created_at || '')
 
     // If server is newer and local is synced, no conflict
     if (localData.synced && serverTimestamp > localTimestamp) {

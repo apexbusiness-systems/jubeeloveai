@@ -1,8 +1,7 @@
 import { useMemo, memo } from 'react'
-import { Achievement, AchievementCategory } from '@/types/achievements'
+import { Achievement } from '@/types/achievements'
 import { AchievementBadge } from './AchievementBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useOptimizedList } from '@/hooks/useOptimizedList'
 
 interface Props {
   achievements: Achievement[]

@@ -1,10 +1,9 @@
-import { Suspense, useEffect, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
 import { isFirstTimeVisitor } from './pages/Landing';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { motion, useSpring } from 'framer-motion';
+import { useSpring } from 'framer-motion';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
@@ -67,7 +66,6 @@ function AppShell() {
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   // Routes where parent auth experience should be clean (no Jubee, nav, or onboarding)
   const isAuthRoute = location.pathname.startsWith('/auth');
@@ -93,7 +91,7 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
+  const { isVisible, toggleVisibility, containerPosition } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
 
   // Spring physics for container positioning
@@ -113,22 +111,6 @@ function AppShell() {
     springBottom.set(containerPosition.bottom);
     springRight.set(containerPosition.right);
   }, [containerPosition.bottom, containerPosition.right, springBottom, springRight]);
-
-  // Track viewport width safely in browser-only effect
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
 
   // Revalidate position on viewport resize (especially when crossing breakpoints)
   useEffect(() => {

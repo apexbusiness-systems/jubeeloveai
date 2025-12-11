@@ -157,7 +157,7 @@ export default function StoryTime() {
             id: s.id,
             title: s.title,
             category: s.category,
-            age_range: s.age_range,
+            age_range: s.age_range ?? '3-5',
             description: s.description || '',
             pages: s.pages as unknown as StoryPage[]
           }))

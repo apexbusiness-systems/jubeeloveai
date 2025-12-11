@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { SEO } from '@/components/SEO';
-import { Loader2, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
-import { validateEmail, validatePassword, authSchemas } from '@/lib/inputValidation';
+import { Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { validateEmail, validatePassword } from '@/lib/inputValidation';
 
 export default function Auth() {
   const navigate = useNavigate();
