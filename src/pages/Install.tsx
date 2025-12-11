@@ -35,7 +35,7 @@ export default function Install() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [_isInstalled, setIsInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [platform] = useState<Platform>(detectPlatform());
   const [browser] = useState<Browser>(detectBrowser());

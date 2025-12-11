@@ -20,7 +20,6 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong'>('weak');
 
   useEffect(() => {
     // Check if user is already logged in

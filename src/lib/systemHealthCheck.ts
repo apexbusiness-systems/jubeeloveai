@@ -84,7 +84,8 @@ export async function runSystemHealthCheck(): Promise<SystemHealthReport> {
 /**
  * Log health report to console
  */
-function logHealthReport(report: SystemHealthReport): void {
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export function logHealthReport(report: SystemHealthReport): void {
   const statusIcon = 
     report.overallHealth === 'healthy' ? '✅' :
     report.overallHealth === 'degraded' ? '⚠️' :

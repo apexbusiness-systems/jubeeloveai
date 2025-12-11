@@ -140,7 +140,7 @@ export function executeRecovery(
  * Proactive validation before state changes
  */
 export function validateStateChange(
-  currentState: JubeeState,
+  _currentState: JubeeState,
   proposedChanges: Partial<JubeeState>
 ): { valid: boolean; safeChanges: Partial<JubeeState> } {
   const safeChanges = { ...proposedChanges }
@@ -185,7 +185,7 @@ class JubeeErrorRecovery {
   private maxAttempts = 3;
   private lastRecoveryTime = 0;
 
-  async attemptRecovery(error: Error): Promise<boolean> {
+  async attemptRecovery(_error: Error): Promise<boolean> {
     const now = Date.now();
     if (now - this.lastRecoveryTime < 2000) {
       console.warn('[Jubee Error Recovery] Throttling recovery attempts');

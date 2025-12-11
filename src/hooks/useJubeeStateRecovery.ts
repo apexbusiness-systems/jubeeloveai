@@ -225,7 +225,7 @@ export function useJubeeStateRecovery() {
 
   // Monitor for state issues and auto-recover
   useEffect(() => {
-    const unsubscribe = useJubeeStore.subscribe((state, prevState) => {
+    const unsubscribe = useJubeeStore.subscribe((state, _prevState) => {
       // Detect invalid position (NaN or out of bounds)
       if (
         !Number.isFinite(state.containerPosition.bottom) ||

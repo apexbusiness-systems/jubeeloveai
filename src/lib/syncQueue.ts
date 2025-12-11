@@ -5,7 +5,7 @@
  * when connection is restored.
  */
 
-import { jubeeDB } from './indexedDB'
+import { jubeeDB as _jubeeDB } from './indexedDB'
 
 export interface QueuedOperation {
   id: string

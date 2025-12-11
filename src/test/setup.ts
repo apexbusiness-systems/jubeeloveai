@@ -68,16 +68,24 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock Web Speech API
-global.SpeechRecognition = class SpeechRecognition {
+class MockSpeechRecognition {
   start = vi.fn()
   stop = vi.fn()
   abort = vi.fn()
-  onresult = null
-  onerror = null
-  onend = null
+  onresult: ((event: unknown) => void) | null = null
+  onerror: ((event: unknown) => void) | null = null
+  onend: (() => void) | null = null
 }
 
-global.webkitSpeechRecognition = global.SpeechRecognition
+Object.defineProperty(global, 'SpeechRecognition', {
+  writable: true,
+  value: MockSpeechRecognition
+})
+
+Object.defineProperty(global, 'webkitSpeechRecognition', {
+  writable: true,
+  value: MockSpeechRecognition
+})
 
 // Mock AudioContext
 global.AudioContext = class AudioContext {

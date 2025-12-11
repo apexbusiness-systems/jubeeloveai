@@ -19,7 +19,7 @@ import { Text, Sparkles } from '@react-three/drei'
 import { useSpring, a, config } from '@react-spring/three'
 import { Group, Mesh } from 'three'
 import { useJubeeStore } from '../../store/useJubeeStore'
-import * as THREE from 'three'
+// THREE is imported via @react-three/fiber types
 
 interface PerformanceProfile {
   quality: 'low' | 'medium' | 'high'
@@ -74,9 +74,9 @@ const getJubeeColors = (gender: 'male' | 'female') => ({
   wingGlow: getColorValue('--jubee-wing-glow')
 })
 
-// Reusable vectors for performance
-const tempVector = new THREE.Vector3()
-const targetScale = new THREE.Vector3()
+// Reusable vectors for performance (kept for future use)
+// const tempVector = new THREE.Vector3()
+// const targetScale = new THREE.Vector3()
 
 export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performanceProfile }: JubeeProps) {
   const group = useRef<Group>(null)

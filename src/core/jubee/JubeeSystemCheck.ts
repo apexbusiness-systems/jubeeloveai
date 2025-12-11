@@ -5,7 +5,7 @@
  * Prevents regression by verifying critical integrations.
  */
 
-import { validatePosition, getSafeDefaultPosition } from './JubeePositionValidator'
+import { validatePosition } from './JubeePositionValidator'
 import { validatePosition as validatePosManager, getSafeDefaultPosition as getSafeDefaultPosManager } from './JubeePositionManager'
 import { validateJubeeSizing } from './JubeeSizingValidator'
 

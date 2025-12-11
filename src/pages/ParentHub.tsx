@@ -8,7 +8,7 @@ import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lu
 
 export default function ParentHub() {
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut } = useAuth();
   const { children, settings } = useParentalStore();
 
   const handleSignOut = async () => {

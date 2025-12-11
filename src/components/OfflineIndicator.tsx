@@ -8,8 +8,6 @@ export function OfflineIndicator() {
   const { isOnline, isSyncing, queueSize, manualSync } = useOfflineSync()
   const { conflictCount } = useConflictMonitor()
 
-  const hasIssues = !isOnline || isSyncing || queueSize > 0 || conflictCount > 0
-
   if (isOnline && !isSyncing && queueSize === 0 && conflictCount === 0) return null
 
   return (

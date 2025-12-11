@@ -8,7 +8,7 @@ export default function GamesMenu() {
   const { triggerAnimation } = useJubeeStore();
   const prefersReducedMotion = useReducedMotion();
 
-  const handleGameClick = (path: string, gameName: string) => {
+  const handleGameClick = (path: string, _gameName: string) => {
     triggerAnimation('excited');
     navigate(path);
   };
