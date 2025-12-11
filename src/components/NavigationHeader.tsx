@@ -1,7 +1,6 @@
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { VoiceCommandButton } from './VoiceCommandButton';
-import { ChildSelector } from './ChildSelector';
 import { useParentalStore } from '@/store/useParentalStore';
 
 interface NavigationHeaderProps {

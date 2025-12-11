@@ -73,8 +73,7 @@ function calculateFlyTrajectory(
   from: { bottom: number; right: number },
   to: { bottom: number; right: number }
 ): { bottom: number; right: number } {
-  const viewport = getViewportBounds();
-  
+  // Ease-in-out for smooth acceleration/deceleration
   // Ease-in-out for smooth acceleration/deceleration
   const easeProgress = progress < 0.5
     ? 2 * progress * progress

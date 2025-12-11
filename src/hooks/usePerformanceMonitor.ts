@@ -50,8 +50,8 @@ class PerformanceMonitor {
     id,
     phase,
     actualDuration,
-    baseDuration,
-    startTime,
+    _baseDuration,
+    _startTime,
     commitTime,
   ) => {
     const existing = this.metrics.get(id);

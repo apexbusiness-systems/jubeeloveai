@@ -184,7 +184,7 @@ class ParentJourneyVerifier {
 
   private async verifyElement(
     selector: string,
-    description: string,
+    _description: string,
     timeout: number = 5000
   ): Promise<boolean> {
     const startTime = Date.now();
@@ -205,7 +205,7 @@ class ParentJourneyVerifier {
 
   private async verifyMultipleSelectors(
     selectors: string[],
-    description: string,
+    _description: string,
     timeout: number = 5000
   ): Promise<HTMLElement | null> {
     const startTime = Date.now();

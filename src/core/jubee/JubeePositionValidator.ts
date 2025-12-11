@@ -101,8 +101,7 @@ export function validateContainerPosition(pos: ContainerPosition): ContainerPosi
  * Always returns a position that's 100% visible
  */
 export function getSafeDefaultPosition(): ContainerPosition {
-  const viewport = getViewportBounds()
-  
+  // Place in bottom-right corner with safe margins, accounting for nav bar
   // Place in bottom-right corner with safe margins, accounting for nav bar
   return {
     right: Math.max(100, SAFE_MARGINS.right + 50),
@@ -133,7 +132,6 @@ export function isPositionSafe(pos: ContainerPosition): boolean {
  */
 export function getPreferredPositions(viewport: ViewportBounds): ContainerPosition[] {
   const containerDims = getContainerDimensions()
-  const centerX = viewport.width / 2
   const centerY = viewport.height / 2
 
   return [

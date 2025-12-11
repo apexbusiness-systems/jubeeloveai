@@ -96,7 +96,7 @@ export function useWebGLResilience(
   }, [onContextLoss])
 
   // Handle context restore event
-  const handleContextRestored = useCallback((event: Event) => {
+  const handleContextRestored = useCallback((_event: Event) => {
     console.log('[WebGL Resilience] Context restored event')
     
     contextInfoRef.current.isValid = true

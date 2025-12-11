@@ -240,7 +240,7 @@ export function ConflictResolutionDialog() {
     }
   }
 
-  const syncToServer = async (storeName: StoreName, data: Record<string, unknown>, userId: string) => {
+  const syncToServer = async (storeName: StoreName, data: Record<string, unknown>, _userId: string) => {
     switch (storeName) {
       case 'gameProgress':
         await supabase.from('game_progress').upsert([{

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
-import { validatePosition, validateCanvasPosition, validateContainerPosition as validateContainerPos, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
+import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
 import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 import { callEdgeFunction } from '@/lib/edgeFunctionErrorHandler'
@@ -61,12 +61,7 @@ interface JubeeState {
   setVoiceVolume: (volume: number) => void
 }
 
-// Position bounds to prevent off-screen positioning
-const POSITION_BOUNDS = {
-  x: { min: -6, max: 6 },
-  y: { min: -4, max: 4 },
-  z: { min: -2, max: 2 }
-}
+// Position bounds to prevent off-screen positioning (used in validation logic)
 
 interface ConversationContext {
   activity?: string

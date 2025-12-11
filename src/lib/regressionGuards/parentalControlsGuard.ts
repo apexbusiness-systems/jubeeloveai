@@ -5,7 +5,7 @@
  * to prevent bypass vulnerabilities and control failures.
  */
 
-import { logger } from '../logger'
+import { logger as _logger } from '../logger'
 import type { HealthCheckResult } from '../systemHealthCheck'
 
 /**

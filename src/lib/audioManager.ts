@@ -279,7 +279,7 @@ class AudioManager {
   /**
    * Create a simple tone as a data URL
    */
-  private createToneDataUrl(frequency: number, duration: number): string {
+  private createToneDataUrl(_frequency: number, _duration: number): string {
     // Return empty data URL - we'll use the audio element's built-in capabilities
     return '';
   }
@@ -393,8 +393,8 @@ class AudioManager {
    * Play sound effect (simplified, no delay)
    */
   playSoundEffect(
-    type: 'draw' | 'clear' | 'success',
-    options?: { volume?: number }
+    _type: 'draw' | 'clear' | 'success',
+    _options?: { volume?: number }
   ): void {
     // Silent for now - sound effects are optional and were causing issues
     // Can be re-enabled later with proper audio files

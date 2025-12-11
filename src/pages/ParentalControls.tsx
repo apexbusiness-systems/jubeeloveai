@@ -11,8 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { SEO } from '@/components/SEO';
 import { ScheduleConfigurator } from '@/components/ScheduleConfigurator';
 import { toast } from '@/hooks/use-toast';
-import { Lock, Unlock, UserPlus, Clock, Shield, Users, Settings as SettingsIcon } from 'lucide-react';
-import type { Schedule } from '@/store/useParentalStore';
+import { Lock, UserPlus, Clock, Shield, Users, Settings as SettingsIcon } from 'lucide-react';
+import type { } from '@/store/useParentalStore';
 import { validatePIN, validateChildName } from '@/lib/inputValidation';
 
 export default function ParentalControls() {

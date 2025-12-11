@@ -137,7 +137,7 @@ export const useAchievementStore = create<AchievementState>()(
 
       updateStreak: () => {
         const today = new Date().toDateString()
-        const { lastActivityDate, currentStreak, longestStreak } = get().streakData
+        const { lastActivityDate, longestStreak } = get().streakData
 
         set((state) => {
           if (!lastActivityDate) {

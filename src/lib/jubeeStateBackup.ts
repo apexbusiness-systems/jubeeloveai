@@ -30,7 +30,7 @@ export interface JubeeStateBackup {
   synced: boolean
 }
 
-const BACKUP_STORE_NAME = 'jubeeStateBackups' as const
+// const BACKUP_STORE_NAME = 'jubeeStateBackups' as const
 const BACKUP_VERSION = 1
 const MAX_BACKUPS = 20 // Keep last 20 backups
 const BACKUP_INTERVAL = 30000 // Backup every 30 seconds

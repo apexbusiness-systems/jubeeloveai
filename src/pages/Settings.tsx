@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings as SettingsIcon, Volume2, VolumeX, Sun, Moon, Sunrise, Sunset, Shield, Download, Play, GraduationCap, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Volume2, VolumeX, Sunrise, Sunset, Shield, Download, Play, GraduationCap, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';

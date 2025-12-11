@@ -19,7 +19,8 @@ interface GameState {
 }
 
 // Validator for game state integrity
-function isValidGameState(state: unknown): state is Partial<GameState> {
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export function isValidGameState(state: unknown): state is Partial<GameState> {
   if (typeof state !== 'object' || state === null) return false
   
   const s = state as Record<string, unknown>

@@ -1,10 +1,9 @@
-import { Suspense, useEffect, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
 import { isFirstTimeVisitor } from './pages/Landing';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
-import { motion, useSpring } from 'framer-motion';
+import { useSpring } from 'framer-motion';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
@@ -67,7 +66,6 @@ function AppShell() {
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const [viewportWidth, setViewportWidth] = useState<number | null>(null);
 
   // Routes where parent auth experience should be clean (no Jubee, nav, or onboarding)
   const isAuthRoute = location.pathname.startsWith('/auth');
@@ -93,7 +91,7 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const { position: jubeePosition, currentAnimation: jubeeAnimation, isVisible, toggleVisibility, containerPosition, isDragging } = useJubeeStore();
+  const { isVisible, containerPosition } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
 
   // Spring physics for container positioning
@@ -113,22 +111,6 @@ function AppShell() {
     springBottom.set(containerPosition.bottom);
     springRight.set(containerPosition.right);
   }, [containerPosition.bottom, containerPosition.right, springBottom, springRight]);
-
-  // Track viewport width safely in browser-only effect
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
 
   // Revalidate position on viewport resize (especially when crossing breakpoints)
   useEffect(() => {
@@ -233,32 +215,6 @@ function AppShell() {
 
             {/* Action buttons - touch friendly */}
             <div className="flex gap-2 md:gap-3">
-              <button
-                onClick={toggleVisibility}
-                className="
-                  action-button
-                  px-4 py-2.5 sm:px-5 sm:py-3
-                  rounded-xl
-                  text-sm sm:text-base
-                  font-bold
-                  text-foreground
-                  bg-card/90
-                  backdrop-blur-sm
-                  border-2 border-primary/40
-                  shadow-lg
-                  transform hover:scale-105 active:scale-95
-                  transition-all duration-200
-                  min-h-[44px] min-w-[44px]
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-                "
-                aria-label={isVisible ? "Hide Jubee" : "Show Jubee"}
-                title={isVisible ? "Hide Jubee" : "Show Jubee"}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-lg sm:text-xl">{isVisible ? '👁️' : '👁️‍🗨️'}</span>
-                  <span className="font-extrabold hidden sm:inline">{isVisible ? 'Hide' : 'Show'}</span>
-                </span>
-              </button>
               <button
                 onClick={() => setShowPersonalization(true)}
                 className="

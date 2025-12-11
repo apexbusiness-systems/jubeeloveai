@@ -18,7 +18,7 @@ export async function initializeStories() {
     }
 
     // Insert all stories
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('stories')
       .insert(
         premiumStories.map(story => ({
