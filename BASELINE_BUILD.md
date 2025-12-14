@@ -313,6 +313,8 @@
 ✅ **Production-Ready** - All systems stable and optimized
 
 ### Recent Fixes
+- **Navigation tab fix (Dec 14, 2025)**: Added `e.preventDefault()` to button click handler to resolve race condition causing non-responsive tabs
+- **Audio verification (Dec 14, 2025)**: Story narration working via OpenAI TTS fallback (ElevenLabs blocked)
 - **CRITICAL FIX (Dec 2, 2025)**: Diagnostic system disconnection resolved
   - **Issue**: Lifecycle diagnostics monitored null ref from App.tsx instead of actual Jubee component
   - **Root Cause**: `useJubeeLifecycleDiagnostics` called with ref never attached to DOM
@@ -338,6 +340,8 @@
 - ✅ Parental controls with screen time enforcement
 - ✅ Multi-language support (i18n)
 - ✅ Error boundaries and recovery mechanisms
+- ✅ Navigation tabs responsive to taps/clicks
+- ✅ Story narration (TTS with OpenAI fallback)
 
 ---
 
@@ -381,6 +385,14 @@ npx playwright test       # E2E tests
 
 ## 13. Change Log
 
+### December 14, 2025
+- **Navigation tab button fix**: Added `e.preventDefault()` to handleClick to resolve race condition
+- **Onboarding modal**: Hidden by default (`hasCompletedOnboarding: true`) for testing
+- **All navigation routes verified**: `/`, `/write`, `/shapes`, `/progress`, `/stickers`, `/settings`
+- **Audio systems verified**: Story narration working via OpenAI TTS fallback
+- **ElevenLabs voice status**: Still blocked (free tier 401) - upgrade required
+- **Note**: Onboarding modal should be re-enabled (`hasCompletedOnboarding: false`) before production
+
 ### December 2, 2025
 - **CRITICAL FIX**: Resolved diagnostic system disconnection
   - Moved `useJubeeLifecycleDiagnostics` from App.tsx into JubeeCanvas3DDirect
@@ -414,6 +426,7 @@ npx playwright test       # E2E tests
 3. **Preserve design token architecture** - No hardcoded colors, all colors must use semantic tokens
 4. **Respect scope boundaries** - Only touch explicitly scoped components/elements
 5. **Visual verification required** - Confirm changes render correctly before marking complete
+6. **Navigation button event handlers** - Must include `e.preventDefault()` for consistent behavior
 
 ### Baseline Reference Points
 - **Jubee Scale:** `0.9` applied to `jubeeGroup`

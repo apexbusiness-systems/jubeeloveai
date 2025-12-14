@@ -1,8 +1,9 @@
 # GOODBUILD-JUBEE-BASELINE
 
-**Date Locked:** 2025-12-14  
+**Date Locked:** 2025-12-14 (Updated)  
 **Build Status:** ✅ STABLE - PRODUCTION READY  
-**Grade:** A+ (Enterprise-Grade)
+**Grade:** A+ (Enterprise-Grade)  
+**Last Verified:** Navigation tabs, audio systems, story narration
 
 ---
 
@@ -33,6 +34,10 @@ const JUBEE_VOICES = {
 // Current Default
 const JUBEE_VOICE_ID = JUBEE_VOICES.jubeeDude;
 ```
+
+**Current Status:**
+- Primary: ElevenLabs API (blocked - free tier 401 error)
+- Active Fallback: OpenAI TTS `nova` voice (working)
 
 ### 3. Voice Modulation Settings
 - **Stability:** 0.35
@@ -174,6 +179,8 @@ const JUBEE_VOICE_ID = JUBEE_VOICES.jubeeDude;
 - [x] Screen time enforcement
 - [x] Offline-first data persistence
 - [x] Multi-language support (5 languages)
+- [x] Navigation tab buttons responsive to taps/clicks
+- [x] Story narration with TTS (OpenAI fallback active)
 
 ---
 
@@ -189,10 +196,11 @@ If regression occurs, revert to this commit state. Key files to preserve:
 
 ## Next Phase Recommendations
 
-1. Add voice selector UI to settings for runtime voice switching
-2. Implement OmniLink ecosystem integration (Phase 1)
-3. Expand music library with lyrical content
-4. Continue E2E test coverage expansion
+1. **Upgrade ElevenLabs to paid plan** to restore premium Jubee Dude voice
+2. Add voice selector UI to settings for runtime voice switching
+3. Implement OmniLink ecosystem integration (Phase 1)
+4. Expand music library with lyrical content
+5. Re-enable onboarding modal for new users before production release
 
 ---
 
