@@ -16,7 +16,7 @@ interface OnboardingState {
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
-      hasCompletedOnboarding: false,
+      hasCompletedOnboarding: true,
       currentStep: 0,
       isActive: false,
 
