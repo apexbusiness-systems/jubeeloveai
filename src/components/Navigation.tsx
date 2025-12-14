@@ -50,7 +50,8 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
     setPressing(false);
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     // Only navigate if long press didn't trigger navigation
     if (!longPressTriggered.current) {
       navigate(path);
