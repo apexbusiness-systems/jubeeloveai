@@ -54,8 +54,14 @@ const MIN_TEXT_LENGTH = 1;
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
 
-// ElevenLabs Voice ID - Custom Jubee voice
-const JUBEE_VOICE_ID = 'XJ2fW4ybq7HouelYYGcL';
+// ElevenLabs Voice IDs - Custom Jubee voices
+const JUBEE_VOICES = {
+  jubee: 'XJ2fW4ybq7HouelYYGcL',      // Primary Jubee voice
+  jubeeDude: 'DTKMou8ccj1ZaWGBiotd',  // Jubee Dude voice
+};
+
+// Default voice
+const JUBEE_VOICE_ID = JUBEE_VOICES.jubee;
 
 function sanitizeText(text: string): string {
   if (typeof text !== 'string') return '';
