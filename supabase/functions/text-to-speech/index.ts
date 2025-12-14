@@ -61,7 +61,7 @@ const JUBEE_VOICES = {
 };
 
 // Default voice
-const JUBEE_VOICE_ID = JUBEE_VOICES.jubee;
+const JUBEE_VOICE_ID = JUBEE_VOICES.jubeeDude;
 
 function sanitizeText(text: string): string {
   if (typeof text !== 'string') return '';
