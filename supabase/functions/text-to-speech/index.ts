@@ -54,13 +54,8 @@ const MIN_TEXT_LENGTH = 1;
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
 
-// ElevenLabs Voice IDs - Using Lily as primary (child-friendly, balanced)
-const ELEVENLABS_VOICES = {
-  lily: 'pFZP5JQG7iQjIQuC4Bku',      // Default - Lily (child-friendly, warm)
-  charlotte: 'XB0fDUnXU5powFXDhCwa',  // Charlotte (nurturing)
-  aria: '9BWtsMINqrJLrRacOk9x',       // Aria (expressive)
-  sarah: 'EXAVITQu4vr4xnSDxMaL',      // Sarah (warm)
-};
+// ElevenLabs Voice ID - Custom Jubee voice
+const JUBEE_VOICE_ID = 'XJ2fW4ybq7HouelYYGcL';
 
 function sanitizeText(text: string): string {
   if (typeof text !== 'string') return '';
@@ -91,8 +86,8 @@ async function synthesizeWithElevenLabs(
     return null;
   }
 
-  // Use Lily as default voice (balanced, child-friendly)
-  const voiceId = ELEVENLABS_VOICES.lily;
+  // Use custom Jubee voice
+  const voiceId = JUBEE_VOICE_ID;
 
   // Balanced voice settings for child-friendly, warm delivery
   // Adjust stability and style based on mood
@@ -118,7 +113,7 @@ async function synthesizeWithElevenLabs(
   }
 
   try {
-    console.log(`ElevenLabs TTS: voice=lily, mood=${mood}, stability=${stability}, style=${style}`);
+    console.log(`ElevenLabs TTS: voice=jubee, mood=${mood}, stability=${stability}, style=${style}`);
     
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -307,7 +302,7 @@ serve(async (req) => {
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedMood = validateMood(mood);
 
-    // Try ElevenLabs first (Lily voice - balanced, child-friendly)
+    // Try ElevenLabs first (custom Jubee voice)
     let audioData = await synthesizeWithElevenLabs(
       sanitizedText,
       sanitizedMood,
