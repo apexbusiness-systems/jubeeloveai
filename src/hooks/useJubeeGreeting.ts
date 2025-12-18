@@ -3,11 +3,13 @@
  * 
  * Provides contextual, time-aware, and activity-specific greetings
  * with anti-repetition logic and streak tracking.
+ * Integrates with useAchievementStore for persistent streak data.
  */
 
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useJubeeStore } from '../store/useJubeeStore'
+import { useAchievementStore } from '../store/useAchievementStore'
 import {
   getContextualGreeting,
   getTimeOfDay,
@@ -20,7 +22,6 @@ import {
 
 interface UseJubeeGreetingOptions {
   childName?: string
-  streak?: number
 }
 
 interface GreetingResult {
@@ -54,8 +55,19 @@ function checkFirstVisitToday(): boolean {
 export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
   const location = useLocation()
   const { currentMood } = useJubeeStore()
+  const { streakData, updateStreak } = useAchievementStore()
   const greetingHistory = useRef<string[]>([])
   const isFirstVisitToday = useRef(checkFirstVisitToday())
+  
+  // Update streak on first visit today
+  useEffect(() => {
+    if (isFirstVisitToday.current) {
+      updateStreak()
+    }
+  }, [updateStreak])
+  
+  // Get current streak from persisted store
+  const currentStreak = streakData?.currentStreak ?? 0
   
   // Memoize current context
   const context = useMemo((): GreetingContext => ({
@@ -64,8 +76,8 @@ export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
     mood: currentMood,
     childName: options.childName,
     isFirstVisitToday: isFirstVisitToday.current,
-    streak: options.streak
-  }), [location.pathname, currentMood, options.childName, options.streak])
+    streak: currentStreak
+  }), [location.pathname, currentMood, options.childName, currentStreak])
   
   /**
    * Get a contextual greeting, avoiding recent repeats
