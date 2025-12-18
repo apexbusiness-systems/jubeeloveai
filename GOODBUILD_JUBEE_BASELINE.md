@@ -36,8 +36,8 @@ const JUBEE_VOICE_ID = JUBEE_VOICES.jubeeDude;
 ```
 
 **Current Status:**
-- Primary: ElevenLabs API (blocked - free tier 401 error)
-- Active Fallback: OpenAI TTS `nova` voice (working)
+- Primary: ElevenLabs API ✅ ACTIVE (Jubee Dude voice working)
+- Fallback: OpenAI TTS `nova` voice (available if needed)
 
 ### 3. Voice Modulation Settings
 - **Stability:** 0.35
