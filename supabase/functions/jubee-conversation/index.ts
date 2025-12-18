@@ -170,11 +170,13 @@ function analyzeSentiment(message: string): {
   }
 }
 
-// Build contextual system prompt based on sentiment and language
+// Build contextual system prompt based on sentiment, language, and time
 function buildSystemPrompt(
   language: string,
   sentiment: { sentiment: string; intensity: string; needsComfort: boolean },
-  childName?: string
+  childName?: string,
+  timeOfDay?: string,
+  activity?: string
 ): string {
   // Emotional context based on detected sentiment
   let emotionalGuidance = '';
@@ -197,6 +199,30 @@ MATCH THEIR ENERGY: This child is excited!
 Be warm, curious, and gently encouraging.`;
   }
 
+  // Time-of-day personality adjustments
+  let timeContext = '';
+  if (timeOfDay === 'morning') {
+    timeContext = '\nIt\'s morning - be bright and energizing! "Good morning sunshine!" energy.';
+  } else if (timeOfDay === 'evening') {
+    timeContext = '\nIt\'s evening - be warm and cozy. Gentle energy, winding down.';
+  } else if (timeOfDay === 'night') {
+    timeContext = '\nIt\'s late/night time - be very gentle and soothing. Quiet, calm voice.';
+  }
+
+  // Activity-specific personality hints
+  let activityContext = '';
+  if (activity === 'games') {
+    activityContext = '\nChild is playing games - be playful and competitive in a fun way!';
+  } else if (activity === 'writing') {
+    activityContext = '\nChild is practicing writing - be extra patient and encouraging about their effort.';
+  } else if (activity === 'reading') {
+    activityContext = '\nChild is reading - be storyteller-like and curious about the story.';
+  } else if (activity === 'shapes') {
+    activityContext = '\nChild is learning shapes - point out shapes around them, make it visual!';
+  } else if (activity === 'music') {
+    activityContext = '\nChild is in music - be rhythmic and musical in responses!';
+  }
+
   // Language-specific additions
   const languageNotes: Record<string, string> = {
     en: '',
@@ -210,6 +236,8 @@ Be warm, curious, and gently encouraging.`;
 
   return `${JUBEE_CORE_PERSONA}
 ${emotionalGuidance}
+${timeContext}
+${activityContext}
 ${nameContext}
 ${languageNotes[language] || ''}
 
@@ -274,8 +302,12 @@ serve(async (req) => {
     const sentimentAnalysis = analyzeSentiment(sanitizedMessage);
     console.log('Jubee conversation - Sentiment:', sentimentAnalysis.sentiment, 'Intensity:', sentimentAnalysis.intensity, 'NeedsComfort:', sentimentAnalysis.needsComfort);
 
-    // Build dynamic system prompt
-    const systemPrompt = buildSystemPrompt(sanitizedLanguage, sentimentAnalysis, sanitizedChildName);
+    // Extract time and activity context
+    const timeOfDay = context.timeOfDay && typeof context.timeOfDay === 'string' ? context.timeOfDay : undefined;
+    const activity = context.activity && typeof context.activity === 'string' ? context.activity : undefined;
+
+    // Build dynamic system prompt with time/activity context
+    const systemPrompt = buildSystemPrompt(sanitizedLanguage, sentimentAnalysis, sanitizedChildName, timeOfDay, activity);
     
     // Add activity context if provided
     let userContext = '';
