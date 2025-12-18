@@ -19,6 +19,7 @@ import { Text, Sparkles } from '@react-three/drei'
 import { useSpring, a, config } from '@react-spring/three'
 import { Group, Mesh } from 'three'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { useJubeeGreeting } from '../../hooks/useJubeeGreeting'
 // THREE is imported via @react-three/fiber types
 
 interface PerformanceProfile {
@@ -36,14 +37,7 @@ interface JubeeProps {
   performanceProfile?: PerformanceProfile
 }
 
-// Constants moved outside component for performance
-const GREETINGS = [
-  "Buzz buzz! Hello!",
-  "Let's learn together!",
-  "You're doing great!",
-  "I'm so happy to see you!",
-  "Ready for an adventure?"
-] as const
+// Legacy greetings removed - now using useJubeeGreeting hook for contextual greetings
 
 // Function to get CSS variable color value
 const getColorValue = (varName: string): string => {
@@ -93,6 +87,9 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
   const [blinkTime, setBlinkTime] = useState(0)
   const [showClickFeedback, setShowClickFeedback] = useState(false)
   const { gender, speechText, currentMood, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
+  
+  // Contextual greeting system
+  const { getGreeting } = useJubeeGreeting()
 
   // Memoize current colors and performance settings from design system
   const currentColors = useMemo(() => getJubeeColors(gender), [gender])
@@ -208,8 +205,9 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)]
-    speak(randomGreeting)
+    // Use contextual greeting based on time, activity, and mood
+    const { greeting } = getGreeting()
+    speak(greeting)
     triggerAnimation('celebrate')
     
     // Bouncy spring animation on click

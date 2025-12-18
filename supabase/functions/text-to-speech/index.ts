@@ -53,6 +53,7 @@ const MAX_TEXT_LENGTH = 4096;
 const MIN_TEXT_LENGTH = 1;
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
+const ALLOWED_TIMES = ['morning', 'afternoon', 'evening', 'night'];
 
 // ElevenLabs Voice IDs - Custom Jubee voices
 const JUBEE_VOICES = {
@@ -79,11 +80,16 @@ function validateLanguage(lang: string): string {
   return ALLOWED_LANGUAGES.includes(lang) ? lang : 'en';
 }
 
-// ElevenLabs TTS with Lily voice - balanced, child-friendly
+function validateTimeOfDay(time: string): string | undefined {
+  return ALLOWED_TIMES.includes(time) ? time : undefined;
+}
+
+// ElevenLabs TTS with Jubee voice - balanced, child-friendly
 async function synthesizeWithElevenLabs(
   text: string,
   mood: string,
-  _language: string
+  _language: string,
+  timeOfDay?: string
 ): Promise<ArrayBuffer | null> {
   const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
   
@@ -96,11 +102,12 @@ async function synthesizeWithElevenLabs(
   const voiceId = JUBEE_VOICE_ID;
 
   // Balanced voice settings for child-friendly, warm delivery
-  // Adjust stability and style based on mood
+  // Adjust stability and style based on mood AND time of day
   let stability = 0.35;
   const similarityBoost = 0.75;
   let style = 0.45;
   
+  // Mood-based adjustments
   if (mood === 'excited') {
     stability = 0.25;     // More variation for excitement
     style = 0.65;         // More expressive
@@ -116,6 +123,17 @@ async function synthesizeWithElevenLabs(
   } else if (mood === 'tired') {
     stability = 0.55;     // Very stable for soothing
     style = 0.25;         // Gentle
+  }
+
+  // Time-of-day energy adjustments
+  if (timeOfDay === 'night') {
+    stability = Math.min(stability + 0.15, 0.7);  // More stable at night
+    style = Math.max(style - 0.15, 0.2);          // Gentler delivery
+  } else if (timeOfDay === 'evening') {
+    stability = Math.min(stability + 0.08, 0.6);  // Slightly calmer
+    style = Math.max(style - 0.08, 0.3);
+  } else if (timeOfDay === 'morning') {
+    style = Math.min(style + 0.05, 0.7);          // Slightly more energetic
   }
 
   try {
@@ -289,7 +307,7 @@ serve(async (req) => {
       throw new Error('Invalid JSON payload');
     }
 
-    const { text, gender, language = 'en', mood = 'happy' } = body;
+    const { text, gender, language = 'en', mood = 'happy', timeOfDay } = body;
     
     // SECURITY: Validate text input
     if (!text || typeof text !== 'string') {
@@ -307,12 +325,14 @@ serve(async (req) => {
     const sanitizedText = sanitizeText(text);
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedMood = validateMood(mood);
+    const sanitizedTimeOfDay = timeOfDay ? validateTimeOfDay(timeOfDay) : undefined;
 
     // Try ElevenLabs first (custom Jubee voice)
     let audioData = await synthesizeWithElevenLabs(
       sanitizedText,
       sanitizedMood,
-      sanitizedLanguage
+      sanitizedLanguage,
+      sanitizedTimeOfDay
     );
 
     // Fall back to OpenAI if ElevenLabs fails
