@@ -206,9 +206,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     // Create Jubee 3D model
     const jubeeGroup = new THREE.Group();
     
-    // Scale model larger for better visibility in the container
-    // Increased from 0.414 to 0.7 for vibrant, clearly visible rendering
-    jubeeGroup.scale.set(0.7, 0.7, 0.7);
+    // Scale model for visibility in the container
+    // Reduced by 20% from 0.7 to 0.56 for better fit
+    jubeeGroup.scale.set(0.56, 0.56, 0.56);
     
     sceneRef.current.add(jubeeGroup);
     jubeeGroupRef.current = jubeeGroup;
