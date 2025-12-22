@@ -7,7 +7,6 @@
  */
 
 import { useCallback, useMemo, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
 import { useJubeeStore } from '../store/useJubeeStore'
 import { useAchievementStore } from '../store/useAchievementStore'
 import {
@@ -22,6 +21,7 @@ import {
 
 interface UseJubeeGreetingOptions {
   childName?: string
+  pathname?: string // Optional - defaults to '/' if not provided
 }
 
 interface GreetingResult {
@@ -53,7 +53,8 @@ function checkFirstVisitToday(): boolean {
 }
 
 export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
-  const location = useLocation()
+  // Use provided pathname or default to home
+  const pathname = options.pathname ?? '/'
   const { currentMood } = useJubeeStore()
   const { streakData, updateStreak } = useAchievementStore()
   const greetingHistory = useRef<string[]>([])
@@ -72,12 +73,12 @@ export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
   // Memoize current context
   const context = useMemo((): GreetingContext => ({
     timeOfDay: getTimeOfDay(),
-    activity: getActivityFromPath(location.pathname),
+    activity: getActivityFromPath(pathname),
     mood: currentMood,
     childName: options.childName,
     isFirstVisitToday: isFirstVisitToday.current,
     streak: currentStreak
-  }), [location.pathname, currentMood, options.childName, currentStreak])
+  }), [pathname, currentMood, options.childName, currentStreak])
   
   /**
    * Get a contextual greeting, avoiding recent repeats

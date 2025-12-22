@@ -35,6 +35,7 @@ interface JubeeProps {
   position?: [number, number, number]
   animation?: string
   performanceProfile?: PerformanceProfile
+  pathname?: string // Current route for contextual greetings
 }
 
 // Legacy greetings removed - now using useJubeeGreeting hook for contextual greetings
@@ -72,7 +73,7 @@ const getJubeeColors = (gender: 'male' | 'female') => ({
 // const tempVector = new THREE.Vector3()
 // const targetScale = new THREE.Vector3()
 
-export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performanceProfile }: JubeeProps) {
+export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performanceProfile, pathname = '/' }: JubeeProps) {
   const group = useRef<Group>(null)
   const bodyRef = useRef<Mesh>(null)
   const headRef = useRef<Mesh>(null)
@@ -88,8 +89,8 @@ export function JubeeMascot({ position = [0, 0, 0], animation = 'idle', performa
   const [showClickFeedback, setShowClickFeedback] = useState(false)
   const { gender, speechText, currentMood, updatePosition, speak, triggerAnimation, cleanup } = useJubeeStore()
   
-  // Contextual greeting system
-  const { getGreeting } = useJubeeGreeting()
+  // Contextual greeting system - uses provided pathname since we're inside R3F context
+  const { getGreeting } = useJubeeGreeting({ pathname })
 
   // Memoize current colors and performance settings from design system
   const currentColors = useMemo(() => getJubeeColors(gender), [gender])
