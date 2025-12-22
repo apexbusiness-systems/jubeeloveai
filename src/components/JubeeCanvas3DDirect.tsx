@@ -13,8 +13,10 @@
  */
 
 import { useEffect, useRef, memo, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useJubeeGreeting } from '@/hooks/useJubeeGreeting';
 import { logger } from '@/lib/logger';
 import { 
   validatePosition as validateContainerPosition,
@@ -39,6 +41,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const jubeeGroupRef = useRef<THREE.Group | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   
+  // Get current location for contextual greetings
+  const location = useLocation();
+  
   const { 
     containerPosition, 
     isVisible, 
@@ -50,6 +55,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     triggerAnimation,
     setMood,
   } = useJubeeStore();
+  
+  // Contextual greeting system - uses current route for activity detection
+  const { getGreeting } = useJubeeGreeting({ pathname: location.pathname });
   
   // Track interaction for greeting variations
   const interactionCountRef = useRef(0);
@@ -435,27 +443,18 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     triggerAnimation('excited');
     setMood('excited');
     
-    // Generate greeting based on interaction count
-    const greetings = [
-      "Hi there! I'm Jubee! 🐝",
-      "Buzz buzz! Let's play!",
-      "Yay! You found me!",
-      "Hello friend! Ready to learn?",
-      "Wheee! That tickles!",
-      "Let's have fun together!",
-    ];
-    
-    const greeting = greetings[(count - 1) % greetings.length];
+    // Use contextual greeting system for time/activity-aware greetings
+    const { greeting, timeOfDay, activity } = getGreeting();
     speak(greeting, 'excited');
     
-    logger.dev('[Jubee3DDirect] Click interaction', { count, greeting });
+    logger.dev('[Jubee3DDirect] Click interaction', { count, greeting, timeOfDay, activity });
     
     // Reset mood after a delay
     setTimeout(() => {
       setMood('happy');
       triggerAnimation('idle');
     }, 3000);
-  }, [isDragging, speak, triggerAnimation, setMood]);
+  }, [isDragging, speak, triggerAnimation, setMood, getGreeting]);
 
   // Attach global mouse/touch listeners for dragging
   useEffect(() => {
