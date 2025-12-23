@@ -1,7 +1,7 @@
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { musicLibrary, Song } from '@/data/musicLibrary';
-import { Play, Pause, Lock, Music as MusicIcon } from 'lucide-react';
+import { Play, Lock, Music as MusicIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
