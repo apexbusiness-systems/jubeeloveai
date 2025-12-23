@@ -29,7 +29,6 @@ import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
 import { JubeeCanvas3DDirect } from './components/JubeeCanvas3DDirect';
 import { validatePosition } from './core/jubee/JubeePositionManager';
-import { DevAuthOverride } from './components/auth/DevAuthOverride';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -178,7 +177,6 @@ function AppShell() {
   return (
     <>
       <AchievementTracker />
-      <DevAuthOverride />
       <SEO />
       <div className="app min-h-screen w-full" data-theme={currentTheme}>
         {/* Header with score and action buttons - hidden on auth and landing routes */}
