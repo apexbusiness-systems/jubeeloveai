@@ -25,6 +25,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
 import { useGameProgressAutoSave } from './hooks/useGameProgressAutoSave';
+import { useGameProgressRestore } from './hooks/useGameProgressRestore';
 import { SyncIndicator } from './components/SyncIndicator';
 import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
 import { AppRoutes } from './components/AppRoutes';
@@ -44,6 +45,8 @@ const queryClient = new QueryClient({
 });
 
 function useSyncStatus() {
+  // Restore game progress from IndexedDB on init
+  useGameProgressRestore();
   // Enable auto-save of game progress to IndexedDB
   const { isSaving, lastSaved } = useGameProgressAutoSave();
   return { isSaving, lastSaved };
