@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import { logger } from '@/lib/logger';
 import { secureGetItem, secureSetItem, secureRemoveItem } from '@/lib/secureStorage';
 
 export interface ChildProfile {

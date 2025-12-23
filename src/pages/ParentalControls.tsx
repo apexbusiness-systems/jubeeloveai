@@ -369,24 +369,16 @@ export default function ParentalControls() {
                             </div>
 
                             <ScheduleConfigurator
-                              schedules={child.settings?.schedules || []}
-                              enforceSchedule={child.settings?.enforceSchedule || false}
-                              onSchedulesChange={(schedules) => 
-                                updateChild(child.id, { 
-                                  settings: { 
-                                    ...child.settings,
-                                    schedules 
-                                  } 
-                                })
-                              }
-                              onEnforceChange={(enforceSchedule) =>
-                                updateChild(child.id, {
-                                  settings: {
-                                    ...child.settings,
-                                    enforceSchedule
-                                  }
-                                })
-                              }
+                              schedules={[]}
+                              enforceSchedule={false}
+                              onSchedulesChange={() => {
+                                // Schedule functionality to be implemented
+                                toast({ title: "Schedule feature coming soon!" });
+                              }}
+                              onEnforceChange={() => {
+                                // Schedule enforcement to be implemented
+                                toast({ title: "Schedule feature coming soon!" });
+                              }}
                             />
                           </div>
                           <DialogFooter>
@@ -444,14 +436,14 @@ export default function ParentalControls() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Require PIN for Exit</Label>
+                    <Label>Require PIN for Settings</Label>
                     <p className="text-sm text-muted-foreground">
-                      Prevent children from exiting the app
+                      Require PIN to access settings
                     </p>
                   </div>
                   <Switch
-                    checked={settings.requirePinForExit}
-                    onCheckedChange={(checked) => updateSettings({ requirePinForExit: checked })}
+                    checked={settings.requirePinForSettings}
+                    onCheckedChange={(checked) => updateSettings({ requirePinForSettings: checked })}
                   />
                 </div>
                 <Button onClick={() => setShowPinSetup(true)} variant="outline">
