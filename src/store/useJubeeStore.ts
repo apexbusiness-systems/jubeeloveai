@@ -2,11 +2,11 @@ import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
 import { persist } from 'zustand/middleware'
 import { validatePosition, getSafeDefaultPosition, type Position3D } from '@/core/jubee/JubeePositionValidator'
-import { performHealthCheck, executeRecovery } from '@/core/jubee/JubeeErrorRecovery'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
 import { callEdgeFunction } from '@/lib/edgeFunctionErrorHandler'
-import { sanitizeString, validateNotEmpty, validateLength } from '@/lib/inputSanitizer'
+import { sanitizeString, validateNotEmpty } from '@/lib/inputSanitizer'
 import { logger } from '@/lib/logger'
+import { audioManager } from '@/lib/audioManager'
 
 // Extend Window interface for i18next properties
 declare global {
@@ -15,15 +15,14 @@ declare global {
   }
 }
 
-// Timer entry type for position update throttling
+// Timer entry type
 interface TimerEntry {
   time: number
 }
 
-// Cleanup timers map - can store either Timeout or TimerEntry
+// Global reference to prevent audio overlap
+let currentSpeechController: AbortController | null = null;
 const timers = new Map<string, NodeJS.Timeout | TimerEntry>()
-
-import { audioManager } from '@/lib/audioManager'
 
 export type JubeeVoice = 'shimmer' | 'nova' | 'alloy' | 'echo' | 'fable' | 'onyx'
 
@@ -61,8 +60,6 @@ interface JubeeState {
   setVoiceVolume: (volume: number) => void
 }
 
-// Position bounds to prevent off-screen positioning (used in validation logic)
-
 interface ConversationContext {
   activity?: string
   mood?: 'happy' | 'excited' | 'frustrated' | 'curious' | 'tired'
@@ -75,7 +72,7 @@ export const useJubeeStore = create<JubeeState>()(
       gender: 'female',
       voice: 'shimmer',
       position: { x: 0, y: 0, z: 0 },
-      containerPosition: getSafeDefaultPosition(), // Use validated safe default
+      containerPosition: getSafeDefaultPosition(),
       isDragging: false,
       currentAnimation: 'idle',
       speechText: '',
@@ -89,24 +86,15 @@ export const useJubeeStore = create<JubeeState>()(
       soundEffectsVolume: 0.3,
       voiceVolume: 1.0,
 
-      setGender: (gender) => {
-        logger.info('[Jubee] Gender changed:', gender)
-        set((state) => { state.gender = gender })
-      },
-
-      setVoice: (voice) => {
-        logger.info('[Jubee] Voice changed:', voice)
-        set((state) => { state.voice = voice })
-      },
+      setGender: (gender) => set((state) => { state.gender = gender }),
+      setVoice: (voice) => set((state) => { state.voice = voice }),
 
       updatePosition: (position) => {
         const now = Date.now()
         const timerEntry = timers.get('positionUpdate')
         const lastUpdate = (timerEntry && 'time' in timerEntry) ? timerEntry.time : 0
         if (now - lastUpdate < 100) return
-        
         timers.set('positionUpdate', { time: now })
-        
         set((state) => {
           if (position) {
             const validated = validatePosition({ x: position.x, y: position.y, z: position.z })
@@ -116,469 +104,191 @@ export const useJubeeStore = create<JubeeState>()(
       },
 
       setContainerPosition: (position) => {
-        logger.dev('[Jubee] Container position requested:', position)
-        
         set((state) => {
           const validated = validatePosition(undefined, position)
           state.containerPosition = validated.container
-          logger.dev('[Jubee] Container position validated:', validated.container)
         })
       },
 
-      setIsDragging: (isDragging) => {
-        set((state) => {
-          state.isDragging = isDragging
-        })
-      },
-
-      setMood: (mood) => {
-        logger.info('[Jubee] Mood changed:', mood)
-        set((state) => { state.currentMood = mood })
-      },
-
-      toggleVisibility: () => {
-        const currentVisibility = get().isVisible
-        const newVisibility = !currentVisibility
-        
-        logger.dev('[Jubee] Visibility toggled:', { from: currentVisibility, to: newVisibility })
-        
-        set((state) => {
-          state.isVisible = newVisibility
-        })
-      },
-
-      toggleMinimized: () => {
-        const currentMinimized = get().isMinimized
-        const newMinimized = !currentMinimized
-        
-        logger.dev('[Jubee] Minimized toggled:', { from: currentMinimized, to: newMinimized })
-        
-        set((state) => {
-          state.isMinimized = newMinimized
-        })
-      },
+      setIsDragging: (isDragging) => set((state) => { state.isDragging = isDragging }),
+      setMood: (mood) => set((state) => { state.currentMood = mood }),
+      toggleVisibility: () => set((state) => { state.isVisible = !state.isVisible }),
+      toggleMinimized: () => set((state) => { state.isMinimized = !state.isMinimized }),
 
       triggerAnimation: (animation) => {
-        logger.info('[Jubee] Animation triggered:', animation)
-        // Clear existing animation timer
         const existingTimer = timers.get('animation')
-        if (existingTimer && typeof existingTimer !== 'object') {
-          clearTimeout(existingTimer)
-        }
-        
+        if (existingTimer && typeof existingTimer !== 'object') clearTimeout(existingTimer)
         set((state) => { state.currentAnimation = animation })
-        
         const timer = setTimeout(() => {
           set((state) => { state.currentAnimation = 'idle' })
           timers.delete('animation')
-          logger.info('[Jubee] Animation reset to idle')
         }, 2000)
-        
         timers.set('animation', timer)
       },
 
       triggerPageTransition: () => {
-        logger.dev('[Jubee] Page transition started')
-        // Clear existing transition timer
         const existingTimer = timers.get('transition')
-        if (existingTimer && typeof existingTimer !== 'object') {
-          clearTimeout(existingTimer)
-        }
-        
+        if (existingTimer && typeof existingTimer !== 'object') clearTimeout(existingTimer)
         set((state) => {
           state.isTransitioning = true
           state.currentAnimation = 'pageTransition'
         })
-        
         const timer = setTimeout(() => {
           set((state) => {
             state.isTransitioning = false
             state.currentAnimation = 'idle'
           })
           timers.delete('transition')
-          logger.dev('[Jubee] Page transition complete')
         }, 1200)
-        
         timers.set('transition', timer)
       },
 
-    speak: async (text, mood = 'happy') => {
-      // Validate and sanitize input
-      try {
-        validateNotEmpty(text, 'Speech text');
-        validateLength(text, 'Speech text', 1, 1000);
-        text = sanitizeString(text, { maxLength: 1000, trim: true });
-      } catch (error) {
-        logger.error('[Jubee] Invalid speech input:', error);
-        return;
-      }
-
-      // Get current voice volume
-      const voiceVolume = get().voiceVolume;
-      
-      // If volume is 0, don't play anything
-      if (voiceVolume === 0) {
-        logger.dev('[Jubee] Voice muted, skipping speech');
-        return;
-      }
-
-      // Stop any current audio first
-      audioManager.stopCurrentAudio()
-      
-      // Clear existing speech timer to prevent conflicts
-      const existingSpeechTimer = timers.get('speech')
-      if (existingSpeechTimer && typeof existingSpeechTimer !== 'object') {
-        clearTimeout(existingSpeechTimer)
-        timers.delete('speech')
-      }
-
-      const gender = get().gender
-      const voice = get().voice
-      const language = window.i18nextLanguage || 'en'
-      
-      set((state) => { 
-        state.speechText = text
-        state.currentMood = mood
-        state.lastError = null
-        state.interactionCount += 1
-      })
-
-      // Check cache first for instant playback
-      const cachedAudio = audioManager.getCachedAudio(text, voice, mood)
-      if (cachedAudio) {
-        await audioManager.playAudio(cachedAudio, true, voiceVolume)
-        set((state) => { state.speechText = '' })
-        return
-      }
-      
-      // Single TTS request with timeout using edge function handler
-      try {
-        const audioBlob = await callEdgeFunction<Blob>({
-          functionName: 'text-to-speech',
-          body: { text, gender, language, mood, voice },
-          timeout: 8000,
-          retries: 1,
-        });
-
-        // Cache for future use
-        audioManager.cacheAudio(text, audioBlob, voice, mood)
-        
-        await audioManager.playAudio(audioBlob, true, voiceVolume)
-        set((state) => { state.speechText = '' })
-        return
-      } catch (error) {
-        logger.warn('[Jubee] TTS service unavailable, using browser fallback', error);
-      }
-
-      // All retries failed, use browser speech fallback
-      set((state) => { state.lastError = 'TTS_FALLBACK' })
-      browserSpeech(text, gender, mood, voiceVolume)
-      const timer = setTimeout(() => {
-        set((state) => { state.speechText = '' })
-        timers.delete('speech')
-      }, 3000)
-      timers.set('speech', timer)
-    },
-
-    converse: async (message, context = {}) => {
-      const state = get()
-      
-      if (state.isProcessing) {
-        logger.warn('[Jubee] Already processing a conversation');
-        return "Let me finish what I was saying first! 🐝"
-      }
-
-      // Validate and sanitize input
-      try {
-        validateNotEmpty(message, 'Message');
-        validateLength(message, 'Message', 1, 2000);
-        message = sanitizeString(message, { maxLength: 2000, trim: true });
-      } catch (error) {
-        logger.error('[Jubee] Invalid conversation input:', error);
-        return "Bzz! That message doesn't look quite right. Could you try again? 🐝";
-      }
-
-      set((state) => {
-        state.isProcessing = true
-        state.currentMood = context.mood || 'happy'
-        state.interactionCount += 1
-      })
-
-      const language = window.i18nextLanguage || 'en'
-
-      try {
-        const response = await callEdgeFunction<{ response: string }>({
-          functionName: 'jubee-conversation',
-          body: {
-            message,
-            context: {
-              ...context,
-              mood: state.currentMood,
-              language,
-            },
-          },
-          timeout: 15000,
-          retries: 2,
-        });
-
-        const jubeeResponse = response.response;
-        
-        set((state) => { 
-          state.isProcessing = false
-          state.lastError = null
-        })
-        
-        // Speak the response
-        get().speak(jubeeResponse, context.mood || 'happy')
-        
-        return jubeeResponse;
-      } catch (error) {
-        logger.error('[Jubee] Conversation error:', error)
-        
-        // Provide empathetic fallback messages
-        const fallbackMessages: Record<string, string> = {
-          en: "Buzz buzz! I'm listening to you, but I'm having trouble finding the right words. Let's try again in a moment! 🐝💛",
-          es: "¡Bzz bzz! Te estoy escuchando, pero tengo problemas para encontrar las palabras correctas. ¡Intentemos de nuevo en un momento! 🐝💛",
-          fr: "Bzz bzz! Je t'écoute, mais j'ai du mal à trouver les bons mots. Réessayons dans un instant! 🐝💛",
-          zh: "嗡嗡！我在听你说话，但我很难找到合适的词语。让我们稍后再试一次！🐝💛",
-          hi: "भनभन! मैं आपको सुन रहा हूं, लेकिन मुझे सही शब्द खोजने में परेशानी हो रही है। चलिए एक पल में फिर से कोशिश करते हैं! 🐝💛"
+      speak: async (text, mood = 'happy') => {
+        // 1. Sanitize
+        try {
+            validateNotEmpty(text, 'Speech text');
+            text = sanitizeString(text, { maxLength: 1000, trim: true });
+        } catch (error) {
+            logger.error('[Jubee] Invalid speech input:', error);
+            return;
         }
 
-        const fallbackMessage = fallbackMessages[language] || fallbackMessages.en
-        
-        set((state) => { 
-          state.isProcessing = false
-          state.lastError = error instanceof Error ? error.message : 'CONVERSATION_ERROR'
+        // 2. Check Volume
+        const { voiceVolume, gender, voice } = get();
+        if (voiceVolume === 0) return;
+
+        // 3. 🛑 ABORT PREVIOUS SPEECH (Crucial Fix)
+        if (currentSpeechController) {
+            currentSpeechController.abort();
+            audioManager.stopCurrentAudio();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+        currentSpeechController = new AbortController();
+        const signal = currentSpeechController.signal;
+
+        set((state) => {
+            state.speechText = text;
+            state.currentMood = mood;
+            state.lastError = null;
+            state.interactionCount += 1;
+        });
+
+        // 4. Try Cache / Edge Function
+        try {
+            const language = window.i18nextLanguage || 'en';
+            // Check cache
+            const cachedAudio = audioManager.getCachedAudio(text, voice, mood);
+            
+            if (cachedAudio) {
+                if (signal.aborted) return;
+                await audioManager.playAudio(cachedAudio, true, voiceVolume);
+            } else {
+                // Fetch new
+                const audioBlob = await callEdgeFunction<Blob>({
+                    functionName: 'text-to-speech',
+                    body: { text, gender, language, mood, voice },
+                    timeout: 8000,
+                    retries: 1,
+                });
+                
+                if (signal.aborted) return;
+                audioManager.cacheAudio(text, audioBlob, voice, mood);
+                await audioManager.playAudio(audioBlob, true, voiceVolume);
+            }
+        } catch (error) {
+            if (signal.aborted) return;
+            logger.warn('[Jubee] TTS service unavailable, using fallback');
+            browserSpeech(text, gender, mood, voiceVolume);
+        } finally {
+            if (!signal.aborted) {
+                set((state) => { state.speechText = '' });
+            }
+        }
+      },
+
+      converse: async (message, context = {}) => {
+        const state = get()
+        if (state.isProcessing) return "One moment, please! 🐝"
+
+        set((state) => {
+          state.isProcessing = true
+          state.currentMood = context.mood || 'happy'
+          state.interactionCount += 1
         })
 
-        // Still speak the fallback with frustrated mood
-        get().speak(fallbackMessage, 'frustrated')
-        
-        return fallbackMessage
-      }
-    },
+        try {
+          const response = await callEdgeFunction<{ response: string }>({
+            functionName: 'jubee-conversation',
+            body: {
+              message,
+              context: { ...context, mood: state.currentMood, language: window.i18nextLanguage || 'en' },
+            },
+            timeout: 15000,
+            retries: 2,
+          });
+
+          set((state) => { state.isProcessing = false })
+          get().speak(response.response, context.mood || 'happy')
+          return response.response;
+        } catch (error) {
+          set((state) => { 
+            state.isProcessing = false
+            state.lastError = 'CONVERSATION_ERROR'
+          })
+          const fallback = "Buzz! I'm having trouble thinking right now. 🐝";
+          get().speak(fallback, 'frustrated');
+          return fallback;
+        }
+      },
 
       cleanup: () => {
-        logger.dev('[Jubee] Cleanup called')
-        timers.forEach((timer) => {
-          // Only clear actual timeout timers, not TimerEntry objects
-          if (!('time' in timer)) {
-            clearTimeout(timer as NodeJS.Timeout)
-          }
-        })
-        timers.clear()
-        
-        audioManager.cleanup()
-        
-        if ('speechSynthesis' in window) {
-          speechSynthesis.cancel()
-        }
+        timers.forEach((t) => { if (!('time' in t)) clearTimeout(t as NodeJS.Timeout) });
+        timers.clear();
+        audioManager.cleanup();
+        if (currentSpeechController) currentSpeechController.abort();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       },
 
-      setSoundEffectsVolume: (volume) => {
-        const clampedVolume = Math.max(0, Math.min(1, volume))
-        logger.dev('[Jubee] Sound effects volume changed:', clampedVolume)
-        set((state) => { state.soundEffectsVolume = clampedVolume })
-      },
-
-      setVoiceVolume: (volume) => {
-        const clampedVolume = Math.max(0, Math.min(1, volume))
-        logger.dev('[Jubee] Voice volume changed:', clampedVolume)
-        set((state) => { state.voiceVolume = clampedVolume })
-      }
+      setSoundEffectsVolume: (v) => set((s) => { s.soundEffectsVolume = Math.max(0, Math.min(1, v)) }),
+      setVoiceVolume: (v) => set((s) => { s.voiceVolume = Math.max(0, Math.min(1, v)) })
     })),
     {
       name: 'jubee-store',
-      version: 2, // Increment version for schema changes
+      version: 3, // Bumped version
       partialize: (state) => ({ 
         gender: state.gender,
         voice: state.voice,
         containerPosition: state.containerPosition,
-        position: state.position,
         isVisible: state.isVisible,
-        isMinimized: state.isMinimized,
-        currentAnimation: state.currentAnimation,
         soundEffectsVolume: state.soundEffectsVolume,
-        voiceVolume: state.voiceVolume,
-        // Persist last known good state for recovery
-        lastError: null, // Reset errors on persist
-        isProcessing: false, // Reset processing state
-        isTransitioning: false // Reset transition state
+        voiceVolume: state.voiceVolume
       }),
-      onRehydrateStorage: () => (state, error) => {
-        if (error) {
-          logger.error('[Jubee] Storage rehydration error:', error)
-          // Fallback to safe defaults
-          if (state) {
-            const safeDefaults = getSafeDefaultPosition()
-            state.containerPosition = safeDefaults
-            state.position = { x: 0, y: 0, z: 0 }
-            state.isVisible = true
-            state.currentAnimation = 'idle'
-          }
-          return
-        }
-        
+      onRehydrateStorage: () => (state) => {
         if (state) {
-          // Comprehensive state validation on load
-          logger.dev('[Jubee] Rehydrating state from storage')
-          
-          // Validate and fix position
-          const validated = validatePosition(state.position, state.containerPosition)
-          state.containerPosition = validated.container
-          state.position = validated.canvas
-          
-          // Ensure visibility is valid
-          if (typeof state.isVisible !== 'boolean') {
-            state.isVisible = true
-          }
-          
-          // Ensure animation is valid
-          if (!state.currentAnimation || typeof state.currentAnimation !== 'string') {
-            state.currentAnimation = 'idle'
-          }
-          
-          // Ensure gender is valid
-          if (state.gender !== 'male' && state.gender !== 'female') {
-            state.gender = 'female'
-          }
-          
-          // Ensure voice is valid
-          const validVoices: JubeeVoice[] = ['shimmer', 'nova', 'alloy', 'echo', 'fable', 'onyx']
-          if (!validVoices.includes(state.voice)) {
-            state.voice = 'shimmer'
-          }
-          
-          // Reset transient states
-          state.lastError = null
-          state.isProcessing = false
-          state.isTransitioning = false
-          state.speechText = ''
-          state.isDragging = false
-          
-          logger.dev('[Jubee] Rehydrated with validated state:', {
-            containerPosition: state.containerPosition,
-            position: state.position,
-            isVisible: state.isVisible,
-            currentAnimation: state.currentAnimation,
-            gender: state.gender,
-            voice: state.voice
-          })
+            // Validation Logic
+            const validated = validatePosition(state.position, state.containerPosition);
+            state.containerPosition = validated.container;
+            state.isProcessing = false;
         }
       }
     }
   )
 )
 
-// Initialize backup service and start auto-backup
-if (typeof window !== 'undefined') {
-  // Initialize backup service
-  jubeeStateBackupService.init().then(() => {
-    // Start automatic backups
-    jubeeStateBackupService.startAutoBackup(() => {
-      const state = useJubeeStore.getState()
-      return {
-        gender: state.gender,
-        voice: state.voice,
-        position: state.position,
-        containerPosition: state.containerPosition,
-        isVisible: state.isVisible,
-        currentAnimation: state.currentAnimation
-      }
-    })
-  }).catch((error) => {
-    logger.error('[Jubee] Failed to initialize backup service:', error)
-  })
-
-  // Periodic health check with backup on issues
-  setInterval(() => {
-    const state = useJubeeStore.getState()
-    const health = performHealthCheck(state)
-    
-    if (!health.isHealthy) {
-      logger.warn('[Jubee Health] Issues detected:', health.issues)
-      
-      // Create emergency backup before recovery
-      jubeeStateBackupService.createBackup({
-        gender: state.gender,
-        voice: state.voice,
-        position: state.position,
-        containerPosition: state.containerPosition,
-        isVisible: state.isVisible,
-        currentAnimation: state.currentAnimation
-      })
-      
-      if (health.recommendedAction !== 'none') {
-        executeRecovery(health.recommendedAction, (updates) => {
-          useJubeeStore.setState(updates)
-        })
-      }
-    }
-  }, 10000) // Check every 10 seconds
-}
-
-// Browser speech fallback helper with mood support
-function browserSpeech(text: string, gender: 'male' | 'female', mood: string = 'happy', volume: number = 1.0) {
-  if ('speechSynthesis' in window) {
-    // CRITICAL: Cancel any ongoing browser speech to prevent overlap
-    speechSynthesis.cancel()
-    
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.volume = Math.max(0, Math.min(1, volume));
-    
-    // Set language based on i18n
-    const language = window.i18nextLanguage || 'en'
-    const langMap: Record<string, string> = {
-      'en': 'en-US',
-      'es': 'es-ES',
-      'fr': 'fr-FR',
-      'zh': 'zh-CN',
-      'hi': 'hi-IN'
-    }
-    utterance.lang = langMap[language] || 'en-US'
-    
-    // Adjust rate and pitch based on mood
-    let rate = 1.1
-    let pitchMultiplier = gender === 'female' ? 1.3 : 1.0
-    
-    if (mood === 'excited') {
-      rate = 1.3
-      pitchMultiplier = gender === 'female' ? 1.4 : 1.1
-    } else if (mood === 'happy') {
-      rate = 1.2
-      pitchMultiplier = gender === 'female' ? 1.3 : 1.0
-    } else if (mood === 'curious') {
-      rate = 1.1
-      pitchMultiplier = gender === 'female' ? 1.2 : 0.95
-    } else if (mood === 'frustrated') {
-      rate = 0.95
-      pitchMultiplier = gender === 'female' ? 1.1 : 0.85
-    } else if (mood === 'tired') {
-      rate = 0.9
-      pitchMultiplier = gender === 'female' ? 1.0 : 0.8
-    }
-    
-    utterance.rate = rate
-    utterance.pitch = pitchMultiplier
-    speechSynthesis.speak(utterance)
-  }
-}
-
-// Expose language for the store
-if (typeof window !== 'undefined') {
-  const updateI18nLanguage = () => {
-    const i18n = window.i18next
-    if (i18n) {
-      window.i18nextLanguage = i18n.language
-    }
-  }
+// Browser Speech Fallback
+function browserSpeech(text: string, gender: 'male' | 'female', mood: string, volume: number) {
+  if (!('speechSynthesis' in window)) return;
   
-  // Update on language change
-  if (window.i18next) {
-    window.i18next.on('languageChanged', updateI18nLanguage)
-    updateI18nLanguage()
-  } else {
-    // Retry after a short delay if i18next isn't loaded yet
-    setTimeout(updateI18nLanguage, 100)
-  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.volume = volume;
+  utterance.rate = mood === 'excited' ? 1.2 : mood === 'tired' ? 0.9 : 1.1;
+  utterance.pitch = gender === 'female' ? 1.2 : 1.0;
+  
+  window.speechSynthesis.speak(utterance);
 }
+
+// Backup Service Init
+if (typeof window !== 'undefined') {
+  jubeeStateBackupService.init().catch(logger.error);
+}
+
