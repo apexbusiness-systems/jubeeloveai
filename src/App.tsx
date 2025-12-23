@@ -25,6 +25,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 import { useOnboardingStore } from './store/useOnboardingStore';
 import { useSmartAudioPreloader } from './hooks/useSmartAudioPreloader';
 import { useGameProgressAutoSave } from './hooks/useGameProgressAutoSave';
+import { SyncIndicator } from './components/SyncIndicator';
 import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
 import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
@@ -42,15 +43,18 @@ const queryClient = new QueryClient({
   },
 });
 
+function useSyncStatus() {
+  // Enable auto-save of game progress to IndexedDB
+  const { isSaving, lastSaved } = useGameProgressAutoSave();
+  return { isSaving, lastSaved };
+}
+
 function AchievementTracker() {
   const { trackActivity, checkAchievements } = useAchievementTracker();
   const setActivityCompleteCallback = useGameStore(state => state.setActivityCompleteCallback);
 
   // Initialize smart audio preloader inside Router context
   useSmartAudioPreloader();
-  
-  // Enable auto-save of game progress to IndexedDB
-  useGameProgressAutoSave();
 
   useEffect(() => {
     setActivityCompleteCallback(() => {
@@ -69,6 +73,7 @@ function AppShell() {
   const [showChildSelector, setShowChildSelector] = useState(false);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
+  const { isSaving, lastSaved } = useSyncStatus();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -319,6 +324,7 @@ function AppShell() {
             <ScreenTimeIndicator />
             <ConflictResolutionDialog />
             <OnboardingTutorial />
+            <SyncIndicator isSaving={isSaving} lastSaved={lastSaved} />
           </>
         )}
 
