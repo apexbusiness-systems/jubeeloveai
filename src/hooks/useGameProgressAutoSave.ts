@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import { jubeeDB } from '@/lib/indexedDB';
 import { logger } from '@/lib/logger';
@@ -13,6 +13,8 @@ export function useGameProgressAutoSave() {
   const { score, currentTheme, completedActivities, stickers } = useGameStore();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<string>('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const saveProgress = useCallback(async () => {
     const progressData = {
@@ -32,9 +34,12 @@ export function useGameProgressAutoSave() {
       return; // No changes, skip save
     }
 
+    setIsSaving(true);
+
     try {
       await jubeeDB.put('gameProgress', progressData);
       lastSavedRef.current = dataHash;
+      setLastSaved(new Date());
       logger.dev('[AutoSave] Game progress saved to IndexedDB');
     } catch (error) {
       logger.error('[AutoSave] Failed to save game progress:', error);
@@ -53,6 +58,8 @@ export function useGameProgressAutoSave() {
         logger.error('[AutoSave] Failed to save sticker:', error);
       }
     }
+
+    setIsSaving(false);
   }, [score, currentTheme, completedActivities, stickers]);
 
   // Debounced save on state changes
@@ -87,5 +94,5 @@ export function useGameProgressAutoSave() {
     return saveProgress();
   }, [saveProgress]);
 
-  return { forceSave };
+  return { forceSave, isSaving, lastSaved };
 }
