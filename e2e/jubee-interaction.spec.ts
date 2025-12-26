@@ -83,26 +83,26 @@ test.describe('Jubee Mascot Interactions', () => {
     const jubee = page.locator('[data-jubee-container="true"]');
     await jubee.waitFor({ state: 'visible' });
     
-    // Desktop: 400x450
+    // Desktop: 256x288
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.waitForTimeout(100);
     let box = await jubee.boundingBox();
-    expect(box?.width).toBe(400);
-    expect(box?.height).toBe(450);
+    expect(box?.width).toBe(256);
+    expect(box?.height).toBe(288);
     
-    // Tablet: 350x400
+    // Tablet: 208x240
     await page.setViewportSize({ width: 800, height: 1024 });
     await page.waitForTimeout(100);
     box = await jubee.boundingBox();
-    expect(box?.width).toBe(350);
-    expect(box?.height).toBe(400);
+    expect(box?.width).toBe(208);
+    expect(box?.height).toBe(240);
     
-    // Mobile: 300x360
+    // Mobile: 160x192
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(100);
     box = await jubee.boundingBox();
-    expect(box?.width).toBe(300);
-    expect(box?.height).toBe(360);
+    expect(box?.width).toBe(160);
+    expect(box?.height).toBe(192);
   });
 
   test('should persist position across page navigation', async ({ page }) => {
