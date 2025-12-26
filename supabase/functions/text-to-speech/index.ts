@@ -57,12 +57,12 @@ const ALLOWED_TIMES = ['morning', 'afternoon', 'evening', 'night'];
 
 // ElevenLabs Voice IDs - Custom Jubee voices
 const JUBEE_VOICES = {
-  jubee: 'XJ2fW4ybq7HouelYYGcL',      // Primary Jubee voice
+  jubee: 'XJ2fW4ybq7HouelYYGcL',      // Primary Jubee voice - warm, child-friendly
   jubeeDude: 'DTKMou8ccj1ZaWGBiotd',  // Jubee Dude voice
 };
 
-// Default voice
-const JUBEE_VOICE_ID = JUBEE_VOICES.jubeeDude;
+// Default voice - use primary Jubee for warmth
+const JUBEE_VOICE_ID = JUBEE_VOICES.jubee;
 
 function sanitizeText(text: string): string {
   if (typeof text !== 'string') return '';
@@ -101,28 +101,29 @@ async function synthesizeWithElevenLabs(
   // Use custom Jubee voice
   const voiceId = JUBEE_VOICE_ID;
 
-  // Balanced voice settings for child-friendly, warm delivery
-  // Adjust stability and style based on mood AND time of day
-  let stability = 0.35;
-  const similarityBoost = 0.75;
-  let style = 0.45;
+  // Voice settings tuned for warm, expressive, child-friendly delivery
+  // Lower stability = more natural variation (less robotic)
+  // Higher style = more expressive emotion
+  let stability = 0.25;         // Lower for more natural variation
+  const similarityBoost = 0.85; // Strong voice character
+  let style = 0.60;             // Higher expressiveness
   
-  // Mood-based adjustments
+  // Mood-based adjustments - prioritize expressiveness
   if (mood === 'excited') {
-    stability = 0.25;     // More variation for excitement
-    style = 0.65;         // More expressive
+    stability = 0.18;     // Maximum variation for excitement
+    style = 0.80;         // Very expressive
   } else if (mood === 'happy') {
-    stability = 0.30;
-    style = 0.55;
+    stability = 0.22;
+    style = 0.70;
   } else if (mood === 'curious') {
-    stability = 0.40;
-    style = 0.50;
+    stability = 0.28;
+    style = 0.65;
   } else if (mood === 'frustrated') {
-    stability = 0.50;     // More stable for gentle reassurance
-    style = 0.35;         // Calmer
+    stability = 0.35;     // Slightly more stable for gentle reassurance
+    style = 0.50;         // Still warm
   } else if (mood === 'tired') {
-    stability = 0.55;     // Very stable for soothing
-    style = 0.25;         // Gentle
+    stability = 0.40;     // More stable for soothing
+    style = 0.40;         // Gentle but warm
   }
 
   // Time-of-day energy adjustments
