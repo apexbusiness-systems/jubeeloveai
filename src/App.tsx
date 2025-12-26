@@ -104,7 +104,7 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const { isVisible, containerPosition } = useJubeeStore();
+  const { containerPosition } = useJubeeStore();
   const { children, activeChildId } = useParentalStore();
 
   // Spring physics for container positioning
@@ -259,17 +259,8 @@ function AppShell() {
           </header>
         )}
 
-        {/* Jubee 3D Mascot - Direct Canvas Rendering (No Portal) */}
-        {showAppShellUI && (() => {
-          console.log('[DIAGNOSTIC] App.tsx - Rendering JubeeCanvas3DDirect', {
-            isAuthRoute,
-            shouldRender: !isAuthRoute,
-            isVisible,
-            containerPosition,
-            timestamp: Date.now()
-          });
-          return <JubeeCanvas3DDirect />;
-        })()}
+        {/* Jubee 3D Mascot - Direct Canvas Rendering */}
+        {showAppShellUI && <JubeeCanvas3DDirect />}
 
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
