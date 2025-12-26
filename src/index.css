@@ -96,8 +96,8 @@ All colors MUST be HSL.
     --jubee-wing-glow: 195 53% 79%;
 
     /* Jubee container dimensions (canonical tokens for JS fallback) */
-    --jubee-container-width: 400;
-    --jubee-container-height: 450;
+    --jubee-container-width: 256;
+    --jubee-container-height: 288;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

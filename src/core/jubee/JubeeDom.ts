@@ -85,8 +85,8 @@ export function getContainerDimensions(): ContainerDimensions {
     }
   }
 
-  // Priority 3: Hardcoded fallback (10% smaller than original 400x450)
-  return { width: 360, height: 405 };
+  // Priority 3: Hardcoded fallback (20% smaller sizing)
+  return { width: 256, height: 288 };
 }
 
 /**
