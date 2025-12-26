@@ -141,19 +141,17 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     };
   }, []); // Empty deps - mount/unmount only
 
-  // DIAGNOSTIC: Ref assignment tracking
+  // Ref validation - only log in dev mode once on mount, not repeatedly
   useEffect(() => {
-    const checkInterval = setInterval(() => {
-      logger.dev('[DIAGNOSTIC] Ref Check', {
+    if (import.meta.env.DEV) {
+      logger.dev('[DIAGNOSTIC] Initial Ref Check', {
         containerRef: containerRef.current ? 'ASSIGNED' : 'NULL',
         canvasRef: canvasRef.current ? 'ASSIGNED' : 'NULL',
         containerInDOM: containerRef.current ? document.contains(containerRef.current) : false,
         canvasInDOM: canvasRef.current ? document.contains(canvasRef.current) : false,
         timestamp: Date.now()
       });
-    }, 2000);
-
-    return () => clearInterval(checkInterval);
+    }
   }, []);
 
   // DIAGNOSTIC: Visibility state tracking
@@ -473,20 +471,18 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     }
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
-  // DIAGNOSTIC: Render tracking
+  // Only log render completion in dev mode, and avoid excessive logging
+  const hasLoggedRender = useRef(false);
   useEffect(() => {
-    logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDER COMPLETE', {
-      containerAttached: containerRef.current && document.contains(containerRef.current),
-      canvasAttached: canvasRef.current && document.contains(canvasRef.current),
-      timestamp: Date.now()
-    });
-  });
-
-  logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect RENDERING', {
-    isVisible,
-    containerPosition,
-    timestamp: Date.now()
-  });
+    if (import.meta.env.DEV && !hasLoggedRender.current) {
+      logger.dev('[DIAGNOSTIC] JubeeCanvas3DDirect mounted and rendered', {
+        containerAttached: containerRef.current && document.contains(containerRef.current),
+        canvasAttached: canvasRef.current && document.contains(canvasRef.current),
+        timestamp: Date.now()
+      });
+      hasLoggedRender.current = true;
+    }
+  }, []);
 
   return (
     <div
