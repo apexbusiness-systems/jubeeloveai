@@ -6,21 +6,28 @@
  * For highly sensitive data, always prefer server-side storage.
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 
 // Simple encryption key derivation from user session
 async function getEncryptionKey(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user?.id) {
-    // Use a stable device identifier for non-authenticated users
-    let deviceId = localStorage.getItem('jubee-device-id');
-    if (!deviceId) {
-      deviceId = crypto.randomUUID();
-      localStorage.setItem('jubee-device-id', deviceId);
+  if (isSupabaseConfigured) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        return session.user.id;
+      }
+    } catch {
+      // Fall back to device identifier when auth is unavailable
     }
-    return deviceId;
   }
-  return session.user.id;
+
+  // Use a stable device identifier for non-authenticated users
+  let deviceId = localStorage.getItem('jubee-device-id');
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem('jubee-device-id', deviceId);
+  }
+  return deviceId;
 }
 
 // Simple XOR encryption (NOT for highly sensitive data)

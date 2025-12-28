@@ -5,7 +5,7 @@
  * to prevent auth-related bugs.
  */
 
-import { supabase } from '@/integrations/supabase/client'
+import { isSupabaseConfigured, supabase, supabaseConfigError } from '@/integrations/supabase/client'
 import { logger as _logger } from '../logger'
 import type { HealthCheckResult } from '../systemHealthCheck'
 
@@ -17,36 +17,26 @@ export async function runAuthHealthCheck(): Promise<HealthCheckResult[]> {
   const timestamp = Date.now()
   
   // Check 1: Supabase client initialization
-  try {
-    if (!supabase) {
-      results.push({
-        passed: false,
-        system: 'SupabaseClient',
-        message: 'Supabase client is not initialized',
-        severity: 'critical',
-        autoFixed: false,
-        timestamp
-      })
-    } else {
-      results.push({
-        passed: true,
-        system: 'SupabaseClient',
-        message: 'Supabase client is initialized',
-        severity: 'info',
-        autoFixed: false,
-        timestamp
-      })
-    }
-  } catch (error) {
+  if (!isSupabaseConfigured) {
     results.push({
       passed: false,
       system: 'SupabaseClient',
-      message: `Supabase client check failed: ${error}`,
+      message: supabaseConfigError ?? 'Supabase client is not configured',
       severity: 'critical',
       autoFixed: false,
       timestamp
     })
+    return results
   }
+
+  results.push({
+    passed: true,
+    system: 'SupabaseClient',
+    message: 'Supabase client is initialized',
+    severity: 'info',
+    autoFixed: false,
+    timestamp
+  })
   
   // Check 2: Session validity
   try {
