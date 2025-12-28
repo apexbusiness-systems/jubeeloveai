@@ -7,21 +7,39 @@ import { runMigrations } from "./lib/storageVersion";
 import { logger } from "./lib/logger";
 import { initializeGlobalErrorHandlers } from "./lib/globalErrorHandlers";
 import { initSentry } from "./lib/sentry";
+import { validateEnv } from "./lib/envValidation";
+
+let envError: Error | null = null;
+if (import.meta.env.PROD) {
+  try {
+    validateEnv();
+  } catch (error) {
+    envError = error instanceof Error ? error : new Error('Unknown environment error');
+    logger.error('Startup configuration error:', envError.message);
+  }
+}
+
 // Initialize Sentry for error tracking
-initSentry();
+if (!envError) {
+  initSentry();
+}
 
 // Initialize global error handlers
-initializeGlobalErrorHandlers();
+if (!envError) {
+  initializeGlobalErrorHandlers();
+}
 
 // Initialize storage migrations
-try {
-  runMigrations();
-} catch (error) {
-  logger.error('Storage migration failed:', error);
+if (!envError) {
+  try {
+    runMigrations();
+  } catch (error) {
+    logger.error('Storage migration failed:', error);
+  }
 }
 
 // Register service worker for PWA (production only to avoid caching issues in dev)
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? 'dev';
     const VERSION_KEY = 'app_version';
@@ -76,12 +94,31 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider defaultTheme="light" attribute="class" enableSystem={false}>
-    <App />
-  </ThemeProvider>
+  envError ? (
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+      <div className="max-w-xl w-full rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+        <h1 className="text-2xl font-semibold">Configuration required</h1>
+        <p className="text-muted-foreground">
+          The application is missing required environment configuration and cannot start.
+        </p>
+        <div className="rounded-md bg-muted p-4 text-sm font-mono whitespace-pre-wrap">
+          {envError.message}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Verify your deployment environment variables and reload the page.
+        </p>
+      </div>
+    </div>
+  ) : (
+    <ThemeProvider defaultTheme="light" attribute="class" enableSystem={false}>
+      <App />
+    </ThemeProvider>
+  )
 );
 
 // Lazy load console commands after React renders to avoid circular dependencies
-setTimeout(() => {
-  import("./performance/verifyParentJourneyClient");
-}, 0);
+if (!envError) {
+  setTimeout(() => {
+    import("./performance/verifyParentJourneyClient");
+  }, 0);
+}
