@@ -173,17 +173,18 @@ export const useJubeeStore = create<JubeeState>()(
             state.interactionCount += 1;
         });
 
-        // 4. Try Cache / Edge Function
+        // 4. Try Cache (memory + IndexedDB) / Edge Function
         try {
             const language = window.i18nextLanguage || 'en';
-            // Check cache
-            const cachedAudio = audioManager.getCachedAudio(text, voice, mood);
+            
+            // Check memory + persistent cache (async)
+            const cachedAudio = await audioManager.getCachedAudioAsync(text, voice, mood);
             
             if (cachedAudio) {
                 if (signal.aborted) return;
                 await audioManager.playAudio(cachedAudio, true, voiceVolume);
             } else {
-                // Fetch new
+                // Fetch new from TTS service
                 const audioBlob = await callEdgeFunction<Blob>({
                     functionName: 'text-to-speech',
                     body: { text, gender, language, mood, voice },
@@ -192,7 +193,9 @@ export const useJubeeStore = create<JubeeState>()(
                 });
                 
                 if (signal.aborted) return;
-                audioManager.cacheAudio(text, audioBlob, voice, mood);
+                
+                // Cache persistently for offline use
+                await audioManager.cacheAudioPersistent(text, audioBlob, voice, mood);
                 await audioManager.playAudio(audioBlob, true, voiceVolume);
             }
         } catch (error) {

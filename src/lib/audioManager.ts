@@ -1,8 +1,10 @@
 /**
  * Centralized Audio Manager
  * Prevents audio delays, duplicates, and manages playback
- * Includes caching and preloading for TTS responses
+ * Includes persistent caching for TTS responses with offline support
  */
+
+import { voiceCache } from './voiceCache';
 
 interface CachedAudio {
   blob: Blob;
@@ -23,11 +25,82 @@ class AudioManager {
   private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
   private audioContext: AudioContext | null = null;
   private isAudioUnlocked = false;
+  private offlinePreloadDone = false;
 
   constructor() {
     this.preloadSoundEffects();
     this.preloadCommonPhrases();
     this.setupAudioUnlock();
+    this.initPersistentCache();
+  }
+
+  /**
+   * Initialize persistent IndexedDB cache and preload common phrases
+   */
+  private async initPersistentCache(): Promise<void> {
+    if (this.offlinePreloadDone) return;
+
+    try {
+      // Clear expired entries on startup
+      const cleared = await voiceCache.clearExpired();
+      if (cleared > 0) {
+        console.log(`✓ Cleared ${cleared} expired voice cache entries`);
+      }
+
+      // Preload common phrases for offline use (in background)
+      const extendedWindow = window as ExtendedWindow;
+      const preload = () => this.preloadForOffline();
+      
+      if (extendedWindow.requestIdleCallback) {
+        extendedWindow.requestIdleCallback(preload, { timeout: 10000 });
+      } else {
+        setTimeout(preload, 3000);
+      }
+    } catch (error) {
+      console.warn('Persistent cache init error:', error);
+    }
+  }
+
+  /**
+   * Preload common phrases to IndexedDB for offline support
+   */
+  private async preloadForOffline(): Promise<void> {
+    if (this.offlinePreloadDone) return;
+    this.offlinePreloadDone = true;
+
+    try {
+      const isReady = await voiceCache.isOfflineReady();
+      if (isReady) {
+        console.log('✓ Voice cache already has offline phrases');
+        return;
+      }
+
+      await voiceCache.preloadCommonPhrases(async (text, mood) => {
+        try {
+          const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              text, 
+              voice: 'shimmer',
+              mood,
+              gender: 'female',
+              language: 'en'
+            }),
+            signal: AbortSignal.timeout(10000)
+          });
+
+          if (response.ok) {
+            return await response.blob();
+          }
+        } catch {
+          // Silently fail for preloads
+        }
+        return null;
+      });
+    } catch (error) {
+      console.warn('Offline preload error:', error);
+    }
   }
 
   /**
@@ -146,14 +219,14 @@ class AudioManager {
   }
 
   /**
-   * Get cached audio blob
+   * Get cached audio blob (checks memory + IndexedDB)
    */
   getCachedAudio(text: string, voice?: string, mood?: string): Blob | null {
     const key = this.getCacheKey(text, voice, mood);
     const cached = this.audioCache.get(key);
     
     if (cached && this.isCacheValid(cached)) {
-      console.log('✓ TTS cache hit:', text.substring(0, 50));
+      console.log('✓ TTS memory cache hit:', text.substring(0, 50));
       return cached.blob;
     }
     
@@ -165,7 +238,31 @@ class AudioManager {
   }
 
   /**
-   * Cache audio blob
+   * Get cached audio with IndexedDB fallback (async version)
+   */
+  async getCachedAudioAsync(text: string, voice?: string, mood?: string): Promise<Blob | null> {
+    // Check memory first
+    const memCached = this.getCachedAudio(text, voice, mood);
+    if (memCached) return memCached;
+
+    // Check persistent cache
+    try {
+      const persisted = await voiceCache.get(text, voice, mood);
+      if (persisted) {
+        // Add to memory cache for faster subsequent access
+        this.cacheAudio(text, persisted, voice, mood);
+        console.log('✓ TTS IndexedDB cache hit:', text.substring(0, 50));
+        return persisted;
+      }
+    } catch {
+      // Silently fall through to null
+    }
+
+    return null;
+  }
+
+  /**
+   * Cache audio blob (memory + IndexedDB for offline)
    */
   cacheAudio(text: string, blob: Blob, voice?: string, mood?: string): void {
     const key = this.getCacheKey(text, voice, mood);
@@ -175,7 +272,23 @@ class AudioManager {
     });
     
     this.manageCacheSize();
-    console.log('✓ TTS cached:', text.substring(0, 50), `(${this.audioCache.size} cached)`);
+    console.log('✓ TTS cached (memory):', text.substring(0, 50), `(${this.audioCache.size} cached)`);
+  }
+
+  /**
+   * Cache audio blob to both memory and IndexedDB (async)
+   */
+  async cacheAudioPersistent(text: string, blob: Blob, voice?: string, mood?: string): Promise<void> {
+    // Cache in memory
+    this.cacheAudio(text, blob, voice, mood);
+    
+    // Persist to IndexedDB for offline
+    try {
+      await voiceCache.set(text, blob, voice, mood);
+      console.log('✓ TTS cached (persistent):', text.substring(0, 50));
+    } catch (error) {
+      console.warn('Persistent cache error:', error);
+    }
   }
 
   /**
