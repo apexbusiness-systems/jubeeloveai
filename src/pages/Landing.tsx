@@ -15,8 +15,7 @@ import {
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import jubeeLogo from '@/assets/jubee-logo.png';
-
-const FIRST_VISIT_KEY = 'jubee_has_visited';
+import { isFirstTimeVisitor, markAsReturningVisitor } from '@/lib/visitorStatus';
 
 const features = [
   {
@@ -50,17 +49,6 @@ const features = [
     description: 'Smart limits help balance learning and playtime'
   }
 ];
-
-export function markAsReturningVisitor() {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(FIRST_VISIT_KEY, 'true');
-  }
-}
-
-export function isFirstTimeVisitor(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem(FIRST_VISIT_KEY) !== 'true';
-}
 
 export default function Landing() {
   const navigate = useNavigate();

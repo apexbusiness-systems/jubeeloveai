@@ -1,14 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { useJubeeStore } from '@/store/useJubeeStore';
-import { Download } from 'lucide-react';
+import { Download, Sparkles, Wand2, Clock3 } from 'lucide-react';
+import { useActivityStore } from '@/store/useActivityStore';
+import { useGameStore } from '@/store/useGameStore';
+
+interface ActivityMeta {
+  title: string;
+  icon: string;
+  description: string;
+  accent: string;
+}
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const { favoritePages, totalTimeSpent, lastActivityTime } = useActivityStore();
+  const { currentTheme } = useGameStore();
+
+  const activityCatalog = useMemo<Record<string, ActivityMeta>>(
+    () => ({
+      '/write': { title: 'Writing Practice', icon: '✏️', description: 'Fine-motor magic', accent: 'from-amber-200 to-orange-400' },
+      '/stories': { title: 'Story Time', icon: '📖', description: 'Calm, cozy focus', accent: 'from-sky-200 to-indigo-400' },
+      '/games': { title: 'Games', icon: '🎮', description: 'Challenge + play', accent: 'from-pink-200 to-purple-400' },
+      '/shapes': { title: 'Shapes', icon: '⭐', description: 'Spatial spark', accent: 'from-lime-200 to-emerald-400' },
+      '/reading': { title: 'Reading Practice', icon: '📚', description: 'Phonics boost', accent: 'from-cyan-200 to-teal-400' },
+      '/music': { title: 'Music', icon: '🎵', description: 'Wind-down vibes', accent: 'from-rose-200 to-amber-300' },
+    }),
+    []
+  );
+
+  const suggestedPath = useMemo(() => {
+    if (favoritePages.length > 0 && activityCatalog[favoritePages[0]]) {
+      return favoritePages[0];
+    }
+
+    if (currentTheme === 'evening') return '/stories';
+    if (currentTheme === 'afternoon') return '/games';
+    return '/write';
+  }, [activityCatalog, currentTheme, favoritePages]);
+
+  const suggestedActivity = activityCatalog[suggestedPath] || activityCatalog['/write'];
+
+  const timeSpentLabel = useMemo(() => {
+    if (!totalTimeSpent || totalTimeSpent <= 0) return 'Just getting started';
+    const minutes = Math.max(1, Math.round(totalTimeSpent / 60));
+    if (minutes < 60) return `${minutes} min with Jubee`;
+    const hours = (minutes / 60).toFixed(1);
+    return `${hours} hrs with Jubee`;
+  }, [totalTimeSpent]);
+
+  const lastActiveLabel = useMemo(() => {
+    if (!lastActivityTime) return 'First adventure awaits';
+    const deltaMinutes = Math.max(
+      0,
+      Math.floor((Date.now() - new Date(lastActivityTime).getTime()) / (60 * 1000))
+    );
+    if (deltaMinutes < 2) return 'Active now';
+    if (deltaMinutes < 60) return `${deltaMinutes} min ago`;
+    const hours = Math.floor(deltaMinutes / 60);
+    if (hours < 24) return `${hours} hr${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }, [lastActivityTime]);
 
   useEffect(() => {
     // Check if app is installed or user dismissed banner
@@ -79,6 +136,59 @@ export default function HomePage() {
             Learn and play with Jubee the friendly bee! Choose an activity below to start your educational adventure.
           </p>
         </header>
+
+        <section className="mb-8 sm:mb-10">
+          <Card className="border-0 bg-gradient-to-br from-background/80 via-card/80 to-accent/10 shadow-xl backdrop-blur-md">
+            <CardContent className="p-5 sm:p-6 lg:p-8 space-y-5">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+                    <Sparkles className="w-4 h-4" />
+                    Apple-smooth journey, kid-first
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                    Start with what feels right <span className="text-primary">right now</span>
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+                    Jubee remembers where you love to play. Continue instantly or try a fresh activity hand-picked for this moment.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <InfoPill icon={<Clock3 className="w-4 h-4" />} label="Last active" value={lastActiveLabel} />
+                  <InfoPill icon={<Wand2 className="w-4 h-4" />} label="Time with Jubee" value={timeSpentLabel} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                <QuickActionCard
+                  title={`Continue ${suggestedActivity.title}`}
+                  description={suggestedActivity.description}
+                  icon={suggestedActivity.icon}
+                  accent={suggestedActivity.accent}
+                  path={suggestedPath}
+                  badge="Resume"
+                  emphasis
+                />
+                <QuickActionCard
+                  title="Discover something new"
+                  description="Try a fresh mini-lesson tailored to your mood"
+                  icon="🌈"
+                  accent="from-amber-200 to-fuchsia-300"
+                  path="/reading"
+                  badge="New"
+                />
+                <QuickActionCard
+                  title="Calm wind-down"
+                  description="Soothing music and gentle stories for quiet time"
+                  icon="🌙"
+                  accent="from-slate-200 to-indigo-300"
+                  path="/music"
+                  badge="Calm"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </section>
         
         <div 
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto"
@@ -144,6 +254,72 @@ interface GameCardProps {
   icon: React.ReactNode | string;
   path: string;
   description: string;
+}
+
+interface QuickActionProps {
+  title: string;
+  description: string;
+  icon: string;
+  accent: string;
+  path: string;
+  badge?: string;
+  emphasis?: boolean;
+}
+
+interface InfoPillProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
+function InfoPill({ icon, label, value }: InfoPillProps) {
+  return (
+    <div className="flex items-center gap-2 rounded-full bg-card/90 border border-border px-3 py-2 shadow-sm">
+      <div className="w-6 h-6 rounded-full bg-foreground/5 text-foreground flex items-center justify-center">
+        {icon}
+      </div>
+      <div className="text-left leading-tight">
+        <div className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-semibold">{label}</div>
+        <div className="text-sm font-semibold text-foreground">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
+  const navigate = useNavigate();
+  const { triggerAnimation } = useJubeeStore();
+
+  const handleClick = () => {
+    triggerAnimation('excited');
+    navigate(path);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`
+        group relative w-full rounded-2xl border border-border/60 
+        bg-gradient-to-br ${accent} px-4 py-5 sm:px-5 sm:py-6 text-left shadow-lg
+        transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none 
+        focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+        ${emphasis ? 'md:row-span-2' : ''}
+      `}
+    >
+      {badge && (
+        <span className="absolute top-3 right-3 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 shadow-sm">
+          {badge}
+        </span>
+      )}
+      <div className="flex items-center gap-3">
+        <span className="text-3xl sm:text-4xl drop-shadow-sm">{icon}</span>
+        <div className="space-y-1">
+          <p className="text-lg sm:text-xl font-bold leading-tight text-foreground">{title}</p>
+          <p className="text-sm text-foreground/80">{description}</p>
+        </div>
+      </div>
+    </button>
+  );
 }
 
 function GameCard({ title, icon, path, description }: GameCardProps) {

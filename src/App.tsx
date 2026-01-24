@@ -1,6 +1,5 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, lazy } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
-import { isFirstTimeVisitor } from './pages/Landing';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { useSpring } from 'framer-motion';
@@ -30,9 +29,12 @@ import { SyncIndicator } from './components/SyncIndicator';
 import { useSystemHealthMonitor } from './hooks/useSystemHealthMonitor';
 import { AppRoutes } from './components/AppRoutes';
 import { Navigation } from './components/Navigation';
-import { JubeeCanvas3DDirect } from './components/JubeeCanvas3DDirect';
 import { validatePosition } from './core/jubee/JubeePositionManager';
 import { DevAuthOverride } from './components/auth/DevAuthOverride';
+import { isFirstTimeVisitor } from './lib/visitorStatus';
+import { usePageVisitTracker } from './hooks/usePageVisitTracker';
+
+const JubeeCanvas3DDirect = lazy(() => import('./components/JubeeCanvas3DDirect'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,11 +76,13 @@ function AppShell() {
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
+  const [shouldRenderMascot, setShouldRenderMascot] = useState(false);
   const { currentTheme, updateTheme, score } = useGameStore();
   const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
   const { isSaving, lastSaved } = useSyncStatus();
   const location = useLocation();
   const navigate = useNavigate();
+  usePageVisitTracker();
 
   // Routes where parent auth experience should be clean (no Jubee, nav, or onboarding)
   const isAuthRoute = location.pathname.startsWith('/auth');
@@ -187,6 +191,23 @@ function AppShell() {
   // Hide app shell UI on auth and landing routes
   const showAppShellUI = !isAuthRoute && !isLandingRoute;
 
+  // Defer heavy 3D mascot rendering until idle for faster first paint
+  useEffect(() => {
+    if (!showAppShellUI) return;
+    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setShouldRenderMascot(false);
+      return;
+    }
+
+    const idle = (window as unknown as { requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number }).requestIdleCallback
+      ?? ((cb: () => void) => window.setTimeout(cb, 400));
+    const cancel = (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback ?? window.clearTimeout;
+
+    const handle = idle(() => setShouldRenderMascot(true), { timeout: 1200 });
+    return () => cancel(handle);
+  }, [showAppShellUI]);
+
   return (
     <>
       <AchievementTracker />
@@ -260,7 +281,17 @@ function AppShell() {
         )}
 
         {/* Jubee 3D Mascot - Direct Canvas Rendering */}
-        {showAppShellUI && <JubeeCanvas3DDirect />}
+        {showAppShellUI && shouldRenderMascot && (
+          <Suspense
+            fallback={
+              <div className="fixed bottom-8 right-8 z-50 rounded-full bg-card/80 px-4 py-2 text-xs font-semibold text-muted-foreground border border-border shadow-sm">
+                Warming up Jubee…
+              </div>
+            }
+          >
+            <JubeeCanvas3DDirect />
+          </Suspense>
+        )}
 
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
