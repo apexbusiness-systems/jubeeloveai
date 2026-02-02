@@ -846,3 +846,6 @@ export const JubeeCanvas3DDirect = memo(JubeeCanvas3DDirectComponent, (prev, nex
     prev.className === next.className
   );
 });
+
+// Default export for lazy loading
+export default JubeeCanvas3DDirect;

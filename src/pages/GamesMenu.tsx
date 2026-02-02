@@ -152,6 +152,24 @@ export default function GamesMenu() {
             <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Puzzle Master</h2>
             <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Solve picture puzzles!</p>
           </button>
+
+          <button
+            onClick={() => handleGameClick('/dance', 'JubeeDance')}
+            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/dance', 'JubeeDance'))}
+            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+            style={{
+              background: 'linear-gradient(135deg, #ff6b9d, #c44ce0, #4facfe)',
+              boxShadow: 'var(--shadow-accent)'
+            }}
+            role="listitem"
+            aria-label="Play JubeeDance - Dance with Jubee to fun songs!"
+          >
+            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">💃</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">JubeeDance</h2>
+            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Dance with Jubee! 🕺</p>
+          </button>
         </div>
 
         <nav className="text-center mt-8 sm:mt-12" aria-label="Navigation">

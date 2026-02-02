@@ -238,6 +238,12 @@ export default function HomePage() {
             description="Listen to fun songs and lullabies"
           />
           <GameCard
+            title="JubeeDance"
+            icon="💃"
+            path="/dance"
+            description="Dance with Jubee to fun songs!"
+          />
+          <GameCard
             title="Reading Practice"
             icon="📚"
             path="/reading"

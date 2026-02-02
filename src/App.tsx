@@ -200,11 +200,11 @@ function AppShell() {
       return;
     }
 
-    const idle = (window as unknown as { requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number }).requestIdleCallback
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number }).requestIdleCallback
       ?? ((cb: () => void) => window.setTimeout(cb, 400));
     const cancel = (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback ?? window.clearTimeout;
 
-    const handle = idle(() => setShouldRenderMascot(true), { timeout: 1200 });
+    const handle = idle(() => setShouldRenderMascot(true));
     return () => cancel(handle);
   }, [showAppShellUI]);
 
