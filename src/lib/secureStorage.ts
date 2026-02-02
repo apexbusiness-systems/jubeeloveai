@@ -6,19 +6,17 @@
  * For highly sensitive data, always prefer server-side storage.
  */
 
-import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 // Simple encryption key derivation from user session
 async function getEncryptionKey(): Promise<string> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        return session.user.id;
-      }
-    } catch {
-      // Fall back to device identifier when auth is unavailable
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      return session.user.id;
     }
+  } catch {
+    // Fall back to device identifier when auth is unavailable
   }
 
   // Use a stable device identifier for non-authenticated users

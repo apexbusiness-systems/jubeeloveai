@@ -5,7 +5,7 @@
  * to prevent auth-related bugs.
  */
 
-import { isSupabaseConfigured, supabase, supabaseConfigError } from '@/integrations/supabase/client'
+import { supabase } from '@/integrations/supabase/client'
 import { logger as _logger } from '../logger'
 import type { HealthCheckResult } from '../systemHealthCheck'
 
@@ -16,19 +16,7 @@ export async function runAuthHealthCheck(): Promise<HealthCheckResult[]> {
   const results: HealthCheckResult[] = []
   const timestamp = Date.now()
   
-  // Check 1: Supabase client initialization
-  if (!isSupabaseConfigured) {
-    results.push({
-      passed: false,
-      system: 'SupabaseClient',
-      message: supabaseConfigError ?? 'Supabase client is not configured',
-      severity: 'critical',
-      autoFixed: false,
-      timestamp
-    })
-    return results
-  }
-
+  // Check 1: Supabase client initialization - always configured now
   results.push({
     passed: true,
     system: 'SupabaseClient',

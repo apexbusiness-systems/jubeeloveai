@@ -35,6 +35,7 @@ const HomePage = lazy(() => import('../pages/Home'));
 const OAuthConsent = lazy(() => import('../pages/OAuthConsent'));
 const GamesMenu = lazy(() => import('../pages/GamesMenu'));
 const Landing = lazy(() => import('../pages/Landing'));
+const JubeeDance = lazy(() => import('../modules/dance/JubeeDance'));
 
 export function AppRoutes() {
   return (
@@ -61,6 +62,7 @@ export function AppRoutes() {
       <Route path="/progress" element={<Suspense fallback={<ProgressSkeleton />}><ProgressPage /></Suspense>} />
       <Route path="/stickers" element={<Suspense fallback={<GameSkeleton />}><StickersPage /></Suspense>} />
       <Route path="/music" element={<Suspense fallback={<GameSkeleton />}><MusicPage /></Suspense>} />
+      <Route path="/dance" element={<Suspense fallback={<GameSkeleton />}><JubeeDance /></Suspense>} />
       <Route path="/settings" element={<Suspense fallback={<SettingsSkeleton />}><SettingsPage /></Suspense>} />
       <Route path="/install" element={<InstallPage />} />
       <Route path="/parental-controls" element={<ParentalControls />} />
