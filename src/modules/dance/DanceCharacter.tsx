@@ -232,14 +232,6 @@ function DanceCharacterComponent({ animation, isStumbling, isPerfect }: DanceCha
       character.position.set(0, 0, 0);
       character.rotation.set(0, 0, 0);
 
-      // Get named parts
-      const leftArm = character.getObjectByName('leftArm') as THREE.Mesh;
-      const rightArm = character.getObjectByName('rightArm') as THREE.Mesh;
-      const leftLeg = character.getObjectByName('leftLeg') as THREE.Mesh;
-      const rightLeg = character.getObjectByName('rightLeg') as THREE.Mesh;
-      const leftWing = character.getObjectByName('leftWing') as THREE.Mesh;
-      const rightWing = character.getObjectByName('rightWing') as THREE.Mesh;
-
       // Wing flutter (always active)
       if (leftWing && rightWing) {
         leftWing.rotation.z = 0.5 + Math.sin(t * 15) * 0.3;
