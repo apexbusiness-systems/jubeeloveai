@@ -144,9 +144,12 @@ function AppShell() {
         // If breakpoint changed, revalidate position to prevent clipping
         if (currentBreakpoint !== previousBreakpoint) {
           console.log('[Jubee Resize] Breakpoint changed:', previousBreakpoint, '->', currentBreakpoint);
-          const validated = validatePosition(containerPosition);
           
-          if (validated.bottom !== containerPosition.bottom || validated.right !== containerPosition.right) {
+          // Access current position directly from store to avoid re-running effect on state change
+          const currentPosition = useJubeeStore.getState().containerPosition;
+          const validated = validatePosition(currentPosition);
+
+          if (validated.bottom !== currentPosition.bottom || validated.right !== currentPosition.right) {
             console.log('[Jubee Resize] Position adjusted for new breakpoint:', validated);
             useJubeeStore.getState().setContainerPosition(validated);
           }
@@ -161,7 +164,7 @@ function AppShell() {
       window.removeEventListener('resize', handleResize);
       clearTimeout(resizeTimeout);
     };
-  }, [containerPosition]);
+  }, []);
 
   useEffect(() => {
     const updateThemeBasedOnTime = () => {
