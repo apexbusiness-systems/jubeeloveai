@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { useJubeeStore } from '@/store/useJubeeStore';
-import { Download, Sparkles, Wand2, Clock3 } from 'lucide-react';
+import { Download, Wand2, Clock3 } from 'lucide-react';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useGameStore } from '@/store/useGameStore';
 
@@ -142,10 +142,6 @@ export default function HomePage() {
             <CardContent className="p-5 sm:p-6 lg:p-8 space-y-5">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
-                    <Sparkles className="w-4 h-4" />
-                    Apple-smooth journey, kid-first
-                  </div>
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                     Start with what feels right <span className="text-primary">right now</span>
                   </h2>

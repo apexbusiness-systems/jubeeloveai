@@ -8,6 +8,8 @@
  * @see STORAGE_STRATEGY.md for architecture decisions
  */
 
+import { logger } from './logger'
+
 const DB_NAME = 'jubee-love-db'
 const DB_VERSION = 1
 
@@ -108,7 +110,7 @@ class IndexedDBService {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
 
         request.onerror = () => {
-          console.error('IndexedDB error:', request.error)
+          logger.error('IndexedDB error:', request.error)
           reject(new Error('Failed to open IndexedDB'))
         }
 
@@ -140,7 +142,7 @@ class IndexedDBService {
           }
         }
       } catch (error) {
-        console.error('IndexedDB initialization error:', error)
+        logger.error('IndexedDB initialization error:', error)
         reject(error)
       }
     })
@@ -182,7 +184,7 @@ class IndexedDBService {
         request.onerror = () => reject(new Error(`Failed to put data in ${storeName}`))
       })
     } catch (error) {
-      console.error(`IndexedDB put error in ${storeName}:`, error)
+      logger.error(`IndexedDB put error in ${storeName}:`, error)
       // Fallback to localStorage
       this.fallbackToLocalStorage('put', storeName, data)
     }
@@ -221,7 +223,7 @@ class IndexedDBService {
         request.onerror = () => reject(new Error(`Failed to get data from ${storeName}`))
       })
     } catch (error) {
-      console.error(`IndexedDB get error in ${storeName}:`, error)
+      logger.error(`IndexedDB get error in ${storeName}:`, error)
       // Fallback to localStorage
       return this.fallbackToLocalStorage('get', storeName, key) as DBSchema[K]['value'] | undefined
     }
@@ -256,7 +258,7 @@ class IndexedDBService {
         request.onerror = () => reject(new Error(`Failed to get all data from ${storeName}`))
       })
     } catch (error) {
-      console.error(`IndexedDB getAll error in ${storeName}:`, error)
+      logger.error(`IndexedDB getAll error in ${storeName}:`, error)
       // Fallback to localStorage
       return this.fallbackToLocalStorage('getAll', storeName) as DBSchema[K]['value'][]
     }
@@ -292,7 +294,7 @@ class IndexedDBService {
         request.onerror = () => reject(new Error(`Failed to delete data from ${storeName}`))
       })
     } catch (error) {
-      console.error(`IndexedDB delete error in ${storeName}:`, error)
+      logger.error(`IndexedDB delete error in ${storeName}:`, error)
       // Fallback to localStorage
       this.fallbackToLocalStorage('delete', storeName, key)
     }
@@ -323,7 +325,7 @@ class IndexedDBService {
       const all = await this.getAll(storeName)
       return all.filter((item: DBSchema[K]['value']) => !item.synced)
     } catch (error) {
-      console.error(`IndexedDB getUnsynced error in ${storeName}:`, error)
+      logger.error(`IndexedDB getUnsynced error in ${storeName}:`, error)
       return []
     }
   }
@@ -355,7 +357,7 @@ class IndexedDBService {
         request.onerror = () => reject(new Error(`Failed to clear ${storeName}`))
       })
     } catch (error) {
-      console.error(`IndexedDB clear error in ${storeName}:`, error)
+      logger.error(`IndexedDB clear error in ${storeName}:`, error)
       throw error
     }
   }
@@ -413,7 +415,7 @@ class IndexedDBService {
         }
       }
     } catch (error) {
-      console.error('localStorage fallback error:', error)
+      logger.error('localStorage fallback error:', error)
       return operation === 'get' || operation === 'getAll' ? [] : undefined
     }
   }
