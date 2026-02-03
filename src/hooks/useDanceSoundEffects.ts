@@ -34,7 +34,7 @@ interface UseDanceSoundEffectsReturn {
 
 // Cache for audio buffers
 const audioCache = new Map<SoundEffect, string>();
-const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null;
+const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)() : null;
 
 export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
   const isLoadingRef = useRef<Set<SoundEffect>>(new Set());
@@ -170,7 +170,7 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
 
         case 'countdown_3':
         case 'countdown_2':
-        case 'countdown_1':
+        case 'countdown_1': {
           // Countdown beat
           const pitch = type === 'countdown_1' ? 523.25 : type === 'countdown_2' ? 440 : 392;
           oscillator.frequency.setValueAtTime(pitch, now);
@@ -180,6 +180,7 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
           oscillator.start(now);
           oscillator.stop(now + 0.3);
           break;
+        }
 
         case 'start':
           // Quick ascending jingle
