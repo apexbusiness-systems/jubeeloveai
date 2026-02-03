@@ -2,6 +2,7 @@
  * JubeeDance Game Hook
  * 
  * React hook for managing the dance game state using the FSM.
+ * Includes sound effects integration for enhanced gameplay feedback.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -13,6 +14,7 @@ import {
   checkMissedNotes 
 } from './DanceGameFSM';
 import { logger } from '@/lib/logger';
+import { useDanceSoundEffects } from '@/hooks/useDanceSoundEffects';
 
 interface UseDanceGameReturn {
   context: DanceGameContext;
@@ -33,6 +35,18 @@ export function useDanceGame(): UseDanceGameReturn {
   const gameLoopRef = useRef<number | null>(null);
   const countdownRef = useRef<number>(3);
   const countdownIntervalRef = useRef<number | null>(null);
+  
+  // Sound effects
+  const {
+    playPerfect,
+    playGood,
+    playMiss,
+    playCountdown,
+    playStart,
+    playCelebrate,
+    playStumble,
+    preloadSounds,
+  } = useDanceSoundEffects();
 
   // Dispatch event to FSM
   const dispatch = useCallback((event: DanceGameEvent) => {
@@ -50,8 +64,11 @@ export function useDanceGame(): UseDanceGameReturn {
     audioRef.current = new Audio(song.audioUrl);
     audioRef.current.preload = 'auto';
     
+    // Preload sound effects in background
+    preloadSounds();
+    
     logger.info('[useDanceGame] Song selected:', song.title);
-  }, [dispatch]);
+  }, [dispatch, preloadSounds]);
 
   // Start countdown and then game
   const startGame = useCallback(() => {
@@ -62,10 +79,18 @@ export function useDanceGame(): UseDanceGameReturn {
 
     dispatch({ type: 'START_COUNTDOWN' });
     countdownRef.current = 3;
+    
+    // Play initial countdown sound
+    playCountdown(3);
 
     // Countdown interval
     countdownIntervalRef.current = window.setInterval(() => {
       countdownRef.current -= 1;
+      
+      // Play countdown sounds
+      if (countdownRef.current > 0) {
+        playCountdown(countdownRef.current);
+      }
       
       if (countdownRef.current <= 0) {
         if (countdownIntervalRef.current) {
@@ -74,6 +99,9 @@ export function useDanceGame(): UseDanceGameReturn {
         }
         
         dispatch({ type: 'COUNTDOWN_COMPLETE' });
+        
+        // Play start sound
+        playStart();
         
         // Start audio
         if (audioRef.current) {
@@ -84,7 +112,7 @@ export function useDanceGame(): UseDanceGameReturn {
         }
       }
     }, 1000);
-  }, [context.currentSong, dispatch]);
+  }, [context.currentSong, dispatch, playCountdown, playStart]);
 
   // Handle directional input
   const handleInput = useCallback((direction: Direction) => {
@@ -103,21 +131,25 @@ export function useDanceGame(): UseDanceGameReturn {
     switch (result) {
       case 'perfect':
         dispatch({ type: 'PERFECT_HIT' });
+        playPerfect();
         logger.dev('[useDanceGame] PERFECT!');
         break;
       case 'good':
         dispatch({ type: 'GOOD_HIT' });
+        playGood();
         logger.dev('[useDanceGame] Good!');
         break;
       case 'miss':
         dispatch({ type: 'MISS' });
+        playMiss();
+        playStumble();
         logger.dev('[useDanceGame] Miss...');
         break;
       case 'early':
         // Too early, ignore
         break;
     }
-  }, [context, dispatch]);
+  }, [context, dispatch, playPerfect, playGood, playMiss, playStumble]);
 
   // Pause game
   const pause = useCallback(() => {
@@ -205,6 +237,8 @@ export function useDanceGame(): UseDanceGameReturn {
         const elapsed = Date.now() - context.startTime;
         if (elapsed >= context.currentSong.duration * 1000) {
           dispatch({ type: 'SONG_END' });
+          // Play celebration sound for completing the song
+          playCelebrate();
           return;
         }
       }
@@ -219,7 +253,7 @@ export function useDanceGame(): UseDanceGameReturn {
         cancelAnimationFrame(gameLoopRef.current);
       }
     };
-  }, [context.state, context, dispatch]);
+  }, [context.state, context, dispatch, playCelebrate]);
 
   // Stumble recovery timer
   useEffect(() => {
