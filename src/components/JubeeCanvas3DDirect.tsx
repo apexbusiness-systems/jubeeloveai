@@ -32,6 +32,21 @@ interface JubeeCanvas3DDirectProps {
   className?: string;
 }
 
+// Cached parts interface
+interface JubeeParts {
+  body: THREE.Mesh;
+  leftEye: THREE.Mesh;
+  rightEye: THREE.Mesh;
+  leftPupil: THREE.Mesh;
+  rightPupil: THREE.Mesh;
+  leftWing: THREE.Mesh;
+  rightWing: THREE.Mesh;
+  leftAntenna: THREE.Mesh;
+  rightAntenna: THREE.Mesh;
+  leftBulb: THREE.Mesh;
+  rightBulb: THREE.Mesh;
+}
+
 function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -39,6 +54,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const jubeeGroupRef = useRef<THREE.Group | null>(null);
+  const jubeePartsRef = useRef<JubeeParts | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   
   // Get current location for contextual greetings
@@ -220,7 +236,8 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     jubeeGroupRef.current = jubeeGroup;
 
     // Build Jubee geometry
-    buildJubeeModel(jubeeGroup, gender);
+    const parts = buildJubeeModel(jubeeGroup, gender);
+    jubeePartsRef.current = parts;
 
     // Add lights - Enhanced for vibrant visibility
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
@@ -284,7 +301,9 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
       }
 
       // Update animations based on mood and state
-      updateJubeeAnimation(jubeeGroup, currentAnimation, currentMood, delta);
+      if (jubeePartsRef.current) {
+        updateJubeeAnimation(jubeeGroup, jubeePartsRef.current, currentAnimation, currentMood, delta);
+      }
 
       // Render scene
       if (renderer && scene && camera) {
@@ -531,7 +550,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
 /**
  * Build the Jubee 3D model
  */
-function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
+function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female'): JubeeParts {
   // Get colors based on gender - ULTRA bright, vibrant, lively bee colors
   const colors = {
     body: gender === 'male' ? 0xFFD700 : 0xFFC300,  // Pure gold / bright amber yellow
@@ -683,6 +702,20 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
   rightBulb.position.set(0.42, 2.5, 0);
   rightBulb.name = 'rightBulb';
   group.add(rightBulb);
+
+  return {
+    body,
+    leftEye,
+    rightEye,
+    leftPupil,
+    rightPupil,
+    leftWing,
+    rightWing,
+    leftAntenna,
+    rightAntenna,
+    leftBulb,
+    rightBulb,
+  };
 }
 
 /**
@@ -690,6 +723,7 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female') {
  */
 function updateJubeeAnimation(
   group: THREE.Group,
+  parts: JubeeParts,
   animation: string,
   mood: string,
   delta: number
@@ -700,7 +734,7 @@ function updateJubeeAnimation(
   group.position.y = Math.sin(time * 2) * 0.1;
 
   // Gentle pulsing glow on body
-  const body = group.getObjectByName('body') as THREE.Mesh;
+  const { body } = parts;
   if (body && body.material instanceof THREE.MeshPhongMaterial) {
     // Lively sine wave pulse between 0.25 and 0.4 emissive intensity
     const pulseIntensity = 0.3 + Math.sin(time * 1.5) * 0.1;
@@ -708,10 +742,7 @@ function updateJubeeAnimation(
   }
 
   // Facial expression changes based on mood
-  const leftEye = group.getObjectByName('leftEye');
-  const rightEye = group.getObjectByName('rightEye');
-  const leftPupil = group.getObjectByName('leftPupil');
-  const rightPupil = group.getObjectByName('rightPupil');
+  const { leftEye, rightEye, leftPupil, rightPupil } = parts;
 
   if (leftEye && rightEye && leftPupil && rightPupil) {
     let eyeScaleY = 1;
@@ -767,8 +798,7 @@ function updateJubeeAnimation(
   }
 
   // Wing flapping
-  const leftWing = group.getObjectByName('leftWing');
-  const rightWing = group.getObjectByName('rightWing');
+  const { leftWing, rightWing } = parts;
 
   if (leftWing && rightWing) {
     const flapSpeed = animation === 'excited' ? 8 : 4;
@@ -779,10 +809,7 @@ function updateJubeeAnimation(
   }
 
   // Antenna animation - contextual based on mood
-  const leftAntenna = group.getObjectByName('leftAntenna');
-  const rightAntenna = group.getObjectByName('rightAntenna');
-  const leftBulb = group.getObjectByName('leftBulb');
-  const rightBulb = group.getObjectByName('rightBulb');
+  const { leftAntenna, rightAntenna, leftBulb, rightBulb } = parts;
 
   if (leftAntenna && rightAntenna && leftBulb && rightBulb) {
     let antennaBaseRotation = -Math.PI / 8;
