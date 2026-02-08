@@ -34,7 +34,10 @@ interface UseDanceSoundEffectsReturn {
 
 // Cache for audio buffers
 const audioCache = new Map<SoundEffect, string>();
-const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as Window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)() : null;
+type AudioContextWindow = Window & typeof globalThis & { webkitAudioContext?: typeof AudioContext };
+const audioContext = typeof window !== 'undefined'
+  ? new ((window as AudioContextWindow).AudioContext || (window as AudioContextWindow).webkitAudioContext!)()
+  : null;
 
 export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
   const isLoadingRef = useRef<Set<SoundEffect>>(new Set());
