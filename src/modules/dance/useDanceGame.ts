@@ -27,14 +27,14 @@ interface UseDanceGameReturn {
   getCurrentLyric: () => string;
   getNextMove: () => { direction: Direction; time: number } | null;
   getTimeToNextMove: () => number;
+  playCountdownSound: (count: number) => void;
+  playStartSound: () => void;
 }
 
 export function useDanceGame(): UseDanceGameReturn {
   const [context, setContext] = useState<DanceGameContext>(createInitialContext);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const gameLoopRef = useRef<number | null>(null);
-  const countdownRef = useRef<number>(3);
-  const countdownIntervalRef = useRef<number | null>(null);
   
   // Sound effects
   const {
@@ -71,49 +71,40 @@ export function useDanceGame(): UseDanceGameReturn {
     logger.info('[useDanceGame] Song selected:', song.title);
   }, [dispatch, preloadSounds]);
 
-  // Start countdown and then game
+  // Start game immediately (visual countdown is handled by JubeeDance.tsx)
   const startGame = useCallback(() => {
     if (!context.currentSong) {
       logger.warn('[useDanceGame] Cannot start without a song selected');
       return;
     }
 
+    // Transition FSM directly to playing state
     dispatch({ type: 'START_COUNTDOWN' });
-    countdownRef.current = 3;
-    
-    // Play initial countdown sound
-    playCountdown(3);
+    dispatch({ type: 'COUNTDOWN_COMPLETE' });
 
-    // Countdown interval
-    countdownIntervalRef.current = window.setInterval(() => {
-      countdownRef.current -= 1;
-      
-      // Play countdown sounds
-      if (countdownRef.current > 0) {
-        playCountdown(countdownRef.current);
-      }
-      
-      if (countdownRef.current <= 0) {
-        if (countdownIntervalRef.current) {
-          clearInterval(countdownIntervalRef.current);
-          countdownIntervalRef.current = null;
-        }
-        
-        dispatch({ type: 'COUNTDOWN_COMPLETE' });
-        
-        // Play start sound
-        playStart();
-        
-        // Start audio
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play().catch((err) => {
-            logger.error('[useDanceGame] Audio play failed:', err);
-          });
-        }
-      }
-    }, 1000);
-  }, [context.currentSong, dispatch, playCountdown, playStart]);
+    // Play start sound
+    playStart();
+
+    // Start audio playback
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((err) => {
+        logger.error('[useDanceGame] Audio play failed:', err);
+      });
+    }
+
+    logger.info('[useDanceGame] Game started!');
+  }, [context.currentSong, dispatch, playStart]);
+
+  // Expose countdown sound for JubeeDance.tsx visual countdown
+  const playCountdownSound = useCallback((count: number) => {
+    playCountdown(count);
+  }, [playCountdown]);
+
+  // Expose start sound
+  const playStartSound = useCallback(() => {
+    playStart();
+  }, [playStart]);
 
   // Combo milestone thresholds
   const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
@@ -194,10 +185,6 @@ export function useDanceGame(): UseDanceGameReturn {
       gameLoopRef.current = null;
     }
     
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
   }, [dispatch]);
 
   // Get current lyric based on elapsed time
@@ -292,9 +279,6 @@ export function useDanceGame(): UseDanceGameReturn {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
     };
   }, []);
 
@@ -309,5 +293,7 @@ export function useDanceGame(): UseDanceGameReturn {
     getCurrentLyric,
     getNextMove,
     getTimeToNextMove,
+    playCountdownSound,
+    playStartSound,
   };
 }
