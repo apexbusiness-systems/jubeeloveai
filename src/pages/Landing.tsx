@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import jubeeLogo from '@/assets/jubee-logo.png';
-import { isFirstTimeVisitor, markAsReturningVisitor } from '@/lib/visitorStatus';
+import { markAsReturningVisitor } from '@/lib/visitorStatus';
 
 const features = [
   {
