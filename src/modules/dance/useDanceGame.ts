@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import type { DanceGameContext, DanceSong, Direction, DanceGameEvent } from './types';
 import { 
   createInitialContext, 
@@ -15,9 +16,14 @@ import {
 } from './DanceGameFSM';
 import { logger } from '@/lib/logger';
 import { useDanceSoundEffects } from '@/hooks/useDanceSoundEffects';
+import { DanceClock } from './engine/DanceClock';
+
+const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
 
 interface UseDanceGameReturn {
   context: DanceGameContext;
+  countdownValue: number | null;
+  songTimeMs: number;
   selectSong: (song: DanceSong) => void;
   startGame: () => void;
   handleInput: (direction: Direction) => void;
@@ -27,14 +33,17 @@ interface UseDanceGameReturn {
   getCurrentLyric: () => string;
   getNextMove: () => { direction: Direction; time: number } | null;
   getTimeToNextMove: () => number;
-  playCountdownSound: (count: number) => void;
-  playStartSound: () => void;
+  getSongTimeMs: () => number;
 }
 
 export function useDanceGame(): UseDanceGameReturn {
   const [context, setContext] = useState<DanceGameContext>(createInitialContext);
+  const [countdownValue, setCountdownValue] = useState<number | null>(null);
+  const [songTimeMs, setSongTimeMs] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const gameLoopRef = useRef<number | null>(null);
+  const clockRef = useRef<DanceClock | null>(null);
+  const prefersReducedMotion = useReducedMotion();
   
   // Sound effects
   const {
@@ -64,6 +73,11 @@ export function useDanceGame(): UseDanceGameReturn {
     }
     audioRef.current = new Audio(song.audioUrl);
     audioRef.current.preload = 'auto';
+    audioRef.current.setAttribute('playsinline', 'true');
+    audioRef.current.setAttribute('webkit-playsinline', 'true');
+    clockRef.current?.dispose();
+    clockRef.current = new DanceClock(audioRef.current);
+    setSongTimeMs(0);
     
     // Preload sound effects in background
     preloadSounds();
@@ -71,21 +85,35 @@ export function useDanceGame(): UseDanceGameReturn {
     logger.info('[useDanceGame] Song selected:', song.title);
   }, [dispatch, preloadSounds]);
 
-  // Start game immediately (visual countdown is handled by JubeeDance.tsx)
+  // Start game countdown (single source of truth)
   const startGame = useCallback(() => {
     if (!context.currentSong) {
       logger.warn('[useDanceGame] Cannot start without a song selected');
       return;
     }
+    if (context.state === 'playing' || context.state === 'countdown') return;
 
-    // Transition FSM directly to playing state
+    // Transition FSM to countdown state
     dispatch({ type: 'START_COUNTDOWN' });
-    dispatch({ type: 'COUNTDOWN_COMPLETE' });
+    setCountdownValue(3);
+  }, [context.currentSong, context.state, dispatch]);
 
-    // Play start sound
+  // Countdown effect (visual + audio)
+  useEffect(() => {
+    if (countdownValue === null) return;
+
+    if (countdownValue > 0) {
+      playCountdown(countdownValue);
+      const timer = setTimeout(() => {
+        setCountdownValue((prev) => (prev === null ? null : prev - 1));
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+
+    setCountdownValue(null);
+    dispatch({ type: 'COUNTDOWN_COMPLETE' });
     playStart();
 
-    // Start audio playback
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch((err) => {
@@ -94,28 +122,13 @@ export function useDanceGame(): UseDanceGameReturn {
     }
 
     logger.info('[useDanceGame] Game started!');
-  }, [context.currentSong, dispatch, playStart]);
-
-  // Expose countdown sound for JubeeDance.tsx visual countdown
-  const playCountdownSound = useCallback((count: number) => {
-    playCountdown(count);
-  }, [playCountdown]);
-
-  // Expose start sound
-  const playStartSound = useCallback(() => {
-    playStart();
-  }, [playStart]);
-
-  // Combo milestone thresholds
-  const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
+  }, [countdownValue, dispatch, playCountdown, playStart]);
 
   // Handle directional input
   const handleInput = useCallback((direction: Direction) => {
     if (context.state !== 'playing') return;
     
-    const inputTime = context.startTime 
-      ? Date.now() - context.startTime 
-      : 0;
+    const inputTime = clockRef.current?.getSongTimeMs() ?? 0;
     
     // Dispatch the input for animation
     dispatch({ type: 'INPUT', direction });
@@ -128,10 +141,13 @@ export function useDanceGame(): UseDanceGameReturn {
       case 'perfect': {
         dispatch({ type: 'PERFECT_HIT' });
         playPerfect();
+        if (!prefersReducedMotion && typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([10]);
+        }
         const newCombo = prevCombo + 1;
         if (COMBO_MILESTONES.includes(newCombo)) {
           playCombo();
-          logger.dev(`[useDanceGame] 🔥 COMBO x${newCombo}!`);
+          logger.dev(`[useDanceGame] COMBO x${newCombo}!`);
         }
         logger.dev('[useDanceGame] PERFECT!');
         break;
@@ -139,10 +155,13 @@ export function useDanceGame(): UseDanceGameReturn {
       case 'good': {
         dispatch({ type: 'GOOD_HIT' });
         playGood();
+        if (!prefersReducedMotion && typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([6]);
+        }
         const newCombo = prevCombo + 1;
         if (COMBO_MILESTONES.includes(newCombo)) {
           playCombo();
-          logger.dev(`[useDanceGame] 🔥 COMBO x${newCombo}!`);
+          logger.dev(`[useDanceGame] COMBO x${newCombo}!`);
         }
         logger.dev('[useDanceGame] Good!');
         break;
@@ -151,13 +170,16 @@ export function useDanceGame(): UseDanceGameReturn {
         dispatch({ type: 'MISS' });
         playMiss();
         playStumble();
+        if (!prefersReducedMotion && typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([18]);
+        }
         logger.dev('[useDanceGame] Miss...');
         break;
       case 'early':
         // Too early, ignore
         break;
     }
-  }, [context, dispatch, playPerfect, playGood, playMiss, playStumble, playCombo]);
+  }, [context, dispatch, playPerfect, playGood, playMiss, playStumble, playCombo, prefersReducedMotion]);
 
   // Pause game
   const pause = useCallback(() => {
@@ -174,6 +196,8 @@ export function useDanceGame(): UseDanceGameReturn {
   // Reset game
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' });
+    setCountdownValue(null);
+    setSongTimeMs(0);
     
     if (audioRef.current) {
       audioRef.current.pause();
@@ -184,14 +208,16 @@ export function useDanceGame(): UseDanceGameReturn {
       cancelAnimationFrame(gameLoopRef.current);
       gameLoopRef.current = null;
     }
+    clockRef.current?.dispose();
+    clockRef.current = null;
     
   }, [dispatch]);
 
   // Get current lyric based on elapsed time
   const getCurrentLyric = useCallback(() => {
-    if (!context.currentSong || !context.startTime) return '';
-    
-    const elapsed = Date.now() - context.startTime;
+    if (!context.currentSong) return '';
+
+    const elapsed = songTimeMs;
     const lyrics = context.currentSong.lyrics;
     
     // Find the most recent lyric
@@ -205,7 +231,7 @@ export function useDanceGame(): UseDanceGameReturn {
     }
     
     return currentLyric;
-  }, [context.currentSong, context.startTime]);
+  }, [context.currentSong, songTimeMs]);
 
   // Get next move
   const getNextMove = useCallback(() => {
@@ -220,26 +246,26 @@ export function useDanceGame(): UseDanceGameReturn {
   // Get time until next move
   const getTimeToNextMove = useCallback(() => {
     const nextMove = getNextMove();
-    if (!nextMove || !context.startTime) return Infinity;
+    if (!nextMove) return Infinity;
     
-    const elapsed = Date.now() - context.startTime;
+    const elapsed = songTimeMs;
     return nextMove.time - elapsed;
-  }, [getNextMove, context.startTime]);
+  }, [getNextMove, songTimeMs]);
 
   // Game loop - check for missed notes and song end
   useEffect(() => {
     if (context.state !== 'playing') return;
 
     const gameLoop = () => {
+      const currentSongTime = clockRef.current?.getSongTimeMs() ?? 0;
       // Check for missed notes
-      if (checkMissedNotes(context)) {
+      if (checkMissedNotes(context, currentSongTime)) {
         dispatch({ type: 'MISS' });
       }
       
       // Check for song end
-      if (context.currentSong && context.startTime) {
-        const elapsed = Date.now() - context.startTime;
-        if (elapsed >= context.currentSong.duration * 1000) {
+      if (context.currentSong) {
+        if (currentSongTime >= context.currentSong.duration * 1000) {
           dispatch({ type: 'SONG_END' });
           // Play celebration sound for completing the song
           playCelebrate();
@@ -279,11 +305,31 @@ export function useDanceGame(): UseDanceGameReturn {
       if (gameLoopRef.current) {
         cancelAnimationFrame(gameLoopRef.current);
       }
+      clockRef.current?.dispose();
     };
   }, []);
 
+  // Keep UI song time in sync (low frequency via audio timeupdate)
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handleTimeUpdate = () => {
+      setSongTimeMs(clockRef.current?.getSongTimeMs() ?? 0);
+    };
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [context.currentSong]);
+
+  const getSongTimeMs = useCallback(() => {
+    return clockRef.current?.getSongTimeMs() ?? songTimeMs;
+  }, [songTimeMs]);
+
   return {
     context,
+    countdownValue,
+    songTimeMs,
     selectSong,
     startGame,
     handleInput,
@@ -293,7 +339,6 @@ export function useDanceGame(): UseDanceGameReturn {
     getCurrentLyric,
     getNextMove,
     getTimeToNextMove,
-    playCountdownSound,
-    playStartSound,
+    getSongTimeMs,
   };
 }

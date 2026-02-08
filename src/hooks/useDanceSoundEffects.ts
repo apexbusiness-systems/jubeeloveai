@@ -42,8 +42,20 @@ const audioContext = typeof window !== 'undefined'
 export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
   const isLoadingRef = useRef<Set<SoundEffect>>(new Set());
 
-  // Fetch sound from edge function
+  const remoteEnabled = import.meta.env.VITE_DANCE_SFX_REMOTE === '1';
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  // Fetch sound from edge function (remote is opt-in)
   const fetchSound = useCallback(async (type: SoundEffect): Promise<string | null> => {
+    if (!remoteEnabled) {
+      return null;
+    }
+    if (!supabaseUrl || !supabaseKey) {
+      logger.dev('[DanceSFX] Remote disabled: missing env configuration');
+      return null;
+    }
+
     // Check cache first
     if (audioCache.has(type)) {
       return audioCache.get(type)!;
@@ -60,13 +72,13 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
       logger.dev(`[DanceSFX] Fetching sound: ${type}`);
       
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || 'https://kphdqgidwipqdthehckg.supabase.co'}/functions/v1/dance-sfx`,
+        `${supabaseUrl}/functions/v1/dance-sfx`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwaGRxZ2lkd2lwcWR0aGVoY2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMDkyMjYsImV4cCI6MjA3NDU4NTIyNn0.nrq7BccAJKuxU1UKk25w7wBlmCC3b8waskQOpxE-McM',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwaGRxZ2lkd2lwcWR0aGVoY2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMDkyMjYsImV4cCI6MjA3NDU4NTIyNn0.nrq7BccAJKuxU1UKk25w7wBlmCC3b8waskQOpxE-McM'}`,
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
           },
           body: JSON.stringify({ type }),
         }
@@ -91,7 +103,7 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
     } finally {
       isLoadingRef.current.delete(type);
     }
-  }, []);
+  }, [remoteEnabled, supabaseKey, supabaseUrl]);
 
   // Play a sound using Web Audio API
   const playSound = useCallback(async (type: SoundEffect) => {
@@ -242,6 +254,7 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
 
   // Preload common sounds
   const preloadSounds = useCallback(async () => {
+    if (!remoteEnabled) return;
     const prioritySounds: SoundEffect[] = ['perfect', 'good', 'miss', 'countdown_3', 'countdown_2', 'countdown_1'];
     
     logger.dev('[DanceSFX] Preloading sounds...');
@@ -253,7 +266,7 @@ export function useDanceSoundEffects(): UseDanceSoundEffectsReturn {
     }
     
     logger.dev('[DanceSFX] Preload complete');
-  }, [fetchSound]);
+  }, [fetchSound, remoteEnabled]);
 
   return {
     playPerfect,

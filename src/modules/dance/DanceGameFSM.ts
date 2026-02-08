@@ -103,7 +103,7 @@ const stateHandlers: Record<GameState, (ctx: DanceGameContext, event: DanceGameE
       return {
         ...ctx,
         state: 'playing',
-        startTime: Date.now(),
+        startTime: 0,
         elapsedTime: 0,
         animation: 'idle',
       };
@@ -260,9 +260,9 @@ export function transition(
 export function evaluateInput(
   context: DanceGameContext,
   direction: 'up' | 'down' | 'left' | 'right',
-  inputTime: number
+  songTimeMs: number
 ): 'perfect' | 'good' | 'miss' | 'early' {
-  if (!context.currentSong || !context.startTime) {
+  if (!context.currentSong) {
     return 'miss';
   }
   
@@ -274,6 +274,7 @@ export function evaluateInput(
   }
   
   const expectedTime = currentMove.time;
+  const inputTime = songTimeMs;
   const timeDiff = Math.abs(inputTime - expectedTime);
   
   // Wrong direction is always a miss
@@ -304,8 +305,8 @@ export function evaluateInput(
 /**
  * Check for missed notes based on elapsed time
  */
-export function checkMissedNotes(context: DanceGameContext): boolean {
-  if (!context.currentSong || !context.startTime) {
+export function checkMissedNotes(context: DanceGameContext, songTimeMs: number): boolean {
+  if (!context.currentSong) {
     return false;
   }
   
@@ -316,7 +317,7 @@ export function checkMissedNotes(context: DanceGameContext): boolean {
     return false;
   }
   
-  const elapsedTime = Date.now() - context.startTime;
+  const elapsedTime = songTimeMs;
   const MISS_THRESHOLD = 300; // 300ms after the note time = miss
   
   return elapsedTime > currentMove.time + MISS_THRESHOLD;

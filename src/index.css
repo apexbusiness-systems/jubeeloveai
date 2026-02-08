@@ -407,6 +407,245 @@ a:focus-visible,
   outline-offset: 3px;
 }
 
+/* JubeeDance Apple-grade visual system */
+.jubee-dance {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  --dance-glass-bg: hsl(var(--card) / 0.78);
+  --dance-glass-border: hsl(var(--border) / 0.55);
+  --dance-glass-shadow: 0 18px 40px hsl(var(--primary) / 0.18);
+  --dance-glass-highlight: inset 0 1px 0 hsl(var(--card) / 0.6);
+
+  --dance-arrow-up: var(--game-accent);
+  --dance-arrow-down: var(--primary);
+  --dance-arrow-left: var(--accent);
+  --dance-arrow-right: var(--game-primary);
+
+  --dance-hit-perfect: var(--accent);
+  --dance-hit-good: var(--game-accent);
+  --dance-hit-miss: var(--destructive);
+  --dance-focus: var(--primary);
+}
+
+.jubee-dance .dance-glass-card {
+  background: var(--dance-glass-bg);
+  border: 1px solid var(--dance-glass-border);
+  box-shadow: var(--dance-glass-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.jubee-dance .dance-stage {
+  background: linear-gradient(160deg, hsl(var(--card) / 0.88), hsl(var(--secondary) / 0.7));
+  border-radius: 20px;
+  border: 1px solid var(--dance-glass-border);
+  box-shadow: var(--dance-glass-shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.jubee-dance .dance-next-chip {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: hsl(var(--foreground) / 0.6);
+  box-shadow: 0 8px 18px hsl(var(--foreground) / 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.jubee-dance .dance-arrow-tile {
+  transition:
+    transform var(--duration-fast) var(--ease-out-expo),
+    opacity var(--duration-fast) var(--ease-out-expo),
+    box-shadow var(--duration-normal) var(--ease-out-quart);
+  box-shadow: 0 8px 18px hsl(var(--foreground) / 0.15);
+}
+
+.jubee-dance .dance-stepzone {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  height: 220px;
+}
+
+.jubee-dance .dance-lane {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(180deg, hsl(var(--muted) / 0.4), hsl(var(--card) / 0.9));
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: inset 0 -18px 30px hsl(var(--primary) / 0.08);
+}
+
+.jubee-dance .dance-lane-track {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, hsl(var(--primary) / 0.12));
+}
+
+.jubee-dance .dance-receptor {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  transform: translateX(-50%);
+  background: hsl(var(--foreground) / 0.12);
+  border: 1px solid hsl(var(--border) / 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 16px hsl(var(--foreground) / 0.2),
+    inset 0 0 0 1px hsl(var(--card) / 0.5);
+}
+
+.jubee-dance .dance-note {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  will-change: transform;
+  box-shadow: 0 12px 22px hsl(var(--foreground) / 0.2);
+}
+
+.jubee-dance .dance-thumbpad {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.jubee-dance .dance-thumbpad-row {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 10px;
+}
+
+.jubee-dance .dance-thumbpad-button {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  border: 1px solid hsl(var(--border) / 0.7);
+  box-shadow: 0 10px 18px hsl(var(--foreground) / 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.jubee-dance .dance-thumbpad-button:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.jubee-dance .dance-thumbpad-button:focus-visible {
+  outline: 3px solid hsl(var(--dance-focus));
+  outline-offset: 3px;
+}
+
+.jubee-dance .dance-lyric {
+  text-shadow: 0 6px 12px hsl(var(--primary) / 0.2);
+}
+
+.jubee-dance .dance-party-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border) / 0.6);
+  background: hsl(var(--card) / 0.7);
+  box-shadow: 0 6px 14px hsl(var(--foreground) / 0.12);
+  cursor: pointer;
+}
+
+.jubee-dance .dance-party-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jubee-dance .dance-toggle-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+  position: relative;
+  transition: background var(--duration-fast) var(--ease-out-quart);
+}
+
+.jubee-dance .dance-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: hsl(var(--card));
+  transition: transform var(--duration-fast) var(--ease-out-expo);
+  box-shadow: 0 4px 8px hsl(var(--foreground) / 0.25);
+}
+
+.jubee-dance .dance-party-toggle input:checked + .dance-toggle-track {
+  background: hsl(var(--accent));
+}
+
+.jubee-dance .dance-party-toggle input:checked + .dance-toggle-track::after {
+  transform: translateX(18px);
+}
+
+.jubee-dance .dance-character.dance-stumble {
+  animation: dance-shake var(--duration-normal) var(--ease-out-quart);
+}
+
+.jubee-dance .dance-character.dance-perfect {
+  animation: dance-glow var(--duration-normal) var(--ease-out-quart);
+}
+
+@keyframes dance-shake {
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes dance-glow {
+  0% {
+    box-shadow: 0 0 0 hsl(var(--accent) / 0);
+  }
+  60% {
+    box-shadow: 0 0 30px hsl(var(--accent) / 0.6);
+  }
+  100% {
+    box-shadow: 0 0 10px hsl(var(--accent) / 0.25);
+  }
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -423,5 +662,19 @@ a:focus-visible,
   .game-card,
   .tab-item {
     transition-duration: 0.01ms !important;
+  }
+
+  .jubee-dance .dance-character.dance-stumble,
+  .jubee-dance .dance-character.dance-perfect {
+    animation: none !important;
+  }
+
+  .jubee-dance .dance-thumbpad-button:active {
+    transform: none;
+  }
+
+  .jubee-dance .dance-receptor,
+  .jubee-dance .dance-note {
+    box-shadow: none;
   }
 }

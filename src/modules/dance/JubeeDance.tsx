@@ -6,8 +6,8 @@
  * and 22 kid-friendly lyrical songs.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,21 +26,32 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useDanceGame } from './useDanceGame';
 import { DanceCharacter } from './DanceCharacter';
-import { ArrowButtons } from './ArrowDisplay';
+import { ArrowButtons, StepZone } from './ArrowDisplay';
 import { getFreeSongs, getPremiumSongs } from './songLibrary';
 import type { DanceSong, Direction } from './types';
 import { useParentalStore } from '@/store/useParentalStore';
 import { SEO } from '@/components/SEO';
 
+const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
+
 export default function JubeeDancePage() {
   const navigate = useNavigate();
   const { isPremium } = useParentalStore();
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
-  const [countdownValue, setCountdownValue] = useState<number | null>(null);
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
+  const [comboMilestone, setComboMilestone] = useState<number | null>(null);
+  const [comboPulse, setComboPulse] = useState(false);
+  const [partyMode, setPartyMode] = useState(false);
+  const pendingAutoStartRef = useRef(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
+  const easeOutQuart: [number, number, number, number] = [0.25, 1, 0.5, 1];
+  const easeSpring: [number, number, number, number] = [0.34, 1.56, 0.64, 1];
 
   const {
     context,
+    countdownValue,
     selectSong,
     startGame,
     handleInput,
@@ -49,18 +60,18 @@ export default function JubeeDancePage() {
     reset,
     getCurrentLyric,
     getNextMove,
-    playCountdownSound,
+    getSongTimeMs,
   } = useDanceGame();
 
   // Handle song selection
   const handleSelectSong = useCallback((song: DanceSong) => {
     const isLocked = song.tier === 'premium' && !isPremium;
     if (isLocked) {
-      toast.info('🎵 Ask your parents to unlock Premium songs!');
+      toast.info('Ask your parents to unlock Premium songs.');
       return;
     }
     selectSong(song);
-    toast.success(`🎵 ${song.title} selected!`);
+    toast.success(`${song.title} selected.`);
   }, [isPremium, selectSong]);
 
   // Start playing selected song
@@ -70,26 +81,8 @@ export default function JubeeDancePage() {
       return;
     }
     setView('playing');
-    setCountdownValue(3);
-  }, [context.currentSong]);
-
-  // Countdown effect with integrated sound
-  useEffect(() => {
-    if (countdownValue === null) return;
-    
-    if (countdownValue > 0) {
-      // Play countdown sound for each number
-      playCountdownSound(countdownValue);
-      
-      const timer = setTimeout(() => {
-        setCountdownValue(countdownValue - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else {
-      setCountdownValue(null);
-      startGame();
-    }
-  }, [countdownValue, startGame, playCountdownSound]);
+    startGame();
+  }, [context.currentSong, startGame]);
 
   // Handle keyboard input
   useEffect(() => {
@@ -151,12 +144,76 @@ export default function JubeeDancePage() {
   const handleBackToMenu = useCallback(() => {
     reset();
     setView('menu');
-    setCountdownValue(null);
   }, [reset]);
 
   // Song list with premium indicators
-  const freeSongs = getFreeSongs();
-  const premiumSongs = getPremiumSongs();
+  const freeSongs = useMemo(() => getFreeSongs(), []);
+  const premiumSongs = useMemo(() => getPremiumSongs(), []);
+  const availableSongs = useMemo(
+    () => (isPremium ? [...freeSongs, ...premiumSongs] : freeSongs),
+    [isPremium, freeSongs, premiumSongs]
+  );
+
+  const handleNextSong = useCallback(() => {
+    if (!context.currentSong || availableSongs.length === 0) return;
+    const currentIndex = availableSongs.findIndex((song) => song.id === context.currentSong?.id);
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % availableSongs.length;
+    const nextSong = availableSongs[nextIndex];
+    selectSong(nextSong);
+    setView('playing');
+    pendingAutoStartRef.current = true;
+  }, [availableSongs, context.currentSong, selectSong]);
+
+  useEffect(() => {
+    if (pendingAutoStartRef.current && context.currentSong) {
+      pendingAutoStartRef.current = false;
+      startGame();
+    }
+  }, [context.currentSong, startGame]);
+
+  useEffect(() => {
+    if (view !== 'results' || !partyMode) return;
+    const timer = setTimeout(() => {
+      handleNextSong();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [view, partyMode, handleNextSong]);
+
+  useEffect(() => {
+    if (context.score.combo === 0) {
+      setComboMilestone(null);
+      return;
+    }
+
+    if (COMBO_MILESTONES.includes(context.score.combo)) {
+      setComboMilestone(context.score.combo);
+      if (!prefersReducedMotion) {
+        setComboPulse(true);
+      }
+      const pulseTimer = setTimeout(() => setComboPulse(false), 250);
+      const milestoneTimer = setTimeout(() => setComboMilestone(null), 900);
+      return () => {
+        clearTimeout(pulseTimer);
+        clearTimeout(milestoneTimer);
+      };
+    }
+  }, [context.score.combo, prefersReducedMotion]);
+
+  const lookaheadMs = useMemo(() => {
+    const difficulty = context.currentSong?.pattern.difficulty ?? 'medium';
+    if (difficulty === 'easy') return 3400;
+    if (difficulty === 'hard') return 2600;
+    return 3000;
+  }, [context.currentSong?.pattern.difficulty]);
+
+  const totalMoves = context.score.perfect + context.score.good + context.score.missed;
+  const accuracy = totalMoves > 0 ? (context.score.perfect + context.score.good) / totalMoves : 0;
+  const starCount = accuracy >= 0.9 ? 3 : accuracy >= 0.7 ? 2 : 1;
+  const gradeLabel = accuracy >= 0.9 ? 'Amazing Rhythm!' : accuracy >= 0.7 ? 'Great Groove!' : 'Nice Try!';
+  const accuracyPercent = Math.round(accuracy * 100);
+  const perfectPercent = totalMoves > 0 ? Math.round((context.score.perfect / totalMoves) * 100) : 0;
+  const goodPercent = totalMoves > 0 ? Math.round((context.score.good / totalMoves) * 100) : 0;
+  const missPercent = totalMoves > 0 ? Math.round((context.score.missed / totalMoves) * 100) : 0;
 
   // Render song card
   const renderSongCard = (song: DanceSong) => {
@@ -204,7 +261,7 @@ export default function JubeeDancePage() {
         description="A fun 3D dance game for kids! Follow the arrows and dance with Jubee!" 
       />
       
-      <div className="max-w-6xl mx-auto p-4 pb-32">
+      <div className="jubee-dance max-w-6xl mx-auto p-4 pb-32">
         {/* Menu View */}
         <AnimatePresence mode="wait">
           {view === 'menu' && (
@@ -213,6 +270,7 @@ export default function JubeeDancePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: easeOutExpo }}
             >
               {/* Header */}
               <header className="text-center mb-8">
@@ -224,7 +282,7 @@ export default function JubeeDancePage() {
                   <Sparkles className="w-8 h-8 text-yellow-400" />
                 </div>
                 <p className="text-muted-foreground text-lg">
-                  Follow the arrows and dance with Jubee! 💃🕺
+                  Follow the arrows and dance with Jubee!
                 </p>
               </header>
 
@@ -293,6 +351,7 @@ export default function JubeeDancePage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: easeOutQuart }}
               className="min-h-[80vh] flex flex-col"
             >
               {/* Countdown Overlay */}
@@ -302,6 +361,7 @@ export default function JubeeDancePage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: easeOutQuart }}
                     className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
                   >
                     <motion.div
@@ -309,9 +369,10 @@ export default function JubeeDancePage() {
                       initial={{ scale: 2, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: easeSpring }}
                       className="text-9xl font-bold text-white"
                     >
-                      {countdownValue || '🎵'}
+                      {countdownValue || 'Go!'}
                     </motion.div>
                   </motion.div>
                 )}
@@ -324,17 +385,41 @@ export default function JubeeDancePage() {
                 </Button>
                 
                 {/* Score Display */}
-                <div className="flex items-center gap-4">
-                  <div className="bg-card px-4 py-2 rounded-xl border-2 border-primary">
+                <div className="flex items-center gap-3">
+                  <div className="dance-glass-card px-4 py-2 rounded-xl border border-white/40">
                     <span className="text-2xl font-bold text-primary">
-                      ⭐ {context.score.totalScore}
+                      Score {context.score.totalScore}
                     </span>
                   </div>
-                  <div className="bg-card px-4 py-2 rounded-xl border">
-                    <span className="text-lg font-semibold">
-                      🔥 {context.score.combo}x
-                    </span>
-                  </div>
+                  <motion.div
+                    className="dance-glass-card px-4 py-2 rounded-xl border border-white/40 min-w-[120px]"
+                    animate={
+                      comboPulse && !prefersReducedMotion
+                        ? { scale: 1.08, y: -2 }
+                        : { scale: 1, y: 0 }
+                    }
+                    transition={{ duration: 0.25, ease: easeSpring }}
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      Combo
+                    </div>
+                    <div className="text-lg font-semibold text-foreground">
+                      Combo {context.score.combo}x
+                    </div>
+                    <AnimatePresence>
+                      {comboMilestone && !prefersReducedMotion && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                          transition={{ duration: 0.25, ease: easeOutQuart }}
+                          className="text-xs font-semibold text-[hsl(var(--dance-hit-perfect))]"
+                        >
+                          Milestone x{comboMilestone}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
 
                 {context.state === 'playing' ? (
@@ -350,50 +435,66 @@ export default function JubeeDancePage() {
                 )}
               </div>
 
-              {/* 3D Character Area */}
-              <div className="flex-1 relative min-h-[300px] sm:min-h-[400px] mb-4">
-                <DanceCharacter 
-                  animation={context.animation}
-                  isStumbling={context.state === 'stumbled'}
-                  isPerfect={lastResult === 'perfect'}
-                />
+              {/* 3D Character + StepZone */}
+              <div className="flex-1 grid gap-4 mb-4">
+                <div className="dance-stage relative min-h-[300px] sm:min-h-[400px]">
+                  <DanceCharacter 
+                    animation={context.animation}
+                    isStumbling={context.state === 'stumbled'}
+                    isPerfect={lastResult === 'perfect'}
+                    isPaused={context.state === 'paused'}
+                    reducedMotion={prefersReducedMotion}
+                  />
 
-                {/* Hit Feedback */}
-                <AnimatePresence>
-                  {lastResult && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.5 }}
-                      className={`
-                        absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                        text-4xl sm:text-6xl font-bold
-                        ${lastResult === 'perfect' ? 'text-yellow-400' : 
-                          lastResult === 'good' ? 'text-green-400' : 'text-red-400'}
-                      `}
-                    >
-                      {lastResult === 'perfect' ? '✨ PERFECT!' : 
-                       lastResult === 'good' ? '👍 GOOD!' : '😅 Oops!'}
-                    </motion.div>
+                  {/* Hit Feedback */}
+                  <AnimatePresence>
+                    {lastResult && (
+                      <motion.div
+                        initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.5, y: 20 }}
+                        animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+                        exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.25, ease: easeOutExpo }}
+                        className={`
+                          absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                          text-4xl sm:text-6xl font-bold
+                          ${lastResult === 'perfect' ? 'text-[hsl(var(--dance-hit-perfect))]' : 
+                            lastResult === 'good' ? 'text-[hsl(var(--dance-hit-good))]' : 'text-[hsl(var(--dance-hit-miss))]'}
+                        `}
+                      >
+                        {lastResult === 'perfect' ? 'PERFECT!' : 
+                         lastResult === 'good' ? 'GOOD!' : 'Oops!'}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Next Move Indicator */}
+                  {context.state === 'playing' && getNextMove() && (
+                    <div className="dance-next-chip">
+                      <span className="text-white text-sm sm:text-base font-semibold">
+                        Next: {getNextMove()?.direction.toUpperCase()}
+                      </span>
+                    </div>
                   )}
-                </AnimatePresence>
+                </div>
 
-                {/* Next Move Indicator */}
-                {context.state === 'playing' && getNextMove() && (
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full">
-                    <span className="text-white text-lg font-semibold">
-                      Next: {getNextMove()?.direction.toUpperCase()} ⬆️
-                    </span>
-                  </div>
-                )}
+                <div className="dance-glass-card p-3 sm:p-4">
+                  <StepZone
+                    moves={context.currentSong?.pattern.moves ?? []}
+                    getSongTimeMs={getSongTimeMs}
+                    isPlaying={context.state === 'playing'}
+                    lookaheadMs={lookaheadMs}
+                    reducedMotion={prefersReducedMotion}
+                  />
+                </div>
               </div>
 
               {/* Lyrics Display */}
-              <div className="text-center mb-4 min-h-[60px]">
+              <div className="text-center mb-4 min-h-[60px] dance-lyric">
                 <motion.p 
                   key={getCurrentLyric()}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, ease: easeOutQuart }}
                   className="text-2xl sm:text-3xl font-bold text-primary"
                 >
                   {getCurrentLyric()}
@@ -405,12 +506,13 @@ export default function JubeeDancePage() {
                 <ArrowButtons 
                   onInput={handleInput}
                   disabled={context.state !== 'playing'}
+                  reducedMotion={prefersReducedMotion}
                 />
               </div>
 
               {/* Instructions for little ones */}
               <div className="text-center text-muted-foreground text-sm">
-                <p>👆 Tap the arrows to dance! Match the moves! 👆</p>
+                <p>Tap the arrows to dance! Match the moves!</p>
               </div>
             </motion.div>
           )}
@@ -422,49 +524,50 @@ export default function JubeeDancePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, ease: easeOutExpo }}
               className="min-h-[80vh] flex flex-col items-center justify-center"
             >
-              <Card className="max-w-md w-full p-8 text-center">
+              <Card className="max-w-xl w-full p-8 text-center dance-glass-card">
                 {/* Result Header */}
                 <div className="mb-6">
-                  {context.state === 'celebrating' ? (
-                    <>
-                      <div className="text-6xl mb-4">🎉🏆🎉</div>
-                      <h2 className="text-3xl font-bold text-primary">PERFECT!</h2>
-                      <p className="text-muted-foreground">No mistakes! Amazing!</p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-6xl mb-4">⭐</div>
-                      <h2 className="text-3xl font-bold">Great Job!</h2>
-                      <p className="text-muted-foreground">Keep practicing!</p>
-                    </>
-                  )}
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <Star
+                        key={`star-${index}`}
+                        className={`w-8 h-8 ${index < starCount ? 'text-[hsl(var(--dance-hit-perfect))]' : 'text-muted-foreground/30'}`}
+                        fill={index < starCount ? 'currentColor' : 'none'}
+                      />
+                    ))}
+                  </div>
+                  <h2 className="text-3xl font-bold text-primary">{gradeLabel}</h2>
+                  <p className="text-muted-foreground">
+                    Accuracy {accuracyPercent}% - Total Score {context.score.totalScore}
+                  </p>
                 </div>
 
-                {/* Score Details */}
-                <div className="space-y-3 mb-8">
+                {/* Accuracy Breakdown */}
+                <div className="space-y-3 mb-6 text-left">
                   <div className="flex justify-between items-center">
-                    <span>Total Score</span>
-                    <span className="text-2xl font-bold text-primary">
-                      ⭐ {context.score.totalScore}
+                    <span>Perfect</span>
+                    <span className="font-semibold text-[hsl(var(--dance-hit-perfect))]">
+                      {context.score.perfect} ({perfectPercent}%)
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-green-500">
-                    <span>Perfect Hits</span>
-                    <span className="font-bold">{context.score.perfect}</span>
+                  <div className="flex justify-between items-center">
+                    <span>Good</span>
+                    <span className="font-semibold text-[hsl(var(--dance-hit-good))]">
+                      {context.score.good} ({goodPercent}%)
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-blue-500">
-                    <span>Good Hits</span>
-                    <span className="font-bold">{context.score.good}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-red-500">
+                  <div className="flex justify-between items-center">
                     <span>Missed</span>
-                    <span className="font-bold">{context.score.missed}</span>
+                    <span className="font-semibold text-[hsl(var(--dance-hit-miss))]">
+                      {context.score.missed} ({missPercent}%)
+                    </span>
                   </div>
-                  <div className="flex justify-between items-center text-orange-500">
+                  <div className="flex justify-between items-center">
                     <span>Max Combo</span>
-                    <span className="font-bold">🔥 {context.score.maxCombo}x</span>
+                    <span className="font-semibold">{context.score.maxCombo}x</span>
                   </div>
                 </div>
 
@@ -474,6 +577,24 @@ export default function JubeeDancePage() {
                     <RotateCcw className="w-5 h-5 mr-2" />
                     Play Again
                   </Button>
+                  <Button size="lg" variant="outline" onClick={handleNextSong} className="w-full">
+                    <Play className="w-5 h-5 mr-2" />
+                    Next Song
+                  </Button>
+                  <label className="dance-party-toggle">
+                    <input
+                      type="checkbox"
+                      checked={partyMode}
+                      onChange={(event) => setPartyMode(event.target.checked)}
+                    />
+                    <span className="dance-toggle-track" aria-hidden="true" />
+                    <span className="text-sm font-semibold">Party mode (auto next)</span>
+                  </label>
+                  {partyMode && (
+                    <p className="text-xs text-muted-foreground">
+                      Party mode on - next song starts shortly.
+                    </p>
+                  )}
                   <Button size="lg" variant="outline" onClick={handleBackToMenu} className="w-full">
                     <Music className="w-5 h-5 mr-2" />
                     Choose Song
