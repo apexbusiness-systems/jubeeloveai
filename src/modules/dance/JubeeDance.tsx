@@ -49,6 +49,7 @@ export default function JubeeDancePage() {
     reset,
     getCurrentLyric,
     getNextMove,
+    playCountdownSound,
   } = useDanceGame();
 
   // Handle song selection
@@ -72,11 +73,14 @@ export default function JubeeDancePage() {
     setCountdownValue(3);
   }, [context.currentSong]);
 
-  // Countdown effect
+  // Countdown effect with integrated sound
   useEffect(() => {
     if (countdownValue === null) return;
     
     if (countdownValue > 0) {
+      // Play countdown sound for each number
+      playCountdownSound(countdownValue);
+      
       const timer = setTimeout(() => {
         setCountdownValue(countdownValue - 1);
       }, 1000);
@@ -85,7 +89,7 @@ export default function JubeeDancePage() {
       setCountdownValue(null);
       startGame();
     }
-  }, [countdownValue, startGame]);
+  }, [countdownValue, startGame, playCountdownSound]);
 
   // Handle keyboard input
   useEffect(() => {
