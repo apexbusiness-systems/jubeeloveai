@@ -3,6 +3,21 @@ import { vi, describe, it, expect, beforeEach, afterEach, type MockInstance } fr
 import App from '../App';
 import { useJubeeStore } from '../store/useJubeeStore';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { changeLanguage: vi.fn() },
+  }),
+}));
+
+vi.mock('../components/auth/DevAuthOverride', () => ({
+  DevAuthOverride: () => null,
+}));
+
+vi.mock('../hooks/useSystemHealthMonitor', () => ({
+  useSystemHealthMonitor: () => undefined,
+}));
+
 // Mock the heavy components and those requiring browser APIs not present in jsdom
 vi.mock('../components/JubeeCanvas3DDirect', () => ({
   default: () => <div data-testid="jubee-canvas-mock">Jubee Canvas</div>
@@ -16,8 +31,11 @@ vi.mock('../components/OfflineIndicator', () => ({ OfflineIndicator: () => null 
 describe('App Resize Listener Performance', () => {
   let addEventListenerSpy: MockInstance;
   let removeEventListenerSpy: MockInstance;
+  let warnSpy: MockInstance;
 
   beforeEach(() => {
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
     // Reset store state
     act(() => {
       useJubeeStore.setState({
@@ -31,11 +49,15 @@ describe('App Resize Listener Performance', () => {
   });
 
   afterEach(() => {
+    warnSpy.mockRestore();
     vi.restoreAllMocks();
   });
 
-  it('checks resize listener attachment count when store updates', () => {
-    render(<App />);
+  it('checks resize listener attachment count when store updates', async () => {
+    await act(async () => {
+      render(<App />);
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
 
     // Initial render should attach resize listener
     // We filter for 'resize' event because other components might attach other listeners

@@ -1,17 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { useAuth } from '../useAuth'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
+
+const createDeferred = <T,>() => {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((res) => {
+    resolve = res
+  })
+  return { promise, resolve }
+}
 
 describe('useAuth', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should initialize with loading state', () => {
+  it('should initialize with loading state', async () => {
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as Promise<{
+      data: { session: Session | null }
+      error: null
+    }>)
+
     const { result } = renderHook(() => useAuth())
-    
+
     expect(result.current.loading).toBe(true)
     expect(result.current.user).toBe(null)
     expect(result.current.isAuthenticated).toBe(false)
@@ -28,27 +41,41 @@ describe('useAuth', () => {
       expires_at: Date.now() + 3600000
     }
     
-    vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({
-      data: { session: mockSession },
-      error: null,
-    })
+    const deferred = createDeferred<{ data: { session: Session | null }; error: null }>()
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise)
 
     const { result } = renderHook(() => useAuth())
 
-    // Wait for state to update
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await act(async () => {
+      deferred.resolve({ data: { session: mockSession }, error: null })
+    })
 
-    expect(result.current.loading).toBe(false)
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
     expect(result.current.user).toEqual(mockUser)
     expect(result.current.isAuthenticated).toBe(true)
   })
 
   it('should handle signOut', async () => {
+    const deferred = createDeferred<{ data: { session: Session | null }; error: null }>()
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise)
     vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null })
 
     const { result } = renderHook(() => useAuth())
 
-    await result.current.signOut()
+    await act(async () => {
+      deferred.resolve({ data: { session: null }, error: null })
+    })
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    await act(async () => {
+      await result.current.signOut()
+    })
 
     expect(supabase.auth.signOut).toHaveBeenCalled()
   })
