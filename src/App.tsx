@@ -144,9 +144,12 @@ function AppShell() {
         // If breakpoint changed, revalidate position to prevent clipping
         if (currentBreakpoint !== previousBreakpoint) {
           console.log('[Jubee Resize] Breakpoint changed:', previousBreakpoint, '->', currentBreakpoint);
-          const validated = validatePosition(containerPosition);
           
-          if (validated.bottom !== containerPosition.bottom || validated.right !== containerPosition.right) {
+          // Access current position directly from store to avoid re-running effect on state change
+          const currentPosition = useJubeeStore.getState().containerPosition;
+          const validated = validatePosition(currentPosition);
+
+          if (validated.bottom !== currentPosition.bottom || validated.right !== currentPosition.right) {
             console.log('[Jubee Resize] Position adjusted for new breakpoint:', validated);
             useJubeeStore.getState().setContainerPosition(validated);
           }
@@ -161,7 +164,7 @@ function AppShell() {
       window.removeEventListener('resize', handleResize);
       clearTimeout(resizeTimeout);
     };
-  }, [containerPosition]);
+  }, []);
 
   useEffect(() => {
     const updateThemeBasedOnTime = () => {
@@ -200,11 +203,11 @@ function AppShell() {
       return;
     }
 
-    const idle = (window as unknown as { requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number }).requestIdleCallback
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number }).requestIdleCallback
       ?? ((cb: () => void) => window.setTimeout(cb, 400));
     const cancel = (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback ?? window.clearTimeout;
 
-    const handle = idle(() => setShouldRenderMascot(true), { timeout: 1200 });
+    const handle = idle(() => setShouldRenderMascot(true));
     return () => cancel(handle);
   }, [showAppShellUI]);
 

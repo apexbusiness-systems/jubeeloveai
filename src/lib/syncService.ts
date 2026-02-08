@@ -14,6 +14,8 @@ import { syncQueue } from './syncQueue'
 import { conflictResolver } from './conflictResolver'
 import { offlineQueue } from './offlineQueue'
 import type { Json } from '@/integrations/supabase/types'
+import { logger } from './logger'
+import { captureException } from './sentry'
 
 type SyncManager = {
   register: (tag: string) => Promise<void>
@@ -62,8 +64,13 @@ class SyncService {
 
     this.syncInterval = setInterval(() => {
       if (this.isOnline() && !this.isSyncing) {
-        this.syncAll().catch(console.error)
-        offlineQueue.processQueue().catch(console.error)
+        this.syncAll().catch(err => {
+            logger.error('Auto sync failed', err)
+            captureException(err instanceof Error ? err : new Error(String(err)))
+        })
+        offlineQueue.processQueue().catch(err => {
+            logger.error('Offline queue processing failed', err)
+        })
       }
     }, intervalMs)
 
@@ -73,7 +80,7 @@ class SyncService {
         const syncEnabledRegistration = registration as ServiceWorkerRegistration & { sync?: SyncManager }
         if (syncEnabledRegistration.sync) {
           syncEnabledRegistration.sync.register('jubee-sync').catch(err => {
-            console.warn('Background sync registration failed:', err)
+            logger.warn('Background sync registration failed:', err)
           })
         }
       })
@@ -96,12 +103,12 @@ class SyncService {
    */
   async syncAll(): Promise<Record<string, SyncResult>> {
     if (!this.isOnline()) {
-      console.log('Offline - skipping sync')
+      logger.dev('Offline - skipping sync')
       return {}
     }
 
     if (this.isSyncing) {
-      console.log('Sync already in progress')
+      logger.dev('Sync already in progress')
       return {}
     }
 
@@ -112,7 +119,7 @@ class SyncService {
       // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        console.log('No active session - skipping sync')
+        logger.dev('No active session - skipping sync')
         return {}
       }
 
@@ -123,10 +130,11 @@ class SyncService {
       results.stickers = await this.syncStickers()
       results.childrenProfiles = await this.syncChildrenProfiles()
 
-      console.log('Sync completed:', results)
+      logger.info('Sync completed:', results)
       return results
     } catch (error) {
-      console.error('Sync error:', error)
+      logger.error('Sync error:', error)
+      captureException(error instanceof Error ? error : new Error(String(error)))
       return results
     } finally {
       this.isSyncing = false
@@ -168,7 +176,7 @@ class SyncService {
           await jubeeDB.put('gameProgress', { ...item, synced: true })
           result.synced++
         } catch (error) {
-          console.error('Failed to sync game progress item:', error)
+          logger.error('Failed to sync game progress item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
           
@@ -182,7 +190,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.error('syncGameProgress error:', error)
+      logger.error('syncGameProgress error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -221,7 +229,7 @@ class SyncService {
           await jubeeDB.put('achievements', { ...item, synced: true })
           result.synced++
         } catch (error) {
-          console.error('Failed to sync achievement item:', error)
+          logger.error('Failed to sync achievement item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
           
@@ -235,7 +243,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.error('syncAchievements error:', error)
+      logger.error('syncAchievements error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -274,7 +282,7 @@ class SyncService {
           await jubeeDB.put('drawings', { ...item, synced: true })
           result.synced++
         } catch (error) {
-          console.error('Failed to sync drawing item:', error)
+          logger.error('Failed to sync drawing item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
           
@@ -288,7 +296,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.error('syncDrawings error:', error)
+      logger.error('syncDrawings error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -327,7 +335,7 @@ class SyncService {
           await jubeeDB.put('stickers', { ...item, synced: true })
           result.synced++
         } catch (error) {
-          console.error('Failed to sync sticker item:', error)
+          logger.error('Failed to sync sticker item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
           
@@ -341,7 +349,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.error('syncStickers error:', error)
+      logger.error('syncStickers error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -382,7 +390,7 @@ class SyncService {
           await jubeeDB.put('childrenProfiles', { ...item, synced: true })
           result.synced++
         } catch (error) {
-          console.error('Failed to sync children profile item:', error)
+          logger.error('Failed to sync children profile item:', error)
           result.failed++
           result.errors.push(error instanceof Error ? error.message : 'Unknown error')
           
@@ -396,7 +404,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      console.error('syncChildrenProfiles error:', error)
+      logger.error('syncChildrenProfiles error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -456,7 +464,7 @@ class SyncService {
           
           if (conflict) {
             conflictResolver.addConflict(conflict)
-            console.log('Conflict detected for game progress')
+            logger.info('Conflict detected for game progress')
             return // Don't overwrite, let user resolve
           }
         }
@@ -504,9 +512,10 @@ class SyncService {
         }
       }
 
-      console.log('Pull from Supabase completed')
+      logger.info('Pull from Supabase completed')
     } catch (error) {
-      console.error('pullFromSupabase error:', error)
+      logger.error('pullFromSupabase error:', error)
+      captureException(error instanceof Error ? error : new Error(String(error)))
     }
   }
 
