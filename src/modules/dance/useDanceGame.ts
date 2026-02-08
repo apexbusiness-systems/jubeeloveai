@@ -44,6 +44,7 @@ export function useDanceGame(): UseDanceGameReturn {
     playCountdown,
     playStart,
     playCelebrate,
+    playCombo,
     playStumble,
     preloadSounds,
   } = useDanceSoundEffects();
@@ -114,6 +115,9 @@ export function useDanceGame(): UseDanceGameReturn {
     }, 1000);
   }, [context.currentSong, dispatch, playCountdown, playStart]);
 
+  // Combo milestone thresholds
+  const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
+
   // Handle directional input
   const handleInput = useCallback((direction: Direction) => {
     if (context.state !== 'playing') return;
@@ -127,18 +131,31 @@ export function useDanceGame(): UseDanceGameReturn {
     
     // Evaluate the input
     const result = evaluateInput(context, direction, inputTime);
+    const prevCombo = context.score.combo;
     
     switch (result) {
-      case 'perfect':
+      case 'perfect': {
         dispatch({ type: 'PERFECT_HIT' });
         playPerfect();
+        const newCombo = prevCombo + 1;
+        if (COMBO_MILESTONES.includes(newCombo)) {
+          playCombo();
+          logger.dev(`[useDanceGame] 🔥 COMBO x${newCombo}!`);
+        }
         logger.dev('[useDanceGame] PERFECT!');
         break;
-      case 'good':
+      }
+      case 'good': {
         dispatch({ type: 'GOOD_HIT' });
         playGood();
+        const newCombo = prevCombo + 1;
+        if (COMBO_MILESTONES.includes(newCombo)) {
+          playCombo();
+          logger.dev(`[useDanceGame] 🔥 COMBO x${newCombo}!`);
+        }
         logger.dev('[useDanceGame] Good!');
         break;
+      }
       case 'miss':
         dispatch({ type: 'MISS' });
         playMiss();
@@ -149,7 +166,7 @@ export function useDanceGame(): UseDanceGameReturn {
         // Too early, ignore
         break;
     }
-  }, [context, dispatch, playPerfect, playGood, playMiss, playStumble]);
+  }, [context, dispatch, playPerfect, playGood, playMiss, playStumble, playCombo]);
 
   // Pause game
   const pause = useCallback(() => {
