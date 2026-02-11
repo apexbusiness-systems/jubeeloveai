@@ -202,6 +202,7 @@ class SyncService {
    */
   private async syncAchievements(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const perfStart = performance.now()
 
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
@@ -255,6 +256,15 @@ class SyncService {
       logger.error('Catastrophic syncAchievements error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    const perfEnd = performance.now()
+    if (result.synced + result.failed > 0) {
+        logger.info('syncAchievements performance', {
+            duration: perfEnd - perfStart,
+            itemCount: result.synced + result.failed,
+            avgTimePerItem: (perfEnd - perfStart) / (result.synced + result.failed)
+        })
     }
 
     return result
@@ -357,6 +367,7 @@ class SyncService {
    */
   private async syncStickers(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const perfStart = performance.now()
 
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
@@ -411,6 +422,15 @@ class SyncService {
       logger.error('Catastrophic syncStickers error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    const perfEnd = performance.now()
+    if (result.synced + result.failed > 0) {
+        logger.info('syncStickers performance', {
+            duration: perfEnd - perfStart,
+            itemCount: result.synced + result.failed,
+            avgTimePerItem: (perfEnd - perfStart) / (result.synced + result.failed)
+        })
     }
 
     return result
