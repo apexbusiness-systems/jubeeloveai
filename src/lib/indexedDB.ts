@@ -202,8 +202,6 @@ class IndexedDBService {
     storeName: K,
     items: DBSchema[K]['value'][]
   ): Promise<void> {
-    if (items.length === 0) return
-
     try {
       const db = await this.init()
 
