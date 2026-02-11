@@ -78,7 +78,7 @@ describe('SyncService Performance', () => {
     const upsertSpy = vi.fn().mockResolvedValue({ error: null })
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     await syncService.syncAll()
 
@@ -114,7 +114,7 @@ describe('SyncService Performance', () => {
     const upsertSpy = vi.fn().mockResolvedValue({ error: null })
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy,
-    } as any)
+    } as unknown as ReturnType<typeof supabase.from>)
 
     await syncService.syncAll()
 
