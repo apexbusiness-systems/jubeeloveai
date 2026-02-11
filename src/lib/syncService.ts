@@ -419,6 +419,7 @@ class SyncService {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+      const user = session.user
 
       // Pull game progress
       const { data: gameProgress } = await supabase
@@ -466,37 +467,90 @@ class SyncService {
         })
       }
 
-      // Pull achievements
-      const { data: achievements } = await supabase
-        .from('achievements')
-        .select('*')
+      // Fetch bulk data in parallel
+      const [achievementsData, stickersData, drawingsData] = await Promise.all([
+        supabase.from('achievements')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('child_profile_id', null),
 
-      if (achievements) {
-        for (const achievement of achievements) {
-          await jubeeDB.put('achievements', {
-            id: achievement.id,
-            achievementId: achievement.achievement_id,
-            unlockedAt: achievement.unlocked_at ?? new Date().toISOString(),
-            synced: true,
-          })
-        }
+        supabase.from('stickers')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('child_profile_id', null),
+
+        supabase.from('drawings')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('child_profile_id', null)
+          .order('created_at', { ascending: false })
+          .limit(50)
+      ])
+
+      // Process each store with individual error handling (fail-fast within each store via putBulk)
+      const pullOperations = []
+
+      // Bulk write achievements
+      if (achievementsData.data && achievementsData.data.length > 0) {
+        const mappedAchievements = achievementsData.data.map(achievement => ({
+          id: achievement.id,
+          achievementId: achievement.achievement_id,
+          unlockedAt: achievement.unlocked_at ?? new Date().toISOString(),
+          synced: true,
+        }))
+
+        pullOperations.push(
+          jubeeDB.putBulk('achievements', mappedAchievements)
+            .then(() => logger.info(`Pulled ${mappedAchievements.length} achievements`))
+            .catch(error => {
+              logger.error('Failed to write achievements:', error)
+              throw new Error(`Achievements write failed: ${error.message}`)
+            })
+        )
       }
 
-      // Pull stickers
-      const { data: stickers } = await supabase
-        .from('stickers')
-        .select('*')
+      // Bulk write stickers
+      if (stickersData.data && stickersData.data.length > 0) {
+        const mappedStickers = stickersData.data.map(sticker => ({
+          id: sticker.id,
+          stickerId: sticker.sticker_id,
+          unlockedAt: sticker.unlocked_at ?? new Date().toISOString(),
+          synced: true,
+        }))
 
-      if (stickers) {
-        for (const sticker of stickers) {
-          await jubeeDB.put('stickers', {
-            id: sticker.id,
-            stickerId: sticker.sticker_id,
-            unlockedAt: sticker.unlocked_at ?? new Date().toISOString(),
-            synced: true,
-          })
-        }
+        pullOperations.push(
+          jubeeDB.putBulk('stickers', mappedStickers)
+            .then(() => logger.info(`Pulled ${mappedStickers.length} stickers`))
+            .catch(error => {
+              logger.error('Failed to write stickers:', error)
+              throw new Error(`Stickers write failed: ${error.message}`)
+            })
+        )
       }
+
+      // Bulk write drawings
+      if (drawingsData.data && drawingsData.data.length > 0) {
+        const mappedDrawings = drawingsData.data.map(drawing => ({
+          id: drawing.id,
+          title: drawing.title,
+          imageData: drawing.image_data,
+          createdAt: drawing.created_at,
+          updatedAt: drawing.updated_at,
+          synced: true,
+        }))
+
+        pullOperations.push(
+          jubeeDB.putBulk('drawings', mappedDrawings)
+            .then(() => logger.info(`Pulled ${mappedDrawings.length} drawings`))
+            .catch(error => {
+              logger.error('Failed to write drawings:', error)
+              throw new Error(`Drawings write failed: ${error.message}`)
+            })
+        )
+      }
+
+      // Execute all store writes
+      await Promise.all(pullOperations)
 
       logger.info('Pull from Supabase completed')
     } catch (error) {

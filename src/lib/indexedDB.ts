@@ -191,6 +191,68 @@ class IndexedDBService {
   }
 
   /**
+   * Bulk put operation - Writes multiple records in a single transaction
+   * CRITICAL: Uses single transaction for true parallelism
+   *
+   * @param storeName - Object store name
+   * @param items - Array of items to write
+   * @returns Promise resolving when all items are written
+   */
+  async putBulk<K extends keyof DBSchema>(
+    storeName: K,
+    items: DBSchema[K]['value'][]
+  ): Promise<void> {
+    if (items.length === 0) return
+
+    try {
+      const db = await this.init()
+
+      return new Promise((resolve, reject) => {
+        // Create SINGLE transaction for all operations
+        const transaction = db.transaction([storeName], 'readwrite')
+        const store = transaction.objectStore(storeName)
+
+        // Queue all put operations in the same transaction
+        // These are non-blocking within the transaction
+        items.forEach(item => {
+          const request = store.put(item)
+
+          // Optional: Track individual errors
+          request.onerror = () => {
+            logger.error(`Put failed for item in ${storeName}:`, request.error)
+          }
+        })
+
+        // Transaction completes when all operations finish
+        transaction.oncomplete = () => {
+          logger.dev(`✅ Bulk put: ${items.length} items in ${storeName}`)
+          resolve()
+        }
+
+        transaction.onerror = () => {
+          logger.error(`❌ Bulk put failed in ${storeName}:`, transaction.error)
+          reject(new Error(
+            `Bulk put failed in ${storeName}: ${transaction.error?.message}`
+          ))
+        }
+
+        transaction.onabort = () => {
+          logger.error(`⚠️ Bulk put aborted in ${storeName}`)
+          reject(new Error(`Bulk put aborted in ${storeName}`))
+        }
+      })
+    } catch (error) {
+      logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
+
+      // Fallback: Serial localStorage writes (rare edge case)
+      logger.warn('Falling back to serial localStorage writes')
+      for (const item of items) {
+        this.fallbackToLocalStorage('put', storeName, item)
+      }
+    }
+  }
+
+  /**
    * Generic method to get data by key
    */
   /**
