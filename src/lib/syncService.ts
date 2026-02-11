@@ -205,42 +205,97 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('achievements')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              achievement_id: item.achievementId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,achievement_id'
-            })
+      // PHASE 1: Attempt batch operation (happy path)
+      const batchData = unsynced.map(item => ({
+        user_id: user.id,
+        child_profile_id: null,
+        achievement_id: item.achievementId,
+        unlocked_at: item.unlockedAt,
+      }))
 
-          if (error) throw error
+      logger.info(`Attempting batch sync of ${unsynced.length} achievements`)
+      const { error: batchError } = await supabase
+        .from('achievements')
+        .upsert(batchData, { onConflict: 'user_id,child_profile_id,achievement_id' })
 
-          await jubeeDB.put('achievements', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync achievement item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'achievements',
-            operation: 'sync',
-            data: item,
-            priority: 4
-          })
-        }
+      // SUCCESS: Happy path
+      if (!batchError) {
+        await this.markItemsSynced(unsynced, 'achievements')
+        result.synced = unsynced.length
+        logger.info(`✅ Batch synced ${unsynced.length} achievements`)
+        return result
       }
+
+      // PHASE 2: Batch failed - Analyze error type
+      logger.warn('Batch sync failed for achievements, analyzing error:', batchError)
+
+      // Check if it's a transient network error
+      if (this.isTransientError(batchError)) {
+        logger.info('Transient error detected - will retry batch later')
+
+        syncQueue.add({
+          storeName: 'achievements',
+          operation: 'sync_batch',
+          data: { items: unsynced },
+          priority: 4
+        })
+
+        result.failed = unsynced.length
+        result.errors.push(`Transient batch error: ${batchError.message}`)
+        return result
+      }
+
+      // PHASE 3: Data-level error - Fall back to individual processing
+      logger.info('Data-level error - falling back to individual sync for achievements')
+      return await this.syncAchievementsIndividual(user, unsynced)
+
     } catch (error) {
-      logger.error('syncAchievements error:', error)
+      logger.error('Catastrophic syncAchievements error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Fallback: Individual sync with granular error handling for achievements
+   */
+  private async syncAchievementsIndividual(
+    user: User,
+    items: DBSchema['achievements']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        const { error } = await supabase
+          .from('achievements')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            achievement_id: item.achievementId,
+            unlocked_at: item.unlockedAt,
+          }, { onConflict: 'user_id,child_profile_id,achievement_id' })
+
+        if (error) throw error
+
+        await jubeeDB.put('achievements', { ...item, synced: true })
+        result.synced++
+      } catch (error) {
+        logger.error('Failed to sync achievement:', error)
+        result.failed++
+        result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+        syncQueue.add({
+          storeName: 'achievements',
+          operation: 'sync',
+          data: item,
+          priority: 4
+        })
+      }
     }
 
     return result
@@ -305,42 +360,99 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
-      
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('stickers')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              sticker_id: item.stickerId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,sticker_id'
-            })
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      // PHASE 1: Attempt batch operation (happy path)
+      const batchData = unsynced.map(item => ({
+        user_id: user.id,
+        child_profile_id: null,
+        sticker_id: item.stickerId,
+        unlocked_at: item.unlockedAt,
+      }))
 
-          await jubeeDB.put('stickers', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync sticker item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'stickers',
-            operation: 'sync',
-            data: item,
-            priority: 2
-          })
-        }
+      logger.info(`Attempting batch sync of ${unsynced.length} stickers`)
+      const { error: batchError } = await supabase
+        .from('stickers')
+        .upsert(batchData, { onConflict: 'user_id,child_profile_id,sticker_id' })
+
+      // SUCCESS: Happy path - 99% of cases
+      if (!batchError) {
+        await this.markItemsSynced(unsynced, 'stickers')
+        result.synced = unsynced.length
+        logger.info(`✅ Batch synced ${unsynced.length} stickers in single operation`)
+        return result
       }
+
+      // PHASE 2: Batch failed - Analyze error type
+      logger.warn('Batch sync failed, analyzing error:', batchError)
+
+      // Check if it's a transient network error
+      if (this.isTransientError(batchError)) {
+        logger.info('Transient error detected - will retry batch later')
+
+        // Queue entire batch for retry (don't fallback yet)
+        syncQueue.add({
+          storeName: 'stickers',
+          operation: 'sync_batch',
+          data: { items: unsynced }, // Special batch marker
+          priority: 2
+        })
+
+        result.failed = unsynced.length
+        result.errors.push(`Transient batch error: ${batchError.message}`)
+        return result
+      }
+
+      // PHASE 3: Data-level error - Fall back to individual processing
+      logger.info('Data-level error - falling back to individual sync')
+      return await this.syncStickersIndividual(user, unsynced)
+
     } catch (error) {
-      logger.error('syncStickers error:', error)
+      logger.error('Catastrophic syncStickers error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Fallback: Individual sync with granular error handling for stickers
+   * Only used when batch fails
+   */
+  private async syncStickersIndividual(
+    user: User,
+    items: DBSchema['stickers']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        const { error } = await supabase
+          .from('stickers')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            sticker_id: item.stickerId,
+            unlocked_at: item.unlockedAt,
+          }, { onConflict: 'user_id,child_profile_id,sticker_id' })
+
+        if (error) throw error
+
+        await jubeeDB.put('stickers', { ...item, synced: true })
+        result.synced++
+      } catch (error) {
+        logger.error('Failed to sync sticker:', error)
+        result.failed++
+        result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+        syncQueue.add({
+          storeName: 'stickers',
+          operation: 'sync',
+          data: item,
+          priority: 2
+        })
+      }
     }
 
     return result
@@ -521,9 +633,35 @@ class SyncService {
     }
 
     return await syncQueue.processQueue(async (operation) => {
-      const { storeName, data } = operation
+      const { storeName, data, operation: opType } = operation
       
-      // Re-attempt the sync operation based on store name
+      // Handle batch retry
+      if (opType === 'sync_batch' && Array.isArray(data.items)) {
+        // For batch operations, we just re-trigger the sync method for that store
+        // ensuring we don't infinitely recurse if it fails again (syncQueue handles attempt limits)
+        // But better: try to process the batch directly here to respect the retry logic
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const items = data.items as any[]
+
+        switch (storeName) {
+           case 'stickers':
+             await this.syncStickers(user) // This will pick up items from DB again.
+             // Wait, if we use syncStickers, it fetches from DB.
+             // If items are still unsynced in DB, it will try to batch sync them again.
+             // This seems safer than reconstructing the batch logic here.
+             break
+           case 'achievements':
+             await this.syncAchievements(user)
+             break
+           default:
+             // Fallback for others or if not supported
+             logger.warn(`Batch sync retry not implemented for ${storeName}`)
+        }
+        return
+      }
+
+      // Re-attempt the individual sync operation based on store name
       switch (storeName) {
         case 'gameProgress':
           await supabase.from('game_progress').upsert({
@@ -588,6 +726,74 @@ class SyncService {
           throw new Error(`Unknown store: ${storeName}`)
       }
     })
+  }
+
+  /**
+   * Mark multiple items as synced in IndexedDB
+   * Uses putBulk if available, falls back to serial
+   */
+  private async markItemsSynced<K extends keyof DBSchema>(
+    items: DBSchema[K]['value'][],
+    storeName: K
+  ): Promise<void> {
+    const syncedItems = items.map(item => ({ ...item, synced: true }))
+
+    // Use bulk operation
+    if (typeof jubeeDB.putBulk === 'function') {
+      await jubeeDB.putBulk(storeName, syncedItems)
+    } else {
+      // Fallback: serial updates (should be covered by putBulk implementation but safe to have)
+      for (const item of syncedItems) {
+        await jubeeDB.put(storeName, item)
+      }
+    }
+  }
+
+  /**
+   * Determine if error is transient (network/server) vs data-level
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private isTransientError(error: any): boolean {
+    const errorStr = JSON.stringify(error).toLowerCase()
+
+    // Network-related errors
+    const transientPatterns = [
+      'network',
+      'timeout',
+      'econnrefused',
+      'etimedout',
+      'enotfound',
+      '503', // Service unavailable
+      '504', // Gateway timeout
+      '429', // Rate limit
+      '500', // Server error (sometimes transient)
+      'fetch failed',
+      'connection',
+    ]
+
+    // Check for transient patterns
+    const isTransient = transientPatterns.some(pattern =>
+      errorStr.includes(pattern)
+    )
+
+    // Data errors (should NOT retry batch)
+    const dataErrorPatterns = [
+      '23505', // Postgres unique violation
+      '23503', // Foreign key violation
+      '23502', // Not null violation
+      '22', // Data exception (Postgres)
+      'invalid',
+      'constraint',
+    ]
+
+    const isDataError = dataErrorPatterns.some(pattern =>
+      errorStr.includes(pattern)
+    )
+
+    // If clearly a data error, not transient
+    if (isDataError) return false
+
+    return isTransient
   }
 
   /**
