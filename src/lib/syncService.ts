@@ -151,40 +151,65 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('game_progress')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              score: item.score,
-              activities_completed: item.activitiesCompleted,
-              current_theme: item.currentTheme,
-              last_activity: item.lastActivity,
-              updated_at: item.updatedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id'
-            })
+      try {
+        const batchData = unsynced.map(item => ({
+          user_id: user.id,
+          child_profile_id: null,
+          score: item.score,
+          activities_completed: item.activitiesCompleted,
+          current_theme: item.currentTheme,
+          last_activity: item.lastActivity,
+          updated_at: item.updatedAt,
+        }))
 
-          if (error) throw error
-
-          // Mark as synced
-          await jubeeDB.put('gameProgress', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync game progress item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'gameProgress',
-            operation: 'sync',
-            data: item,
-            priority: 5
+        const { error } = await supabase
+          .from('game_progress')
+          .upsert(batchData, {
+            onConflict: 'user_id,child_profile_id'
           })
+
+        if (error) throw error
+
+        const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
+        await jubeeDB.putBulk('gameProgress', syncedItems)
+        result.synced = unsynced.length
+      } catch (batchError) {
+        logger.warn('Batch sync failed for gameProgress, falling back to individual:', batchError)
+        // Fallback to individual
+        for (const item of unsynced) {
+          try {
+            const { error } = await supabase
+              .from('game_progress')
+              .upsert({
+                user_id: user.id,
+                child_profile_id: null,
+                score: item.score,
+                activities_completed: item.activitiesCompleted,
+                current_theme: item.currentTheme,
+                last_activity: item.lastActivity,
+                updated_at: item.updatedAt,
+              }, {
+                onConflict: 'user_id,child_profile_id'
+              })
+
+            if (error) throw error
+
+            await jubeeDB.put('gameProgress', { ...item, synced: true })
+            result.synced++
+          } catch (error) {
+            logger.error('Failed to sync game progress item:', error)
+            result.failed++
+            result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+            syncQueue.add({
+              storeName: 'gameProgress',
+              operation: 'sync',
+              data: item,
+              priority: 5
+            })
+          }
         }
       }
     } catch (error) {
@@ -205,36 +230,58 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('achievements')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              achievement_id: item.achievementId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,achievement_id'
-            })
+      try {
+        const batchData = unsynced.map(item => ({
+          user_id: user.id,
+          child_profile_id: null,
+          achievement_id: item.achievementId,
+          unlocked_at: item.unlockedAt,
+        }))
 
-          if (error) throw error
-
-          await jubeeDB.put('achievements', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync achievement item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'achievements',
-            operation: 'sync',
-            data: item,
-            priority: 4
+        const { error } = await supabase
+          .from('achievements')
+          .upsert(batchData, {
+            onConflict: 'user_id,child_profile_id,achievement_id'
           })
+
+        if (error) throw error
+
+        const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
+        await jubeeDB.putBulk('achievements', syncedItems)
+        result.synced = unsynced.length
+      } catch (batchError) {
+        logger.warn('Batch sync failed for achievements, falling back to individual:', batchError)
+        for (const item of unsynced) {
+          try {
+            const { error } = await supabase
+              .from('achievements')
+              .upsert({
+                user_id: user.id,
+                child_profile_id: null,
+                achievement_id: item.achievementId,
+                unlocked_at: item.unlockedAt,
+              }, {
+                onConflict: 'user_id,child_profile_id,achievement_id'
+              })
+
+            if (error) throw error
+
+            await jubeeDB.put('achievements', { ...item, synced: true })
+            result.synced++
+          } catch (error) {
+            logger.error('Failed to sync achievement item:', error)
+            result.failed++
+            result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+            syncQueue.add({
+              storeName: 'achievements',
+              operation: 'sync',
+              data: item,
+              priority: 4
+            })
+          }
         }
       }
     } catch (error) {
@@ -252,39 +299,67 @@ class SyncService {
    */
   private async syncDrawings(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const BATCH_SIZE = 10
 
     try {
       const unsynced = await jubeeDB.getUnsynced('drawings')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
+      // Process in chunks to avoid payload size issues
+      for (let i = 0; i < unsynced.length; i += BATCH_SIZE) {
+        const chunk = unsynced.slice(i, i + BATCH_SIZE)
+
         try {
+          const batchData = chunk.map(item => ({
+            user_id: user.id,
+            child_profile_id: null,
+            title: item.title,
+            image_data: item.imageData,
+            created_at: item.createdAt,
+            updated_at: item.updatedAt,
+          }))
+
           const { error } = await supabase
             .from('drawings')
-            .insert({
-              user_id: user.id,
-              child_profile_id: null,
-              title: item.title,
-              image_data: item.imageData,
-              created_at: item.createdAt,
-              updated_at: item.updatedAt,
-            })
+            .insert(batchData)
 
           if (error) throw error
 
-          await jubeeDB.put('drawings', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync drawing item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'drawings',
-            operation: 'sync',
-            data: item,
-            priority: 3
-          })
+          const syncedItems = chunk.map(item => ({ ...item, synced: true }))
+          await jubeeDB.putBulk('drawings', syncedItems)
+          result.synced += chunk.length
+        } catch (batchError) {
+          logger.warn('Batch sync failed for drawings chunk, falling back to individual:', batchError)
+          for (const item of chunk) {
+            try {
+              const { error } = await supabase
+                .from('drawings')
+                .insert({
+                  user_id: user.id,
+                  child_profile_id: null,
+                  title: item.title,
+                  image_data: item.imageData,
+                  created_at: item.createdAt,
+                  updated_at: item.updatedAt,
+                })
+
+              if (error) throw error
+
+              await jubeeDB.put('drawings', { ...item, synced: true })
+              result.synced++
+            } catch (error) {
+              logger.error('Failed to sync drawing item:', error)
+              result.failed++
+              result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+              syncQueue.add({
+                storeName: 'drawings',
+                operation: 'sync',
+                data: item,
+                priority: 3
+              })
+            }
+          }
         }
       }
     } catch (error) {
@@ -305,36 +380,58 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('stickers')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              sticker_id: item.stickerId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,sticker_id'
-            })
+      try {
+        const batchData = unsynced.map(item => ({
+          user_id: user.id,
+          child_profile_id: null,
+          sticker_id: item.stickerId,
+          unlocked_at: item.unlockedAt,
+        }))
 
-          if (error) throw error
-
-          await jubeeDB.put('stickers', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync sticker item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'stickers',
-            operation: 'sync',
-            data: item,
-            priority: 2
+        const { error } = await supabase
+          .from('stickers')
+          .upsert(batchData, {
+            onConflict: 'user_id,child_profile_id,sticker_id'
           })
+
+        if (error) throw error
+
+        const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
+        await jubeeDB.putBulk('stickers', syncedItems)
+        result.synced = unsynced.length
+      } catch (batchError) {
+        logger.warn('Batch sync failed for stickers, falling back to individual:', batchError)
+        for (const item of unsynced) {
+          try {
+            const { error } = await supabase
+              .from('stickers')
+              .upsert({
+                user_id: user.id,
+                child_profile_id: null,
+                sticker_id: item.stickerId,
+                unlocked_at: item.unlockedAt,
+              }, {
+                onConflict: 'user_id,child_profile_id,sticker_id'
+              })
+
+            if (error) throw error
+
+            await jubeeDB.put('stickers', { ...item, synced: true })
+            result.synced++
+          } catch (error) {
+            logger.error('Failed to sync sticker item:', error)
+            result.failed++
+            result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+            syncQueue.add({
+              storeName: 'stickers',
+              operation: 'sync',
+              data: item,
+              priority: 2
+            })
+          }
         }
       }
     } catch (error) {
@@ -355,38 +452,62 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('childrenProfiles')
+      if (unsynced.length === 0) return result
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('children_profiles')
-            .upsert([{
-              id: item.id,
-              parent_user_id: user.id,
-              name: item.name,
-              age: item.age,
-              gender: item.gender,
-              avatar_url: item.avatarUrl,
-              settings: (item.settings as Json) ?? null,
-              updated_at: item.updatedAt,
-            }])
+      try {
+        const batchData = unsynced.map(item => ({
+          id: item.id,
+          parent_user_id: user.id,
+          name: item.name,
+          age: item.age,
+          gender: item.gender,
+          avatar_url: item.avatarUrl,
+          settings: (item.settings as Json) ?? null,
+          updated_at: item.updatedAt,
+        }))
 
-          if (error) throw error
+        const { error } = await supabase
+          .from('children_profiles')
+          .upsert(batchData)
 
-          await jubeeDB.put('childrenProfiles', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync children profile item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'childrenProfiles',
-            operation: 'sync',
-            data: item,
-            priority: 1
-          })
+        if (error) throw error
+
+        const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
+        await jubeeDB.putBulk('childrenProfiles', syncedItems)
+        result.synced = unsynced.length
+      } catch (batchError) {
+        logger.warn('Batch sync failed for childrenProfiles, falling back to individual:', batchError)
+        for (const item of unsynced) {
+          try {
+            const { error } = await supabase
+              .from('children_profiles')
+              .upsert([{
+                id: item.id,
+                parent_user_id: user.id,
+                name: item.name,
+                age: item.age,
+                gender: item.gender,
+                avatar_url: item.avatarUrl,
+                settings: (item.settings as Json) ?? null,
+                updated_at: item.updatedAt,
+              }])
+
+            if (error) throw error
+
+            await jubeeDB.put('childrenProfiles', { ...item, synced: true })
+            result.synced++
+          } catch (error) {
+            logger.error('Failed to sync children profile item:', error)
+            result.failed++
+            result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+            syncQueue.add({
+              storeName: 'childrenProfiles',
+              operation: 'sync',
+              data: item,
+              priority: 1
+            })
+          }
         }
       }
     } catch (error) {
