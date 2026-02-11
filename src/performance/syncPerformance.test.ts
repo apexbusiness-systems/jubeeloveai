@@ -25,7 +25,6 @@ vi.mock('../lib/indexedDB', () => ({
   jubeeDB: {
     getUnsynced: vi.fn().mockResolvedValue([]),
     put: vi.fn(),
-    putBulk: vi.fn(),
     get: vi.fn(),
     getAll: vi.fn(),
   },

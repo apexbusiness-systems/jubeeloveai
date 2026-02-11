@@ -1,8 +1,8 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { jubeeDB } from '../lib/indexedDB'
-import { syncService } from '../lib/syncService'
+import { jubeeDB, type DBSchema } from '../lib/indexedDB'
 import { supabase } from '@/integrations/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
 // Mock dependencies
 vi.mock('@/integrations/supabase/client', () => ({
@@ -37,7 +37,7 @@ describe('Performance Benchmark: Serial vs Bulk Operations', () => {
 
     // Mock user
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'test-user' } } as any,
+      data: { user: { id: 'test-user' } as unknown as User },
       error: null,
     })
   })
@@ -47,9 +47,11 @@ describe('Performance Benchmark: Serial vs Bulk Operations', () => {
     const TRANSACTION_OVERHEAD_MS = 10
     const BULK_TRANSACTION_OVERHEAD_MS = 20 // slightly higher due to larger payload, but only once
 
-    const mockItems = Array.from({ length: NUM_ITEMS }, (_, i) => ({
+    const mockItems: DBSchema['achievements']['value'][] = Array.from({ length: NUM_ITEMS }, (_, i) => ({
       id: `item-${i}`,
-      value: i,
+      achievementId: `ach-${i}`,
+      unlockedAt: new Date().toISOString(),
+      synced: true
     }))
 
     // 1. Simulate Serial Operations
@@ -60,7 +62,7 @@ describe('Performance Benchmark: Serial vs Bulk Operations', () => {
 
     const serialStart = performance.now()
     for (const item of mockItems) {
-      await jubeeDB.put('achievements', item as any)
+      await jubeeDB.put('achievements', item)
     }
     const serialTime = performance.now() - serialStart
     console.log(`Serial Time (${NUM_ITEMS} items): ${serialTime.toFixed(2)}ms`)
@@ -73,7 +75,7 @@ describe('Performance Benchmark: Serial vs Bulk Operations', () => {
     })
 
     const bulkStart = performance.now()
-    await jubeeDB.putBulk('achievements', mockItems as any)
+    await jubeeDB.putBulk('achievements', mockItems)
     const bulkTime = performance.now() - bulkStart
     console.log(`Bulk Time (${NUM_ITEMS} items): ${bulkTime.toFixed(2)}ms`)
 
