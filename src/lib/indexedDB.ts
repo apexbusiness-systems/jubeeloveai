@@ -191,6 +191,38 @@ class IndexedDBService {
   }
 
   /**
+   * Bulk add or update records in the specified store
+   * Uses a single transaction for better performance
+   *
+   * @param storeName - Name of the object store
+   * @param items - Array of data items to store
+   * @throws {Error} If operation fails
+   */
+  async putBulk<K extends keyof DBSchema>(
+    storeName: K,
+    items: DBSchema[K]['value'][]
+  ): Promise<void> {
+    try {
+      const db = await this.init()
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite')
+        const store = transaction.objectStore(storeName)
+
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(new Error(`Failed to putBulk data in ${storeName}`))
+
+        items.forEach(item => {
+          store.put(item)
+        })
+      })
+    } catch (error) {
+      logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
+      // Fallback to localStorage (iterate)
+      items.forEach(item => this.fallbackToLocalStorage('put', storeName, item))
+    }
+  }
+
+  /**
    * Generic method to get data by key
    */
   /**
