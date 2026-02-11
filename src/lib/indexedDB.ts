@@ -191,6 +191,39 @@ class IndexedDBService {
   }
 
   /**
+   * Add or update multiple records in the specified store
+   *
+   * @param storeName - Name of the object store
+   * @param items - Array of data to store (each must include id field)
+   * @throws {Error} If operation fails
+   */
+  async putBulk<K extends keyof DBSchema>(
+    storeName: K,
+    items: DBSchema[K]['value'][]
+  ): Promise<void> {
+    if (items.length === 0) return
+
+    try {
+      const db = await this.init()
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite')
+        const store = transaction.objectStore(storeName)
+
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(new Error(`Failed to bulk put data in ${storeName}`))
+
+        items.forEach(item => {
+          store.put(item)
+        })
+      })
+    } catch (error) {
+      logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
+      // Fallback to localStorage
+      this.fallbackToLocalStorage('putBulk', storeName, items)
+    }
+  }
+
+  /**
    * Generic method to get data by key
    */
   /**
@@ -395,6 +428,22 @@ class IndexedDBService {
           } else {
             existing.push(putData)
           }
+          localStorage.setItem(key, JSON.stringify(existing))
+          break
+        }
+        case 'putBulk': {
+          const existing = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
+          const putItems = data as ItemWithId[]
+
+          putItems.forEach(putItem => {
+            const index = existing.findIndex((item: ItemWithId) => item.id === putItem.id)
+            if (index >= 0) {
+              existing[index] = putItem
+            } else {
+              existing.push(putItem)
+            }
+          })
+
           localStorage.setItem(key, JSON.stringify(existing))
           break
         }
