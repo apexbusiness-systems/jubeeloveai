@@ -202,45 +202,79 @@ class SyncService {
    */
   private async syncAchievements(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const perfStart = performance.now()
 
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('achievements')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              achievement_id: item.achievementId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,achievement_id'
+      const upsertPromises = unsynced.map(item =>
+        supabase
+          .from('achievements')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            achievement_id: item.achievementId,
+            unlocked_at: item.unlockedAt,
+          }, {
+            onConflict: 'user_id,child_profile_id,achievement_id'
+          })
+          .then(({ error }) => ({ item, error }))
+      )
+
+      const upsertResults = await Promise.allSettled(upsertPromises)
+
+      const successfulItems: typeof unsynced = []
+
+      upsertResults.forEach((res, index) => {
+        if (res.status === 'fulfilled') {
+          const { item, error } = res.value
+          if (!error) {
+            successfulItems.push({ ...item, synced: true })
+            result.synced++
+          } else {
+            logger.error('Failed to sync achievement item:', error)
+            result.failed++
+            result.errors.push(error.message)
+
+            // Add to retry queue
+            syncQueue.add({
+              storeName: 'achievements',
+              operation: 'sync',
+              data: item,
+              priority: 4
             })
-
-          if (error) throw error
-
-          await jubeeDB.put('achievements', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync achievement item:', error)
+          }
+        } else {
           result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          result.errors.push(res.reason?.message || 'Unknown error')
           
           // Add to retry queue
           syncQueue.add({
             storeName: 'achievements',
             operation: 'sync',
-            data: item,
+            data: unsynced[index],
             priority: 4
           })
         }
+      })
+
+      if (successfulItems.length > 0) {
+        await jubeeDB.putBulk('achievements', successfulItems)
       }
+
     } catch (error) {
       logger.error('syncAchievements error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    const perfEnd = performance.now()
+    if (result.synced + result.failed > 0) {
+        logger.info('syncAchievements performance', {
+            duration: perfEnd - perfStart,
+            itemCount: result.synced + result.failed,
+            avgTimePerItem: (perfEnd - perfStart) / (result.synced + result.failed)
+        })
     }
 
     return result
@@ -302,45 +336,79 @@ class SyncService {
    */
   private async syncStickers(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const perfStart = performance.now()
 
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('stickers')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              sticker_id: item.stickerId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,sticker_id'
+      const upsertPromises = unsynced.map(item =>
+        supabase
+          .from('stickers')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            sticker_id: item.stickerId,
+            unlocked_at: item.unlockedAt,
+          }, {
+            onConflict: 'user_id,child_profile_id,sticker_id'
+          })
+          .then(({ error }) => ({ item, error }))
+      )
+
+      const upsertResults = await Promise.allSettled(upsertPromises)
+
+      const successfulItems: typeof unsynced = []
+
+      upsertResults.forEach((res, index) => {
+        if (res.status === 'fulfilled') {
+          const { item, error } = res.value
+          if (!error) {
+            successfulItems.push({ ...item, synced: true })
+            result.synced++
+          } else {
+            logger.error('Failed to sync sticker item:', error)
+            result.failed++
+            result.errors.push(error.message)
+
+            // Add to retry queue
+            syncQueue.add({
+              storeName: 'stickers',
+              operation: 'sync',
+              data: item,
+              priority: 2
             })
-
-          if (error) throw error
-
-          await jubeeDB.put('stickers', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync sticker item:', error)
+          }
+        } else {
           result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          result.errors.push(res.reason?.message || 'Unknown error')
           
           // Add to retry queue
           syncQueue.add({
             storeName: 'stickers',
             operation: 'sync',
-            data: item,
+            data: unsynced[index],
             priority: 2
           })
         }
+      })
+
+      if (successfulItems.length > 0) {
+        await jubeeDB.putBulk('stickers', successfulItems)
       }
+
     } catch (error) {
       logger.error('syncStickers error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    const perfEnd = performance.now()
+    if (result.synced + result.failed > 0) {
+        logger.info('syncStickers performance', {
+            duration: perfEnd - perfStart,
+            itemCount: result.synced + result.failed,
+            avgTimePerItem: (perfEnd - perfStart) / (result.synced + result.failed)
+        })
     }
 
     return result
