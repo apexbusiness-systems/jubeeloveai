@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { User } from '@supabase/supabase-js'
 import { syncService } from '../lib/syncService'
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from '../lib/indexedDB'
@@ -33,7 +34,7 @@ describe('SyncService Performance', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
-      data: { user: { id: 'test-user' } as any },
+      data: { user: { id: 'test-user' } as unknown as User },
       error: null,
     })
   })
@@ -41,8 +42,8 @@ describe('SyncService Performance', () => {
   it('should call getUser only once during syncAll', async () => {
     // Mock data for each store to ensure loops run if needed
     vi.mocked(jubeeDB.getUnsynced).mockResolvedValue([
-      { id: '1', synced: false } as any,
-      { id: '2', synced: false } as any
+      { id: '1', synced: false } as unknown as never,
+      { id: '2', synced: false } as unknown as never
     ])
 
     await syncService.syncAll()
