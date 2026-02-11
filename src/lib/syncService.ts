@@ -255,36 +255,64 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('drawings')
+      if (unsynced.length === 0) return result
+
+      // PHASE 1: Calculate batch sizes based on payload
+      const batches = this.createSmartBatches(unsynced, 'drawings')
       
-      for (const item of unsynced) {
+      logger.info(`Syncing ${unsynced.length} drawings in ${batches.length} batches`)
+
+      // PHASE 2: Process each batch
+      for (const batch of batches) {
         try {
-          const { error } = await supabase
+          const batchData = batch.items.map(item => ({
+            user_id: user.id,
+            child_profile_id: null,
+            title: item.title,
+            image_data: item.imageData,
+            created_at: item.createdAt,
+            updated_at: item.updatedAt,
+          }))
+
+          // Attempt batch insert
+          const { error: batchError } = await supabase
             .from('drawings')
-            .insert({
-              user_id: user.id,
-              child_profile_id: null,
-              title: item.title,
-              image_data: item.imageData,
-              created_at: item.createdAt,
-              updated_at: item.updatedAt,
-            })
+            .insert(batchData)
 
-          if (error) throw error
+          if (!batchError) {
+            // SUCCESS: Mark batch as synced
+            const syncedItems = batch.items.map(item => ({
+              ...item,
+              synced: true
+            }))
 
-          await jubeeDB.put('drawings', { ...item, synced: true })
-          result.synced++
+            // Use bulk update
+            await jubeeDB.putBulk('drawings', syncedItems)
+
+            result.synced += batch.items.length
+            logger.info(`Batch synced ${batch.items.length} drawings`)
+          } else {
+            // BATCH FAILED: Fallback to individual processing
+            logger.warn(`Batch failed (${batch.items.length} items), falling back:`, batchError)
+
+            const individualResult = await this.syncDrawingsIndividual(user, batch.items)
+            result.synced += individualResult.synced
+            result.failed += individualResult.failed
+            result.errors.push(...individualResult.errors)
+          }
+
         } catch (error) {
-          logger.error('Failed to sync drawing item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'drawings',
-            operation: 'sync',
-            data: item,
-            priority: 3
-          })
+          // Catastrophic batch error - fallback
+          logger.error('Batch processing error:', error)
+          const individualResult = await this.syncDrawingsIndividual(user, batch.items)
+          result.synced += individualResult.synced
+          result.failed += individualResult.failed
+          result.errors.push(...individualResult.errors)
+        }
+
+        // Rate limiting: small delay between batches
+        if (batches.indexOf(batch) < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100))
         }
       }
     } catch (error) {
@@ -393,6 +421,135 @@ class SyncService {
       logger.error('syncChildrenProfiles error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Creates optimized batches based on payload size
+   * Ensures no batch exceeds Supabase limits
+   * @private
+   */
+  private createSmartBatches<K extends keyof DBSchema>(
+    items: DBSchema[K]['value'][],
+    storeName: K
+  ): Array<{ items: DBSchema[K]['value'][], estimatedSize: number }> {
+    const MAX_BATCH_SIZE = 800 * 1024 // 800KB (stay under 1MB limit with buffer)
+    const MAX_ITEMS_PER_BATCH = 50 // Hard limit on item count
+    const batches: Array<{ items: DBSchema[K]['value'][], estimatedSize: number }> = []
+
+    let currentBatch: DBSchema[K]['value'][] = []
+    let currentSize = 0
+
+    for (const item of items) {
+      // Estimate payload size for this item
+      const itemSize = this.estimatePayloadSize(item, storeName)
+
+      // Check if adding this item would exceed limits
+      if (
+        (currentSize + itemSize > MAX_BATCH_SIZE) ||
+        (currentBatch.length >= MAX_ITEMS_PER_BATCH)
+      ) {
+        // Save current batch and start new one
+        if (currentBatch.length > 0) {
+          batches.push({ items: currentBatch, estimatedSize: currentSize })
+        }
+        currentBatch = [item]
+        currentSize = itemSize
+      } else {
+        // Add to current batch
+        currentBatch.push(item)
+        currentSize += itemSize
+      }
+    }
+
+    // Add remaining items
+    if (currentBatch.length > 0) {
+      batches.push({ items: currentBatch, estimatedSize: currentSize })
+    }
+
+    return batches
+  }
+
+  /**
+   * Estimate payload size for a database item
+   * Critical for image-heavy data
+   * @private
+   */
+  private estimatePayloadSize<K extends keyof DBSchema>(
+    item: DBSchema[K]['value'],
+    storeName: K
+  ): number {
+    let size = 200 // Base overhead (JSON structure, metadata)
+
+    if (storeName === 'drawings') {
+      const drawing = item as DBSchema['drawings']['value']
+
+      // Base64 images are ~133% of original size
+      // Estimate from base64 string length
+      if (drawing.imageData) {
+        size += drawing.imageData.length // Already in bytes (each char ~1 byte)
+      }
+
+      if (drawing.title) {
+        size += drawing.title.length * 2 // UTF-8 can be 2 bytes per char
+      }
+    }
+
+    return size
+  }
+
+  /**
+   * Fallback: Sync drawings individually (existing logic)
+   * @private
+   */
+  private async syncDrawingsIndividual(
+    user: User,
+    items: DBSchema['drawings']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        const { error } = await supabase
+          .from('drawings')
+          .insert({
+            user_id: user.id,
+            child_profile_id: null,
+            title: item.title,
+            image_data: item.imageData,
+            created_at: item.createdAt,
+            updated_at: item.updatedAt,
+          })
+
+        if (error) {
+          // Check for duplicate error (23505 = unique violation)
+          if (error.code === '23505') {
+            // Already exists - mark as synced locally, don't fail
+            await jubeeDB.put('drawings', { ...item, synced: true })
+            result.synced++
+            logger.info('Drawing already exists, marked as synced:', item.id)
+            continue
+          }
+          throw error
+        }
+
+        await jubeeDB.put('drawings', { ...item, synced: true })
+        result.synced++
+      } catch (error) {
+        logger.error('Failed to sync drawing:', error)
+        result.failed++
+        result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+        // Add to retry queue
+        syncQueue.add({
+          storeName: 'drawings',
+          operation: 'sync',
+          data: item,
+          priority: 3
+        })
+      }
     }
 
     return result
