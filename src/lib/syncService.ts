@@ -380,7 +380,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      logger.error('Catastrophic syncStickers error:', error)
+      logger.error('syncStickers catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -428,6 +428,36 @@ class SyncService {
     }
 
     return result
+  }
+
+  /**
+   * Helper: Determine if error is transient (network/server)
+   */
+  private isTransientError(error: unknown): boolean {
+    const transientCodes = ['PGRST301', 'ECONNREFUSED', 'ETIMEDOUT', '503', '429']
+    const errorStr = JSON.stringify(error)
+    return transientCodes.some(code => errorStr.includes(code)) ||
+           errorStr.includes('network') ||
+           errorStr.includes('timeout')
+  }
+
+  /**
+   * Helper: Mark multiple items as synced in IndexedDB
+   */
+  private async markItemsSynced<K extends keyof DBSchema>(
+    items: DBSchema[K]['value'][],
+    storeName: K
+  ): Promise<void> {
+    const syncedItems = items.map(item => ({ ...item, synced: true }))
+
+    if (typeof jubeeDB.putBulk === 'function') {
+      await jubeeDB.putBulk(storeName, syncedItems)
+    } else {
+      // Fallback: serial local updates
+      for (const item of syncedItems) {
+        await jubeeDB.put(storeName, item)
+      }
+    }
   }
 
   /**
@@ -725,13 +755,34 @@ class SyncService {
           break
 
         case 'stickers':
-          await supabase.from('stickers').upsert({
-            user_id: user.id,
-            child_profile_id: null,
-            sticker_id: data.stickerId as string,
-            unlocked_at: data.unlockedAt as string,
-          })
-          await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          if (data.batch && Array.isArray(data.batch)) {
+             const batch = data.batch as DBSchema['stickers']['value'][]
+             const batchData = batch.map(item => ({
+                user_id: user.id,
+                child_profile_id: null,
+                sticker_id: item.stickerId,
+                unlocked_at: item.unlockedAt,
+              }))
+
+             const { error } = await supabase.from('stickers').upsert(batchData, {
+               onConflict: 'user_id,child_profile_id,sticker_id'
+             })
+
+             if (error) throw error
+
+             await this.markItemsSynced(batch, 'stickers')
+          } else {
+            const { error } = await supabase.from('stickers').upsert({
+              user_id: user.id,
+              child_profile_id: null,
+              sticker_id: data.stickerId as string,
+              unlocked_at: data.unlockedAt as string,
+            })
+
+            if (error) throw error
+
+            await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          }
           break
 
         case 'childrenProfiles':
