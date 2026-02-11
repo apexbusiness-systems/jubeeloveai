@@ -1,9 +1,9 @@
 /**
  * Sync Service for Jubee Love
- * 
+ *
  * Manages bidirectional synchronization between IndexedDB and Supabase.
  * Handles automatic sync, conflict resolution, and retry logic.
- * 
+ *
  * @module syncService
  * @see STORAGE_STRATEGY.md for sync architecture
  */
@@ -34,7 +34,7 @@ interface SyncResult {
 
 /**
  * Sync Service Class
- * 
+ *
  * Orchestrates data synchronization between local IndexedDB and Supabase.
  * Provides automatic syncing, manual sync triggers, and conflict resolution.
  */
@@ -52,9 +52,9 @@ class SyncService {
 
   /**
    * Start automatic synchronization at regular intervals
-   * 
+   *
    * @param intervalMs - Sync interval in milliseconds (default: 1 minute)
-   * 
+   *
    * @example
    * ```typescript
    * syncService.startAutoSync(300000); // Sync every 5 minutes
@@ -152,7 +152,7 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
       if (unsynced.length === 0) return result
-      
+
       try {
         const batchData = unsynced.map(item => ({
           user_id: user.id,
@@ -231,8 +231,7 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
       if (unsynced.length === 0) return result
-      
-      // Batch sync achievements
+
       try {
         const batchData = unsynced.map(item => ({
           user_id: user.id,
@@ -305,7 +304,7 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('drawings')
       if (unsynced.length === 0) return result
-      
+
       // Process in chunks to avoid payload size issues
       for (let i = 0; i < unsynced.length; i += BATCH_SIZE) {
         const chunk = unsynced.slice(i, i + BATCH_SIZE)
@@ -382,7 +381,7 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
       if (unsynced.length === 0) return result
-      
+
       try {
         const batchData = unsynced.map(item => ({
           user_id: user.id,
@@ -454,7 +453,7 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('childrenProfiles')
       if (unsynced.length === 0) return result
-      
+
       try {
         const batchData = unsynced.map(item => ({
           id: item.id,
@@ -526,9 +525,9 @@ class SyncService {
   /**
    * Pull latest data from Supabase and update local IndexedDB
    * Server data takes precedence (server wins conflict resolution)
-   * 
+   *
    * @throws {Error} If pull operation fails
-   * 
+   *
    * @example
    * ```typescript
    * await syncService.pullFromSupabase();
@@ -553,7 +552,7 @@ class SyncService {
       if (gameProgress) {
         // Check for conflicts with local data
         const localData = await jubeeDB.get('gameProgress', gameProgress.id)
-        
+
         if (localData && !localData.synced) {
           const conflict = conflictResolver.detectConflicts(
             'gameProgress',
@@ -569,14 +568,14 @@ class SyncService {
             },
             'Game Progress'
           )
-          
+
           if (conflict) {
             conflictResolver.addConflict(conflict)
             logger.info('Conflict detected for game progress')
             return // Don't overwrite, let user resolve
           }
         }
-        
+
         await jubeeDB.put('gameProgress', {
           id: gameProgress.id,
           score: gameProgress.score ?? 0,
@@ -644,7 +643,7 @@ class SyncService {
 
     return await syncQueue.processQueue(async (operation) => {
       const { storeName, data } = operation
-      
+
       // Re-attempt the sync operation based on store name
       switch (storeName) {
         case 'gameProgress':
