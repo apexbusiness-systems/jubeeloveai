@@ -347,6 +347,25 @@ class SyncService {
   }
 
   /**
+   * Check if an error is transient (network/timeout)
+   */
+  private isTransientError(error: any): boolean {
+    if (!error) return false
+    const msg = (error.message || '').toLowerCase()
+    const code = (error.code || '').toString()
+
+    return (
+      msg.includes('timeout') ||
+      msg.includes('connection') ||
+      msg.includes('network') ||
+      msg.includes('fetch') ||
+      code === 'ETIMEDOUT' ||
+      code === '503' ||
+      code === '504'
+    )
+  }
+
+  /**
    * Synchronize children profiles from IndexedDB to Supabase
    * @private
    */
@@ -355,44 +374,155 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('childrenProfiles')
-      
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('children_profiles')
-            .upsert([{
-              id: item.id,
-              parent_user_id: user.id,
-              name: item.name,
-              age: item.age,
-              gender: item.gender,
-              avatar_url: item.avatarUrl,
-              settings: (item.settings as Json) ?? null,
-              updated_at: item.updatedAt,
-            }])
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      logger.dev(`Syncing ${unsynced.length} children profiles`)
 
-          await jubeeDB.put('childrenProfiles', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync children profile item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'childrenProfiles',
-            operation: 'sync',
-            data: item,
-            priority: 1
-          })
+      // SAFETY CHECK: Unusually large profile count
+      const MAX_BATCH_SIZE = 50
+      if (unsynced.length > MAX_BATCH_SIZE) {
+        logger.warn(`Unusually large profile count: ${unsynced.length}, splitting batches`)
+
+        // Split into chunks
+        for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
+          const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
+          const chunkResult = await this.syncProfilesBatch(user, chunk)
+          result.synced += chunkResult.synced
+          result.failed += chunkResult.failed
+          result.errors.push(...chunkResult.errors)
         }
+
+        return result
       }
+
+      // Normal path: Single batch
+      return await this.syncProfilesBatch(user, unsynced)
+
     } catch (error) {
-      logger.error('syncChildrenProfiles error:', error)
+      logger.error('syncChildrenProfiles catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Sync a batch of children profiles
+   */
+  private async syncProfilesBatch(
+    user: User,
+    profiles: DBSchema['childrenProfiles']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    const batchData = profiles.map(item => ({
+      id: item.id,
+      parent_user_id: user.id,
+      name: item.name,
+      age: item.age,
+      gender: item.gender,
+      avatar_url: item.avatarUrl,
+      settings: (item.settings as Json) ?? null,
+      updated_at: item.updatedAt,
+    }))
+
+    const { error: batchError } = await supabase
+      .from('children_profiles')
+      .upsert(batchData)
+
+    if (!batchError) {
+      // Mark as synced
+      for (const item of profiles) {
+        await jubeeDB.put('childrenProfiles', { ...item, synced: true })
+      }
+      result.synced = profiles.length
+      logger.info(`✅ Batch synced ${profiles.length} children profiles`)
+      return result
+    }
+
+    // Batch failed - Analyze error
+    logger.warn('Batch sync failed for children profiles:', batchError)
+
+    // Transient error: Queue entire batch
+    if (this.isTransientError(batchError)) {
+      logger.info('Transient error - queueing batch for retry')
+
+      for (const item of profiles) {
+        syncQueue.add({
+          storeName: 'childrenProfiles',
+          operation: 'sync',
+          data: item,
+          priority: 1
+        })
+      }
+
+      result.failed = profiles.length
+      result.errors.push(`Transient batch error: ${batchError.message}`)
+      return result
+    }
+
+    // Data-level error - Fall back to individual processing
+    logger.info('Data-level error - falling back to individual sync')
+    return await this.syncChildrenProfilesIndividual(user, profiles)
+  }
+
+  /**
+   * Individual sync fallback for children profiles
+   * Used when batch fails due to data-level issues
+   */
+  private async syncChildrenProfilesIndividual(
+    user: User,
+    items: DBSchema['childrenProfiles']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        // Validate settings before sending
+        let validSettings: Json | null = null
+        if (item.settings) {
+          try {
+            // Ensure settings is valid JSON
+            validSettings = JSON.parse(JSON.stringify(item.settings)) as Json
+          } catch (jsonError) {
+            logger.error('Invalid JSON in settings for profile:', item.id, jsonError)
+            throw new Error('Invalid settings JSON')
+          }
+        }
+
+        const { error } = await supabase
+          .from('children_profiles')
+          .upsert([{
+            id: item.id,
+            parent_user_id: user.id,
+            name: item.name,
+            age: item.age,
+            gender: item.gender,
+            avatar_url: item.avatarUrl,
+            settings: validSettings,
+            updated_at: item.updatedAt,
+          }])
+
+        if (error) throw error
+
+        await jubeeDB.put('childrenProfiles', { ...item, synced: true })
+        result.synced++
+        logger.info(`✅ Synced child profile: ${item.name}`)
+
+      } catch (error) {
+        logger.error(`Failed to sync child profile ${item.name}:`, error)
+        result.failed++
+        result.errors.push(`${item.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+
+        // Queue with highest priority
+        syncQueue.add({
+          storeName: 'childrenProfiles',
+          operation: 'sync',
+          data: item,
+          priority: 1
+        })
+      }
     }
 
     return result
