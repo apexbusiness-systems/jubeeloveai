@@ -210,11 +210,9 @@ class IndexedDBService {
         const store = transaction.objectStore(storeName)
 
         transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(new Error(`Failed to bulk put data in ${storeName}`))
+        transaction.onerror = () => reject(new Error(`Failed to put bulk data in ${storeName}`))
 
-        items.forEach(item => {
-          store.put(item)
-        })
+        items.forEach(item => store.put(item))
       })
     } catch (error) {
       logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
@@ -435,12 +433,12 @@ class IndexedDBService {
           const existing = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
           const putItems = data as ItemWithId[]
 
-          putItems.forEach(putItem => {
-            const index = existing.findIndex((item: ItemWithId) => item.id === putItem.id)
+          putItems.forEach(putData => {
+            const index = existing.findIndex((item: ItemWithId) => item.id === putData.id)
             if (index >= 0) {
-              existing[index] = putItem
+              existing[index] = putData
             } else {
-              existing.push(putItem)
+              existing.push(putData)
             }
           })
 

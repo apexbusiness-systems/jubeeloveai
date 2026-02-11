@@ -239,7 +239,7 @@ class SyncService {
       const unsynced = await jubeeDB.getUnsynced('achievements')
       if (unsynced.length === 0) return result
 
-      // Attempt batch sync
+      // Batch sync achievements
       try {
         const batchData = unsynced.map(item => ({
           user_id: user.id,
@@ -248,24 +248,19 @@ class SyncService {
           unlocked_at: item.unlockedAt,
         }))
 
-        const { error: batchError } = await supabase
+        const { error } = await supabase
           .from('achievements')
           .upsert(batchData, {
             onConflict: 'user_id,child_profile_id,achievement_id'
           })
 
-        if (batchError) throw batchError
+        if (error) throw error
 
-        // Batch success - update local status
         const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
         await jubeeDB.putBulk('achievements', syncedItems)
-
         result.synced = unsynced.length
-        logger.info(`Batch synced ${unsynced.length} achievements`)
-        return result
       } catch (batchError) {
         logger.warn('Batch sync failed for achievements, falling back to individual:', batchError)
-        // Fallback: Individual sync
         for (const item of unsynced) {
           try {
             const { error } = await supabase
@@ -312,7 +307,6 @@ class SyncService {
    */
   private async syncDrawings(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
-    const BATCH_SIZE = 10
 
     try {
       const unsynced = await jubeeDB.getUnsynced('drawings')
@@ -396,7 +390,6 @@ class SyncService {
       const unsynced = await jubeeDB.getUnsynced('stickers')
       if (unsynced.length === 0) return result
 
-      // Attempt batch sync
       try {
         const batchData = unsynced.map(item => ({
           user_id: user.id,
@@ -405,24 +398,19 @@ class SyncService {
           unlocked_at: item.unlockedAt,
         }))
 
-        const { error: batchError } = await supabase
+        const { error } = await supabase
           .from('stickers')
           .upsert(batchData, {
             onConflict: 'user_id,child_profile_id,sticker_id'
           })
 
-        if (batchError) throw batchError
+        if (error) throw error
 
-        // Batch success - update local status
         const syncedItems = unsynced.map(item => ({ ...item, synced: true }))
         await jubeeDB.putBulk('stickers', syncedItems)
-
         result.synced = unsynced.length
-        logger.info(`Batch synced ${unsynced.length} stickers`)
-        return result
       } catch (batchError) {
         logger.warn('Batch sync failed for stickers, falling back to individual:', batchError)
-        // Fallback: Individual sync
         for (const item of unsynced) {
           try {
             const { error } = await supabase
@@ -461,36 +449,6 @@ class SyncService {
     }
 
     return result
-  }
-
-  /**
-   * Helper: Determine if error is transient (network/server)
-   */
-  private isTransientError(error: unknown): boolean {
-    const transientCodes = ['PGRST301', 'ECONNREFUSED', 'ETIMEDOUT', '503', '429']
-    const errorStr = JSON.stringify(error)
-    return transientCodes.some(code => errorStr.includes(code)) ||
-           errorStr.includes('network') ||
-           errorStr.includes('timeout')
-  }
-
-  /**
-   * Helper: Mark multiple items as synced in IndexedDB
-   */
-  private async markItemsSynced<K extends keyof DBSchema>(
-    items: DBSchema[K]['value'][],
-    storeName: K
-  ): Promise<void> {
-    const syncedItems = items.map(item => ({ ...item, synced: true }))
-
-    if (typeof jubeeDB.putBulk === 'function') {
-      await jubeeDB.putBulk(storeName, syncedItems)
-    } else {
-      // Fallback: serial local updates
-      for (const item of syncedItems) {
-        await jubeeDB.put(storeName, item)
-      }
-    }
   }
 
   /**
