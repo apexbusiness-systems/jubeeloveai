@@ -152,33 +152,31 @@ class SyncService {
     try {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
       
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('game_progress')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              score: item.score,
-              activities_completed: item.activitiesCompleted,
-              current_theme: item.currentTheme,
-              last_activity: item.lastActivity,
-              updated_at: item.updatedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id'
-            })
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      const updates = unsynced.map(item => ({
+        user_id: user.id,
+        child_profile_id: null,
+        score: item.score,
+        activities_completed: item.activitiesCompleted,
+        current_theme: item.currentTheme,
+        last_activity: item.lastActivity,
+        updated_at: item.updatedAt,
+      }))
 
-          // Mark as synced
-          await jubeeDB.put('gameProgress', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync game progress item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
-          
-          // Add to retry queue
+      const { error } = await supabase
+        .from('game_progress')
+        .upsert(updates, {
+          onConflict: 'user_id,child_profile_id'
+        })
+
+      if (error) {
+        logger.error('Failed to batch sync game progress:', error)
+        result.success = false
+        result.failed = unsynced.length
+        result.errors.push(error.message)
+
+        for (const item of unsynced) {
           syncQueue.add({
             storeName: 'gameProgress',
             operation: 'sync',
@@ -186,6 +184,13 @@ class SyncService {
             priority: 5
           })
         }
+        return result
+      }
+
+      // Mark all as synced
+      for (const item of unsynced) {
+        await jubeeDB.put('gameProgress', { ...item, synced: true })
+        result.synced++
       }
     } catch (error) {
       logger.error('syncGameProgress error:', error)
