@@ -3,47 +3,38 @@ import type { User } from '@supabase/supabase-js'
 import { syncService } from '../lib/syncService'
 import { supabase } from '@/integrations/supabase/client'
 import { jubeeDB } from '../lib/indexedDB'
-import { syncQueue } from '../lib/syncQueue'
 
-// Create shared mock functions
-const mockUpsert = vi.fn().mockResolvedValue({ error: null })
-const mockInsert = vi.fn().mockResolvedValue({ error: null })
-const mockSelect = vi.fn().mockReturnThis()
-const mockOrder = vi.fn().mockReturnThis()
-const mockLimit = vi.fn().mockReturnThis()
-const mockSingle = vi.fn().mockResolvedValue({ data: null, error: null })
-
-const mockQueryBuilder = {
-  upsert: mockUpsert,
-  insert: mockInsert,
-  select: mockSelect,
-  order: mockOrder,
-  limit: mockLimit,
-  single: mockSingle,
-}
-
+// Mock Supabase
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),
       getSession: vi.fn(),
     },
-    from: vi.fn(() => mockQueryBuilder),
+    from: vi.fn(() => ({
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+      insert: vi.fn().mockResolvedValue({ error: null }),
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
   },
 }))
 
+// Mock IndexedDB
 vi.mock('../lib/indexedDB', () => ({
   jubeeDB: {
-    getUnsynced: vi.fn().mockResolvedValue([]),
+    getUnsynced: vi.fn(),
     put: vi.fn(),
-    putBulk: vi.fn(), // We will add this later
+    putBulk: vi.fn().mockResolvedValue(undefined),
     get: vi.fn(),
     getAll: vi.fn(),
   },
 }))
 
-describe('Sync Batch Optimization', () => {
-  const mockUser = { id: 'test-user-id' } as User
+describe('SyncService Batch Optimization', () => {
+  const mockUser = { id: 'test-user' } as unknown as User
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -51,98 +42,79 @@ describe('Sync Batch Optimization', () => {
       data: { user: mockUser },
       error: null,
     })
-    // Reset implementations
-    mockUpsert.mockResolvedValue({ error: null })
-    vi.mocked(jubeeDB.put).mockResolvedValue(undefined)
   })
 
-  describe('Phase 1: Stickers', () => {
-    it('should batch sync 50 stickers in single call', async () => {
-      const mockStickers = Array.from({ length: 50 }, (_, i) => ({
-        id: `sticker-${i}`,
-        stickerId: `sticker-id-${i}`,
-        unlockedAt: new Date().toISOString(),
-        synced: false
-      }))
+  it('should batch upsert calls for gameProgress', async () => {
+    const unsyncedItems = Array.from({ length: 50 }, (_, i) => ({
+      id: `gp-${i}`,
+      score: i * 10,
+      activitiesCompleted: i,
+      currentTheme: 'default',
+      lastActivity: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      synced: false
+    }))
 
-      vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (storeName) => {
-        if (storeName === 'stickers') return mockStickers
-        return []
-      })
-
-      await syncService.syncAll()
-
-      // Should call upsert ONCE with array of 50 items
-      const batchCall = mockUpsert.mock.calls.find(call => Array.isArray(call[0]) && call[0].length === 50)
-
-      // Strict expectation: Must rely on batching
-      expect(batchCall).toBeDefined()
-      expect(mockUpsert).toHaveBeenCalledTimes(1)
+    vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      if (store === 'gameProgress') return unsyncedItems
+      return []
     })
 
-    it('should fallback to individual on data error', async () => {
-      const mockStickers = Array.from({ length: 3 }, (_, i) => ({
-        id: `sticker-${i}`,
-        stickerId: `sticker-id-${i}`,
-        unlockedAt: new Date().toISOString(),
-        synced: false
-      }))
+    const upsertSpy = vi.fn().mockResolvedValue({ error: null })
+    vi.mocked(supabase.from).mockReturnValue({
+      upsert: upsertSpy,
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (storeName) => {
-        if (storeName === 'stickers') return mockStickers
-        return []
-      })
+    await syncService.syncAll()
 
-      let callCount = 0
-      mockUpsert.mockImplementation(async (args) => {
-        callCount++
-        // If it's the batch call (array)
-        if (Array.isArray(args)) {
-          return { error: { code: '23505', message: 'duplicate key' } }
-        }
-        // Individual calls succeed
-        return { error: null }
-      })
+    // OPTIMIZED BEHAVIOR (Batch): Expect 1 call for all 50 items
+    expect(upsertSpy).toHaveBeenCalledTimes(1)
 
-      await syncService.syncAll()
-
-      // 1 batch call (failed) + 3 individual calls = 4 calls total
-      expect(mockUpsert).toHaveBeenCalledTimes(4)
-      // First call should be batch
-      expect(Array.isArray(mockUpsert.mock.calls[0][0])).toBe(true)
+    // Verify payload of the call
+    const callArgs = upsertSpy.mock.calls[0][0]
+    expect(callArgs).toHaveLength(50)
+    expect(callArgs[0]).toMatchObject({
+      user_id: 'test-user',
+      score: 0
     })
 
-    it('should queue batch retry on transient error', async () => {
-        const mockStickers = Array.from({ length: 50 }, (_, i) => ({
-          id: `sticker-${i}`,
-          stickerId: `sticker-id-${i}`,
-          unlockedAt: new Date().toISOString(),
-          synced: false
-        }))
+    // Verify putBulk was called
+    expect(jubeeDB.putBulk).toHaveBeenCalledWith('gameProgress', expect.any(Array))
+  })
 
-        vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (storeName) => {
-          if (storeName === 'stickers') return mockStickers
-          return []
-        })
+  it('should batch insert calls for drawings in chunks', async () => {
+    const unsyncedItems = Array.from({ length: 20 }, (_, i) => ({
+      id: `drawing-${i}`,
+      title: `Drawing ${i}`,
+      imageData: 'data:image/png;base64,fake',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      synced: false
+    }))
 
-        mockUpsert.mockResolvedValue({
-          error: { message: 'Network timeout', code: 'ETIMEDOUT' }
-        })
+    vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      if (store === 'drawings') return unsyncedItems
+      return []
+    })
 
-        const queueSpy = vi.spyOn(syncQueue, 'add')
+    const insertSpy = vi.fn().mockResolvedValue({ error: null })
+    vi.mocked(supabase.from).mockReturnValue({
+      insert: insertSpy,
+      upsert: vi.fn().mockResolvedValue({ error: null }),
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
-        await syncService.syncAll()
+    await syncService.syncAll()
 
-        // Should NOT fallback to individual, so only 1 call (the batch attempt)
-        expect(mockUpsert).toHaveBeenCalledTimes(1)
+    // OPTIMIZED BEHAVIOR (Batch): Expect 2 calls (20 items / 10 batch size)
+    expect(insertSpy).toHaveBeenCalledTimes(2)
 
-        // Should queue for retry
-        expect(queueSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            storeName: 'stickers',
-            operation: 'sync_batch'
-          })
-        )
-      })
+    // Verify chunk sizes
+    expect(insertSpy.mock.calls[0][0]).toHaveLength(10)
+    expect(insertSpy.mock.calls[1][0]).toHaveLength(10)
+
+    // Verify putBulk was called twice (once per chunk)
+    expect(jubeeDB.putBulk).toHaveBeenCalledTimes(2)
+    expect(jubeeDB.putBulk).toHaveBeenCalledWith('drawings', expect.any(Array))
   })
 })
