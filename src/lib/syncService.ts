@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client'
+import type { User } from '@supabase/supabase-js'
 import { jubeeDB, type DBSchema } from './indexedDB'
 import { syncQueue } from './syncQueue'
 import { conflictResolver } from './conflictResolver'
@@ -117,18 +118,18 @@ class SyncService {
 
     try {
       // Check if user is authenticated
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        logger.dev('No active session - skipping sync')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        logger.dev('No authenticated user - skipping sync')
         return {}
       }
 
       // Sync each store
-      results.gameProgress = await this.syncGameProgress()
-      results.achievements = await this.syncAchievements()
-      results.drawings = await this.syncDrawings()
-      results.stickers = await this.syncStickers()
-      results.childrenProfiles = await this.syncChildrenProfiles()
+      results.gameProgress = await this.syncGameProgress(user)
+      results.achievements = await this.syncAchievements(user)
+      results.drawings = await this.syncDrawings(user)
+      results.stickers = await this.syncStickers(user)
+      results.childrenProfiles = await this.syncChildrenProfiles(user)
 
       logger.info('Sync completed:', results)
       return results
@@ -145,7 +146,7 @@ class SyncService {
    * Synchronize game progress from IndexedDB to Supabase
    * @private
    */
-  private async syncGameProgress(): Promise<SyncResult> {
+  private async syncGameProgress(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
     try {
@@ -153,9 +154,6 @@ class SyncService {
       
       for (const item of unsynced) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) continue
-
           const { error } = await supabase
             .from('game_progress')
             .upsert({
@@ -202,7 +200,7 @@ class SyncService {
    * Synchronize achievements from IndexedDB to Supabase
    * @private
    */
-  private async syncAchievements(): Promise<SyncResult> {
+  private async syncAchievements(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
     try {
@@ -210,9 +208,6 @@ class SyncService {
       
       for (const item of unsynced) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) continue
-
           const { error } = await supabase
             .from('achievements')
             .upsert({
@@ -255,7 +250,7 @@ class SyncService {
    * Synchronize drawings from IndexedDB to Supabase
    * @private
    */
-  private async syncDrawings(): Promise<SyncResult> {
+  private async syncDrawings(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
     try {
@@ -263,9 +258,6 @@ class SyncService {
       
       for (const item of unsynced) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) continue
-
           const { error } = await supabase
             .from('drawings')
             .insert({
@@ -308,7 +300,7 @@ class SyncService {
    * Synchronize stickers from IndexedDB to Supabase
    * @private
    */
-  private async syncStickers(): Promise<SyncResult> {
+  private async syncStickers(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
     try {
@@ -316,9 +308,6 @@ class SyncService {
       
       for (const item of unsynced) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) continue
-
           const { error } = await supabase
             .from('stickers')
             .upsert({
@@ -361,7 +350,7 @@ class SyncService {
    * Synchronize children profiles from IndexedDB to Supabase
    * @private
    */
-  private async syncChildrenProfiles(): Promise<SyncResult> {
+  private async syncChildrenProfiles(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
     try {
@@ -369,9 +358,6 @@ class SyncService {
       
       for (const item of unsynced) {
         try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (!user) continue
-
           const { error } = await supabase
             .from('children_profiles')
             .upsert([{
@@ -528,16 +514,20 @@ class SyncService {
       return { processed: 0, failed: 0, remaining: syncQueue.size() }
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      logger.error('No authenticated user - cannot process queue')
+      return { processed: 0, failed: 0, remaining: syncQueue.size() }
+    }
+
     return await syncQueue.processQueue(async (operation) => {
       const { storeName, data } = operation
       
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No authenticated user')
-
       // Re-attempt the sync operation based on store name
       switch (storeName) {
         case 'gameProgress':
           await supabase.from('game_progress').upsert({
+            user_id: user.id,
             child_profile_id: null,
             score: data.score as number,
             activities_completed: data.activitiesCompleted as number,
@@ -550,6 +540,7 @@ class SyncService {
 
         case 'achievements':
           await supabase.from('achievements').upsert({
+            user_id: user.id,
             child_profile_id: null,
             achievement_id: data.achievementId as string,
             unlocked_at: data.unlockedAt as string,
@@ -559,6 +550,7 @@ class SyncService {
 
         case 'drawings':
           await supabase.from('drawings').insert({
+            user_id: user.id,
             child_profile_id: null,
             title: data.title as string,
             image_data: data.imageData as string,
@@ -570,6 +562,7 @@ class SyncService {
 
         case 'stickers':
           await supabase.from('stickers').upsert({
+            user_id: user.id,
             child_profile_id: null,
             sticker_id: data.stickerId as string,
             unlocked_at: data.unlockedAt as string,
