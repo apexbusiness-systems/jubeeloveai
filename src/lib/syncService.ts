@@ -211,6 +211,13 @@ class SyncService {
             })
           }
         }
+        return result
+      }
+
+      // Mark all as synced
+      for (const item of unsynced) {
+        await jubeeDB.put('gameProgress', { ...item, synced: true })
+        result.synced++
       }
     } catch (error) {
       logger.error('syncGameProgress error:', error)
