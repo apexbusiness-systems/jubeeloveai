@@ -373,7 +373,7 @@ class SyncService {
       const unsynced = await jubeeDB.getUnsynced('stickers')
       if (unsynced.length === 0) return result
 
-      // PHASE 1: Attempt batch operation (happy path)
+      // PHASE 1: Attempt batch upsert (happy path)
       const batchData = unsynced.map(item => ({
         user_id: user.id,
         child_profile_id: null,
@@ -381,37 +381,67 @@ class SyncService {
         unlocked_at: item.unlockedAt,
       }))
 
-      logger.info(`Attempting batch sync of ${unsynced.length} stickers`)
       const { error: batchError } = await supabase
         .from('stickers')
         .upsert(batchData, { onConflict: 'user_id,child_profile_id,sticker_id' })
 
-      // SUCCESS: Happy path - 99% of cases
       if (!batchError) {
+        // SUCCESS: Mark all as synced locally
         await this.markItemsSynced(unsynced, 'stickers')
         result.synced = unsynced.length
-        logger.info(`✅ Batch synced ${unsynced.length} stickers in single operation`)
+        logger.info(`Batch synced ${unsynced.length} stickers`)
         return result
       }
+
+      // PHASE 2: Batch failed - Determine strategy
+      logger.warn('Batch sync failed, analyzing error:', batchError)
+
+      // Check if it's a transient network error (retry batch later)
+      if (this.isTransientError(batchError)) {
+        // Queue entire batch for retry
+        syncQueue.add({
+          storeName: 'stickers',
+          operation: 'sync',
+          data: { batch: unsynced }, // Special batch marker
+          priority: 2
+        })
+        result.failed = unsynced.length
+        result.errors.push(`Transient error: ${batchError.message}`)
+        return result
+      }
+
+      // PHASE 3: Data-level error - Fallback to individual processing
+      logger.info('Falling back to individual sync due to data error')
+      
+      for (const item of unsynced) {
+        try {
+          const { error } = await supabase
+            .from('stickers')
+            .upsert({
+              user_id: user.id,
+              child_profile_id: null,
+              sticker_id: item.stickerId,
+              unlocked_at: item.unlockedAt,
+            }, { onConflict: 'user_id,child_profile_id,sticker_id' })
 
       // PHASE 2: Batch failed - Analyze error type
       logger.warn('Batch sync failed, analyzing error:', batchError)
 
-      // Check if it's a transient network error
-      if (this.isTransientError(batchError)) {
-        logger.info('Transient error detected - will retry batch later')
-
-        // Queue entire batch for retry (don't fallback yet)
-        syncQueue.add({
-          storeName: 'stickers',
-          operation: 'sync_batch',
-          data: { items: unsynced }, // Special batch marker
-          priority: 2
-        })
-
-        result.failed = unsynced.length
-        result.errors.push(`Transient batch error: ${batchError.message}`)
-        return result
+          await jubeeDB.put('stickers', { ...item, synced: true })
+          result.synced++
+        } catch (error) {
+          logger.error('Individual sticker sync failed:', error)
+          result.failed++
+          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+          
+          // Queue individual item
+          syncQueue.add({
+            storeName: 'stickers',
+            operation: 'sync',
+            data: item,
+            priority: 2
+          })
+        }
       }
 
       // PHASE 3: Data-level error - Fall back to individual processing
@@ -419,7 +449,7 @@ class SyncService {
       return await this.syncStickersIndividual(user, unsynced)
 
     } catch (error) {
-      logger.error('Catastrophic syncStickers error:', error)
+      logger.error('syncStickers catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -476,6 +506,36 @@ class SyncService {
     }
 
     return result
+  }
+
+  /**
+   * Helper: Determine if error is transient (network/server)
+   */
+  private isTransientError(error: unknown): boolean {
+    const transientCodes = ['PGRST301', 'ECONNREFUSED', 'ETIMEDOUT', '503', '429']
+    const errorStr = JSON.stringify(error)
+    return transientCodes.some(code => errorStr.includes(code)) ||
+           errorStr.includes('network') ||
+           errorStr.includes('timeout')
+  }
+
+  /**
+   * Helper: Mark multiple items as synced in IndexedDB
+   */
+  private async markItemsSynced<K extends keyof DBSchema>(
+    items: DBSchema[K]['value'][],
+    storeName: K
+  ): Promise<void> {
+    const syncedItems = items.map(item => ({ ...item, synced: true }))
+
+    if (typeof jubeeDB.putBulk === 'function') {
+      await jubeeDB.putBulk(storeName, syncedItems)
+    } else {
+      // Fallback: serial local updates
+      for (const item of syncedItems) {
+        await jubeeDB.put(storeName, item)
+      }
+    }
   }
 
   /**
@@ -719,13 +779,34 @@ class SyncService {
           break
 
         case 'stickers':
-          await supabase.from('stickers').upsert({
-            user_id: user.id,
-            child_profile_id: null,
-            sticker_id: data.stickerId as string,
-            unlocked_at: data.unlockedAt as string,
-          })
-          await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          if (data.batch && Array.isArray(data.batch)) {
+             const batch = data.batch as DBSchema['stickers']['value'][]
+             const batchData = batch.map(item => ({
+                user_id: user.id,
+                child_profile_id: null,
+                sticker_id: item.stickerId,
+                unlocked_at: item.unlockedAt,
+              }))
+
+             const { error } = await supabase.from('stickers').upsert(batchData, {
+               onConflict: 'user_id,child_profile_id,sticker_id'
+             })
+
+             if (error) throw error
+
+             await this.markItemsSynced(batch, 'stickers')
+          } else {
+            const { error } = await supabase.from('stickers').upsert({
+              user_id: user.id,
+              child_profile_id: null,
+              sticker_id: data.stickerId as string,
+              unlocked_at: data.unlockedAt as string,
+            })
+
+            if (error) throw error
+
+            await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          }
           break
 
         case 'childrenProfiles':
