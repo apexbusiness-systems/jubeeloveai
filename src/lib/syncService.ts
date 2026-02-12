@@ -151,7 +151,7 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
-      
+
       for (const item of unsynced) {
         try {
           const { error } = await supabase
