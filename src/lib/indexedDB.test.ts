@@ -24,6 +24,7 @@ const mockDb = {
 const mockOpenRequest = {
   onerror: null as (() => void) | null,
   onsuccess: null as (() => void) | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onupgradeneeded: null as ((e: any) => void) | null,
   result: mockDb,
 }

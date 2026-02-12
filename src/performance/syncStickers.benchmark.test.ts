@@ -63,13 +63,14 @@ describe('syncStickers Performance Benchmarks', () => {
 
     // Mock getUnsynced to return our test stickers
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
-        if (store === 'stickers') return testStickers as any
+        if (store === 'stickers') return testStickers as unknown as ReturnType<typeof jubeeDB.getUnsynced>
         return []
     })
 
     // Mock 300ms network latency (3G simulation) for the upsert call
     mockUpsert.mockImplementation(async () => {
         await mockLatency(300)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return { error: null, data: [] } as any
     })
 
