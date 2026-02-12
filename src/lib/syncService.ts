@@ -154,19 +154,61 @@ class SyncService {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
       if (unsynced.length === 0) return result
 
-      logger.dev(`Syncing ${unsynced.length} game progress items`)
+      const BATCH_SIZE = 50
+      for (let i = 0; i < unsynced.length; i += BATCH_SIZE) {
+        const batch = unsynced.slice(i, i + BATCH_SIZE)
 
-      const MAX_BATCH_SIZE = 50
+        // Parallel execution with Promise.allSettled
+        const promises = batch.map(async (item) => {
+          try {
+            const { error } = await supabase
+              .from('game_progress')
+              .upsert({
+                user_id: user.id,
+                child_profile_id: null,
+                score: item.score,
+                activities_completed: item.activitiesCompleted,
+                current_theme: item.currentTheme,
+                last_activity: item.lastActivity,
+                updated_at: item.updatedAt,
+              }, {
+                onConflict: 'user_id,child_profile_id'
+              })
 
-      if (unsynced.length > MAX_BATCH_SIZE) {
-        logger.warn(`Large game progress count: ${unsynced.length}, splitting batches`)
+            if (error) throw error
+            return { success: true, item }
+          } catch (error) {
+            return { success: false, item, error }
+          }
+        })
 
-        for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
-          const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
-          const chunkResult = await this.syncGameProgressBatch(user, chunk)
-          result.synced += chunkResult.synced
-          result.failed += chunkResult.failed
-          result.errors.push(...chunkResult.errors)
+        const results = await Promise.allSettled(promises)
+        const successItems: DBSchema['gameProgress']['value'][] = []
+
+        for (const res of results) {
+          if (res.status === 'fulfilled') {
+            const { success, item, error } = res.value
+            if (success) {
+              successItems.push({ ...item, synced: true })
+              result.synced++
+            } else {
+              logger.error('Failed to sync game progress item:', error)
+              result.failed++
+              result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+              // Add to retry queue
+              syncQueue.add({
+                storeName: 'gameProgress',
+                operation: 'sync',
+                data: item,
+                priority: 5
+              })
+            }
+          }
+        }
+
+        if (successItems.length > 0) {
+          await jubeeDB.putBulk('gameProgress', successItems)
         }
 
         return result

@@ -191,19 +191,15 @@ class IndexedDBService {
   }
 
   /**
-   * Bulk insert/update records in a single transaction
-   * Reduces N IndexedDB operations to 1 transaction
+   * Add or update multiple records in a single transaction
    *
    * @param storeName - Name of the object store
-   * @param items - Array of items to insert/update
-   * @throws {Error} If bulk operation fails
+   * @param items - Array of data to store (each must include id field)
+   * @throws {Error} If operation fails
    *
    * @example
    * ```typescript
-   * await jubeeDB.putBulk('stickers', [
-   *   { id: '1', stickerId: 's1', unlockedAt: '2026-01-01', synced: true },
-   *   { id: '2', stickerId: 's2', unlockedAt: '2026-01-02', synced: true }
-   * ]);
+   * await jubeeDB.putBulk('drawings', [drawing1, drawing2]);
    * ```
    */
   async putBulk<K extends keyof DBSchema>(
@@ -216,20 +212,19 @@ class IndexedDBService {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
-        // Queue all operations in single transaction
-        items.forEach(item => {
-          store.put(item)
-        })
-
         transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(new Error(`Bulk put failed in ${storeName}`))
+        transaction.onerror = () => reject(new Error(`Failed to put bulk data in ${storeName}`))
+
+        for (const item of items) {
+          store.put(item)
+        }
       })
     } catch (error) {
       logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
-      // Fallback to individual localStorage operations
-      items.forEach(item => {
+      // Fallback to localStorage - process individually
+      for (const item of items) {
         this.fallbackToLocalStorage('put', storeName, item)
-      })
+      }
     }
   }
 
