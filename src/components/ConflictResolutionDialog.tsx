@@ -128,39 +128,41 @@ export function ConflictResolutionDialog() {
 
     setIsResolving(true)
     try {
-      let resolvedBatch: { id: string, data: Record<string, unknown> }[]
+      let resolvedDataArray: Record<string, unknown>[]
 
       if (scope === 'all') {
-        resolvedBatch = await conflictResolver.resolveAll(choice)
+        resolvedDataArray = await conflictResolver.resolveAll(choice)
       } else if (currentConflict) {
-        resolvedBatch = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
+        resolvedDataArray = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
       } else {
         return
       }
 
-      // Sync to server and update local DB in parallel
+      // Sync to server in batches
       const { data: { user } } = await supabase.auth.getUser()
-      const tasks: Promise<void>[] = []
-
-      resolvedBatch.forEach(({ id, data }) => {
-        const conflict = conflicts.find(c => c.id === id)
-
-        if (conflict && isStoreName(conflict.storeName)) {
-          // Add save task
-          tasks.push(saveToLocalStore(conflict.storeName, data))
-
-          // Add sync task if needed
-          if (user && (choice === 'local' || choice === 'merge')) {
-            tasks.push(syncToServer(conflict.storeName, data, user.id))
+      if (user && (choice === 'local' || choice === 'merge')) {
+        const syncPromises = resolvedDataArray.map((data, index) => {
+          const conflict = conflicts[index]
+          if (conflict && isStoreName(conflict.storeName)) {
+            return syncToServer(conflict.storeName, data, user.id)
           }
-        }
-      })
+          return undefined
+        })
+        await Promise.all(syncPromises.filter(Boolean))
+      }
 
-      await Promise.all(tasks)
+      // Update local database in batches
+      for (let i = 0; i < resolvedDataArray.length; i++) {
+        const data = resolvedDataArray[i]
+        const conflict = conflicts[i]
+        if (conflict) {
+          await saveToLocalStore(conflict.storeName, data)
+        }
+      }
 
       toast({
         title: "Conflicts Resolved",
-        description: `${resolvedBatch.length} conflict(s) resolved using ${choice} strategy`,
+        description: `${resolvedDataArray.length} conflict(s) resolved using ${choice} strategy`,
       })
 
       setCurrentConflict(null)
@@ -183,7 +185,7 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const diagnosis = conflictResolver.getDiagnosis()
-      let totalResolvedCount = 0
+      const resolvedDataArray: Record<string, unknown>[] = []
 
       // Group conflicts by recommended strategy
       const byStrategy: Record<ResolutionChoice, string[]> = {
@@ -196,36 +198,33 @@ export function ConflictResolutionDialog() {
         byStrategy[strategy].push(id)
       })
 
-      const { data: { user } } = await supabase.auth.getUser()
-      const tasks: Promise<void>[] = []
-
       // Resolve each group
       for (const [strategy, ids] of Object.entries(byStrategy) as [ResolutionChoice, string[]][]) {
         if (ids.length > 0) {
-          const resolvedBatch = await conflictResolver.resolveBatch(ids, strategy)
-          totalResolvedCount += resolvedBatch.length
-
-          resolvedBatch.forEach(({ id, data }) => {
-            const conflict = conflicts.find(c => c.id === id)
-
-            if (conflict && isStoreName(conflict.storeName)) {
-              // Add save task
-              tasks.push(saveToLocalStore(conflict.storeName, data))
-
-              // Add sync task if needed
-              if (user && (strategy === 'local' || strategy === 'merge')) {
-                tasks.push(syncToServer(conflict.storeName, data, user.id))
-              }
-            }
-          })
+          const resolved = await conflictResolver.resolveBatch(ids, strategy)
+          resolvedDataArray.push(...resolved)
         }
       }
 
-      await Promise.all(tasks)
+      // Sync to server
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        for (let i = 0; i < resolvedDataArray.length; i++) {
+          const data = resolvedDataArray[i]
+          const conflict = conflicts[i]
+          if (conflict && isStoreName(conflict.storeName)) {
+            await saveToLocalStore(conflict.storeName, data)
+
+            if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
+              await syncToServer(conflict.storeName, data, user.id)
+            }
+          }
+        }
+      }
 
       toast({
         title: "Auto-Diagnosis Complete",
-        description: `${totalResolvedCount} conflict(s) automatically resolved`,
+        description: `${resolvedDataArray.length} conflict(s) automatically resolved`,
       })
 
       setCurrentConflict(null)

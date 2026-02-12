@@ -150,8 +150,8 @@ class ConflictResolver {
   /**
    * Resolve multiple conflicts with the same choice
    */
-  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<{ id: string; data: Record<string, unknown> }[]> {
-    const resolvedDataArray: { id: string; data: Record<string, unknown> }[] = []
+  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
+    const resolvedDataArray: Record<string, unknown>[] = []
     const errors: Array<{ id: string; error: string }> = []
 
     // Process in chunks to avoid blocking
@@ -169,7 +169,7 @@ class ConflictResolver {
           }
 
           const resolvedData = this.resolveConflictData(conflict, choice)
-          resolvedDataArray.push({ id: conflictId, data: resolvedData })
+          resolvedDataArray.push(resolvedData)
         } catch (error) {
           errors.push({ 
             id: conflictId, 
@@ -200,7 +200,7 @@ class ConflictResolver {
   /**
    * Resolve all conflicts with the same choice
    */
-  async resolveAll(choice: ResolutionChoice): Promise<{ id: string; data: Record<string, unknown> }[]> {
+  async resolveAll(choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const allIds = this.conflicts.map(c => c.id)
     return this.resolveBatch(allIds, choice)
   }
@@ -208,7 +208,7 @@ class ConflictResolver {
   /**
    * Resolve conflicts by store with the same choice
    */
-  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<{ id: string; data: Record<string, unknown> }[]> {
+  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const storeConflictIds = this.conflicts
       .filter(c => c.storeName === storeName)
       .map(c => c.id)
