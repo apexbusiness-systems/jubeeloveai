@@ -28,6 +28,7 @@ vi.mock('../lib/indexedDB', () => ({
     putBulk: vi.fn().mockResolvedValue(undefined),
     get: vi.fn(),
     getAll: vi.fn(),
+    putBulk: vi.fn(),
   },
 }))
 
