@@ -151,40 +151,63 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('gameProgress')
-      
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('game_progress')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              score: item.score,
-              activities_completed: item.activitiesCompleted,
-              current_theme: item.currentTheme,
-              last_activity: item.lastActivity,
-              updated_at: item.updatedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id'
-            })
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      const BATCH_SIZE = 50
+      for (let i = 0; i < unsynced.length; i += BATCH_SIZE) {
+        const batch = unsynced.slice(i, i + BATCH_SIZE)
 
-          // Mark as synced
-          await jubeeDB.put('gameProgress', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync game progress item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+        // Parallel execution with Promise.allSettled
+        const promises = batch.map(async (item) => {
+          try {
+            const { error } = await supabase
+              .from('game_progress')
+              .upsert({
+                user_id: user.id,
+                child_profile_id: null,
+                score: item.score,
+                activities_completed: item.activitiesCompleted,
+                current_theme: item.currentTheme,
+                last_activity: item.lastActivity,
+                updated_at: item.updatedAt,
+              }, {
+                onConflict: 'user_id,child_profile_id'
+              })
 
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'gameProgress',
-            operation: 'sync',
-            data: item,
-            priority: 5
-          })
+            if (error) throw error
+            return { success: true, item }
+          } catch (error) {
+            return { success: false, item, error }
+          }
+        })
+
+        const results = await Promise.allSettled(promises)
+        const successItems: DBSchema['gameProgress']['value'][] = []
+
+        for (const res of results) {
+          if (res.status === 'fulfilled') {
+            const { success, item, error } = res.value
+            if (success) {
+              successItems.push({ ...item, synced: true })
+              result.synced++
+            } else {
+              logger.error('Failed to sync game progress item:', error)
+              result.failed++
+              result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+              // Add to retry queue
+              syncQueue.add({
+                storeName: 'gameProgress',
+                operation: 'sync',
+                data: item,
+                priority: 5
+              })
+            }
+          }
+        }
+
+        if (successItems.length > 0) {
+          await jubeeDB.putBulk('gameProgress', successItems)
         }
       }
     } catch (error) {
