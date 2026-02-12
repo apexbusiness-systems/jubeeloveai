@@ -28,11 +28,6 @@ export interface ConflictGroup {
 
 export type ResolutionChoice = 'local' | 'server' | 'merge'
 
-export interface ResolvedConflict {
-  id: string
-  data: Record<string, unknown>
-}
-
 class ConflictResolver {
   private conflicts: ConflictGroup[] = []
   private listeners: Array<(conflicts: ConflictGroup[]) => void> = []
@@ -155,8 +150,8 @@ class ConflictResolver {
   /**
    * Resolve multiple conflicts with the same choice
    */
-  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<ResolvedConflict[]> {
-    const resolvedConflicts: ResolvedConflict[] = []
+  async resolveBatch(conflictIds: string[], choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
+    const resolvedDataArray: Record<string, unknown>[] = []
     const errors: Array<{ id: string; error: string }> = []
 
     // Process in chunks to avoid blocking
@@ -174,7 +169,7 @@ class ConflictResolver {
           }
 
           const resolvedData = this.resolveConflictData(conflict, choice)
-          resolvedConflicts.push({ id: conflictId, data: resolvedData })
+          resolvedDataArray.push(resolvedData)
         } catch (error) {
           errors.push({ 
             id: conflictId, 
@@ -199,13 +194,13 @@ class ConflictResolver {
       console.warn('Batch resolution errors:', errors)
     }
 
-    return resolvedConflicts
+    return resolvedDataArray
   }
 
   /**
    * Resolve all conflicts with the same choice
    */
-  async resolveAll(choice: ResolutionChoice): Promise<ResolvedConflict[]> {
+  async resolveAll(choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const allIds = this.conflicts.map(c => c.id)
     return this.resolveBatch(allIds, choice)
   }
@@ -213,7 +208,7 @@ class ConflictResolver {
   /**
    * Resolve conflicts by store with the same choice
    */
-  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<ResolvedConflict[]> {
+  async resolveByStore(storeName: string, choice: ResolutionChoice): Promise<Record<string, unknown>[]> {
     const storeConflictIds = this.conflicts
       .filter(c => c.storeName === storeName)
       .map(c => c.id)

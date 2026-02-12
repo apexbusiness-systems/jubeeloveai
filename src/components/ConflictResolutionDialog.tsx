@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { conflictResolver, ConflictGroup, ResolutionChoice, ResolvedConflict } from '@/lib/conflictResolver';
+import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver';
 import { jubeeDB, type DBSchema } from '@/lib/indexedDB';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,31 +50,6 @@ const saveToLocalStore = async (storeName: string, data: Record<string, unknown>
       break;
   }
 };
-
-const saveBulkToLocalStore = async (
-  storeName: StoreName,
-  dataArray: Record<string, unknown>[]
-) => {
-  if (dataArray.length === 0) return
-
-  switch (storeName) {
-    case 'gameProgress':
-      await jubeeDB.putBulk('gameProgress', dataArray as DBSchema['gameProgress']['value'][])
-      break
-    case 'achievements':
-      await jubeeDB.putBulk('achievements', dataArray as DBSchema['achievements']['value'][])
-      break
-    case 'drawings':
-      await jubeeDB.putBulk('drawings', dataArray as DBSchema['drawings']['value'][])
-      break
-    case 'stickers':
-      await jubeeDB.putBulk('stickers', dataArray as DBSchema['stickers']['value'][])
-      break
-    case 'childrenProfiles':
-      await jubeeDB.putBulk('childrenProfiles', dataArray as DBSchema['childrenProfiles']['value'][])
-      break;
-  }
-}
 
 export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
@@ -153,68 +128,41 @@ export function ConflictResolutionDialog() {
 
     setIsResolving(true)
     try {
-      let resolvedConflicts: ResolvedConflict[]
+      let resolvedDataArray: Record<string, unknown>[]
 
       if (scope === 'all') {
-        resolvedConflicts = await conflictResolver.resolveAll(choice)
+        resolvedDataArray = await conflictResolver.resolveAll(choice)
       } else if (currentConflict) {
-        resolvedConflicts = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
+        resolvedDataArray = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
       } else {
         return
       }
 
-      // Create lookup map: id → resolved data
-      const resolvedMap = new Map(
-        resolvedConflicts.map(r => [r.id, r.data])
-      )
-
-      // Group by store for bulk operations
-      const byStore: Record<StoreName, Array<{ conflict: ConflictGroup, data: Record<string, unknown> }>> = {
-        gameProgress: [],
-        achievements: [],
-        drawings: [],
-        stickers: [],
-        childrenProfiles: []
+      // Sync to server in batches
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && (choice === 'local' || choice === 'merge')) {
+        const syncPromises = resolvedDataArray.map((data, index) => {
+          const conflict = conflicts[index]
+          if (conflict && isStoreName(conflict.storeName)) {
+            return syncToServer(conflict.storeName, data, user.id)
+          }
+          return undefined
+        })
+        await Promise.all(syncPromises.filter(Boolean))
       }
 
-      // Map resolved data to correct conflicts using ID
-      for (const conflict of conflicts) {
-        const resolvedData = resolvedMap.get(conflict.id)
-        if (resolvedData && isStoreName(conflict.storeName)) {
-          byStore[conflict.storeName].push({ conflict, data: resolvedData })
+      // Update local database in batches
+      for (let i = 0; i < resolvedDataArray.length; i++) {
+        const data = resolvedDataArray[i]
+        const conflict = conflicts[i]
+        if (conflict) {
+          await saveToLocalStore(conflict.storeName, data)
         }
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
-
-      // Parallel operations across stores and sync
-      await Promise.all([
-        // Save to local stores (bulk per store)
-        ...Object.entries(byStore)
-          .filter(([_, items]) => items.length > 0)
-          .map(async ([storeName, items]) => {
-            const typedStore = storeName as StoreName
-            const dataArray = items.map(i => i.data)
-            await saveBulkToLocalStore(typedStore, dataArray)
-          }),
-
-        // Sync to server (parallel across items that need syncing)
-        // Only if user is logged in and choice requires sync
-        ...(user && (choice === 'local' || choice === 'merge')
-          ? conflicts
-            .filter(c => resolvedMap.has(c.id))
-            .map(async (c) => {
-              const data = resolvedMap.get(c.id)
-              if (data && isStoreName(c.storeName)) {
-                await syncToServer(c.storeName, data, user.id)
-              }
-            })
-          : [])
-      ])
-
       toast({
         title: "Conflicts Resolved",
-        description: `${resolvedConflicts.length} conflict(s) resolved using ${choice} strategy`,
+        description: `${resolvedDataArray.length} conflict(s) resolved using ${choice} strategy`,
       })
 
       setCurrentConflict(null)
@@ -237,7 +185,7 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const diagnosis = conflictResolver.getDiagnosis()
-      const resolvedConflicts: ResolvedConflict[] = []
+      const resolvedDataArray: Record<string, unknown>[] = []
 
       // Group conflicts by recommended strategy
       const byStrategy: Record<ResolutionChoice, string[]> = {
@@ -250,71 +198,33 @@ export function ConflictResolutionDialog() {
         byStrategy[strategy].push(id)
       })
 
-      // Resolve each group and maintain id mapping
+      // Resolve each group
       for (const [strategy, ids] of Object.entries(byStrategy) as [ResolutionChoice, string[]][]) {
         if (ids.length > 0) {
           const resolved = await conflictResolver.resolveBatch(ids, strategy)
-          resolvedConflicts.push(...resolved)
+          resolvedDataArray.push(...resolved)
         }
       }
 
-      // Create lookup map: id → resolved data
-      const resolvedMap = new Map(
-        resolvedConflicts.map(r => [r.id, r.data])
-      )
-
-      // Get auth once
+      // Sync to server
       const { data: { user } } = await supabase.auth.getUser()
-
       if (user) {
-        // Group by store for bulk operations
-        const byStore: Record<StoreName, Array<{ conflict: ConflictGroup, data: Record<string, unknown> }>> = {
-          gameProgress: [],
-          achievements: [],
-          drawings: [],
-          stickers: [],
-          childrenProfiles: []
-        }
+        for (let i = 0; i < resolvedDataArray.length; i++) {
+          const data = resolvedDataArray[i]
+          const conflict = conflicts[i]
+          if (conflict && isStoreName(conflict.storeName)) {
+            await saveToLocalStore(conflict.storeName, data)
 
-        // Map resolved data to correct conflicts using ID
-        for (const conflict of conflicts) {
-          const resolvedData = resolvedMap.get(conflict.id)
-          if (resolvedData && isStoreName(conflict.storeName)) {
-            byStore[conflict.storeName].push({ conflict, data: resolvedData })
+            if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
+              await syncToServer(conflict.storeName, data, user.id)
+            }
           }
         }
-
-        // Parallel operations across stores
-        await Promise.all([
-          // Save to local stores (bulk per store)
-          ...Object.entries(byStore)
-            .filter(([_, items]) => items.length > 0)
-            .map(async ([storeName, items]) => {
-              const typedStore = storeName as StoreName
-              const dataArray = items.map(i => i.data)
-
-              // Use putBulk for same-store items
-              await saveBulkToLocalStore(typedStore, dataArray)
-            }),
-
-          // Sync to server (parallel across items that need syncing)
-          ...conflicts
-            .filter(c => {
-              const strategy = diagnosis[c.id]
-              return (strategy === 'local' || strategy === 'merge') && resolvedMap.has(c.id)
-            })
-            .map(async (c) => {
-              const data = resolvedMap.get(c.id)
-              if (data && isStoreName(c.storeName)) {
-                await syncToServer(c.storeName, data, user.id)
-              }
-            })
-        ])
       }
 
       toast({
         title: "Auto-Diagnosis Complete",
-        description: `${resolvedConflicts.length} conflict(s) automatically resolved`,
+        description: `${resolvedDataArray.length} conflict(s) automatically resolved`,
       })
 
       setCurrentConflict(null)

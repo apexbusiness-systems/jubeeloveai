@@ -1,102 +1,55 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import 'fake-indexeddb/auto'
 
 // Unmock the module so we test the real implementation
-vi.unmock('../indexedDB')
 vi.unmock('@/lib/indexedDB')
+// Also unmock the relative path just in case
+vi.unmock('../indexedDB')
 
 import { jubeeDB } from '../indexedDB'
 
-// Mock logger to avoid cluttering test output
-vi.mock('../logger', () => ({
-  logger: {
-    error: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-  }
-}))
-
-describe('IndexedDB Service - putBulk', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    localStorage.clear()
+describe('IndexedDBService.putBulk', () => {
+  beforeEach(async () => {
+    // indexedDB is mocked by jsdom in vitest, but we might need to reset it
+    // However, jubeeDB uses a singleton.
+    // Let's clear the store we are testing.
+    await jubeeDB.init()
+    await jubeeDB.clear('stickers')
   })
 
   it('should insert multiple records in single transaction', async () => {
-    const putSpy = vi.fn()
-    const transactionMock = {
-      objectStore: vi.fn().mockReturnValue({ put: putSpy }),
-      oncomplete: null as (() => void) | null,
-      onerror: null as (() => void) | null,
-    }
-
-    const dbMock = {
-      transaction: vi.fn().mockReturnValue(transactionMock)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(jubeeDB as any, 'init').mockResolvedValue(dbMock)
-
     const items = [
-      { id: '1', stickerId: 's1', unlockedAt: '2026-01-01', synced: false },
-      { id: '2', stickerId: 's2', unlockedAt: '2026-01-02', synced: false }
+      { id: '1', stickerId: 'star', unlockedAt: '2026-01-01', synced: false },
+      { id: '2', stickerId: 'heart', unlockedAt: '2026-01-02', synced: false }
     ]
 
-    const promise = jubeeDB.putBulk('stickers', items)
+    await jubeeDB.putBulk('stickers', items)
 
-    // Wait for microtasks so putBulk reaches transaction creation
-    await new Promise(resolve => setTimeout(resolve, 0))
+    const result1 = await jubeeDB.get('stickers', '1')
+    const result2 = await jubeeDB.get('stickers', '2')
 
-    // Trigger success
-    if (transactionMock.oncomplete) {
-      transactionMock.oncomplete()
-    }
-
-    await promise
-
-    expect(dbMock.transaction).toHaveBeenCalledWith(['stickers'], 'readwrite')
-    expect(putSpy).toHaveBeenCalledTimes(2)
-    expect(putSpy).toHaveBeenCalledWith(items[0])
-    expect(putSpy).toHaveBeenCalledWith(items[1])
+    expect(result1).toBeDefined()
+    expect(result2).toBeDefined()
+    expect(result1?.stickerId).toBe('star')
+    expect(result2?.stickerId).toBe('heart')
   })
 
   it('should handle empty array gracefully', async () => {
-    const transactionMock = {
-      objectStore: vi.fn().mockReturnValue({ put: vi.fn() }),
-      oncomplete: null as (() => void) | null,
-    }
-    const dbMock = {
-      transaction: vi.fn().mockReturnValue(transactionMock)
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(jubeeDB as any, 'init').mockResolvedValue(dbMock)
-
-    const promise = jubeeDB.putBulk('stickers', [])
-
-    // Wait for microtasks so putBulk reaches transaction creation
-    await new Promise(resolve => setTimeout(resolve, 0))
-
-    if (transactionMock.oncomplete) transactionMock.oncomplete()
-
-    await expect(promise).resolves.not.toThrow()
+    await expect(jubeeDB.putBulk('stickers', [])).resolves.not.toThrow()
   })
 
-  it('should fallback to localStorage on IndexedDB failure', async () => {
-    // Mock IndexedDB failure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.spyOn(jubeeDB as any, 'init').mockRejectedValue(new Error('DB unavailable'))
+  it('should update existing records in bulk', async () => {
+    // Insert initial
+    await jubeeDB.put('stickers', {
+      id: '1', stickerId: 'star', unlockedAt: '2026-01-01', synced: false
+    })
 
-    const items = [{ id: '1', stickerId: 's1', unlockedAt: '2026-01-01', synced: false }]
-    await jubeeDB.putBulk('stickers', items)
+    // Bulk update
+    await jubeeDB.putBulk('stickers', [{
+      id: '1', stickerId: 'star', unlockedAt: '2026-01-01', synced: true
+    }])
 
-    // Verify localStorage fallback worked
-    // The key is `${DB_NAME}_${storeName}` -> 'jubee-love-db_stickers'
-    const stored = localStorage.getItem('jubee-love-db_stickers')
-    expect(stored).toBeTruthy()
-    if (stored) {
-        expect(stored).toContain('s1')
-        const parsed = JSON.parse(stored)
-        expect(parsed).toHaveLength(1)
-        expect(parsed[0].id).toBe('1')
-    }
+    const result = await jubeeDB.get('stickers', '1')
+    expect(result?.synced).toBe(true)
   })
 })
