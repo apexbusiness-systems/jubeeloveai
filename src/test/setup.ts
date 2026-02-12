@@ -38,7 +38,6 @@ vi.mock('@/lib/indexedDB', () => ({
   jubeeDB: {
     init: vi.fn().mockResolvedValue({}),
     put: vi.fn().mockResolvedValue(undefined),
-    putBulk: vi.fn().mockResolvedValue(undefined),
     get: vi.fn().mockResolvedValue(undefined),
     getAll: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
