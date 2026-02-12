@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { conflictResolver, ConflictGroup, ResolutionChoice } from '@/lib/conflictResolver';
+import { conflictResolver, ConflictGroup, ResolutionChoice, ResolvedConflict } from '@/lib/conflictResolver';
 import { jubeeDB, type DBSchema } from '@/lib/indexedDB';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +50,31 @@ const saveToLocalStore = async (storeName: string, data: Record<string, unknown>
       break;
   }
 };
+
+const saveBulkToLocalStore = async (
+  storeName: StoreName,
+  dataArray: Record<string, unknown>[]
+) => {
+  if (dataArray.length === 0) return
+
+  switch (storeName) {
+    case 'gameProgress':
+      await jubeeDB.putBulk('gameProgress', dataArray as DBSchema['gameProgress']['value'][])
+      break
+    case 'achievements':
+      await jubeeDB.putBulk('achievements', dataArray as DBSchema['achievements']['value'][])
+      break
+    case 'drawings':
+      await jubeeDB.putBulk('drawings', dataArray as DBSchema['drawings']['value'][])
+      break
+    case 'stickers':
+      await jubeeDB.putBulk('stickers', dataArray as DBSchema['stickers']['value'][])
+      break
+    case 'childrenProfiles':
+      await jubeeDB.putBulk('childrenProfiles', dataArray as DBSchema['childrenProfiles']['value'][])
+      break;
+  }
+}
 
 export function ConflictResolutionDialog() {
   const [conflicts, setConflicts] = useState<ConflictGroup[]>([])
@@ -128,27 +153,28 @@ export function ConflictResolutionDialog() {
 
     setIsResolving(true)
     try {
-      let resolvedDataArray: Record<string, unknown>[]
+      let resolvedConflicts: ResolvedConflict[]
 
       if (scope === 'all') {
-        resolvedDataArray = await conflictResolver.resolveAll(choice)
+        resolvedConflicts = await conflictResolver.resolveAll(choice)
       } else if (currentConflict) {
-        resolvedDataArray = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
+        resolvedConflicts = await conflictResolver.resolveByStore(currentConflict.storeName, choice)
       } else {
         return
       }
 
-      // Sync to server in batches
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user && (choice === 'local' || choice === 'merge')) {
-        const syncPromises = resolvedDataArray.map((data, index) => {
-          const conflict = conflicts[index]
-          if (conflict && isStoreName(conflict.storeName)) {
-            return syncToServer(conflict.storeName, data, user.id)
-          }
-          return undefined
-        })
-        await Promise.all(syncPromises.filter(Boolean))
+      // Create lookup map: id → resolved data
+      const resolvedMap = new Map(
+        resolvedConflicts.map(r => [r.id, r.data])
+      )
+
+      // Group by store for bulk operations
+      const byStore: Record<StoreName, Array<{ conflict: ConflictGroup, data: Record<string, unknown> }>> = {
+        gameProgress: [],
+        achievements: [],
+        drawings: [],
+        stickers: [],
+        childrenProfiles: []
       }
 
       // Validate alignment
@@ -204,7 +230,7 @@ export function ConflictResolutionDialog() {
 
       toast({
         title: "Conflicts Resolved",
-        description: `${resolvedDataArray.length} conflict(s) resolved using ${choice} strategy`,
+        description: `${resolvedConflicts.length} conflict(s) resolved using ${choice} strategy`,
       })
 
       setCurrentConflict(null)
@@ -299,6 +325,7 @@ export function ConflictResolutionDialog() {
 
       // Sync to server
       const { data: { user } } = await supabase.auth.getUser()
+
       if (user) {
         for (const { conflict, data } of resolvedPairs) {
           if (isStoreName(conflict.storeName)) {
@@ -309,6 +336,33 @@ export function ConflictResolutionDialog() {
             }
           }
         }
+
+        // Parallel operations across stores
+        await Promise.all([
+          // Save to local stores (bulk per store)
+          ...Object.entries(byStore)
+            .filter(([_, items]) => items.length > 0)
+            .map(async ([storeName, items]) => {
+              const typedStore = storeName as StoreName
+              const dataArray = items.map(i => i.data)
+
+              // Use putBulk for same-store items
+              await saveBulkToLocalStore(typedStore, dataArray)
+            }),
+
+          // Sync to server (parallel across items that need syncing)
+          ...conflicts
+            .filter(c => {
+              const strategy = diagnosis[c.id]
+              return (strategy === 'local' || strategy === 'merge') && resolvedMap.has(c.id)
+            })
+            .map(async (c) => {
+              const data = resolvedMap.get(c.id)
+              if (data && isStoreName(c.storeName)) {
+                await syncToServer(c.storeName, data, user.id)
+              }
+            })
+        ])
       }
 
       toast({
