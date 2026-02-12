@@ -192,8 +192,6 @@ class IndexedDBService {
 
   /**
    * Bulk insert/update records in a single transaction
-   * CRITICAL for conflict resolution ACID compliance
-   *
    * @param storeName - Name of the object store
    * @param items - Array of items to insert/update
    * @throws {Error} If bulk operation fails
@@ -202,11 +200,9 @@ class IndexedDBService {
     storeName: K,
     items: DBSchema[K]['value'][]
   ): Promise<void> {
-    if (items.length === 0) return
-
     try {
       const db = await this.init()
-      return new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
@@ -216,9 +212,7 @@ class IndexedDBService {
         })
 
         transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(
-          new Error(`Bulk put failed in ${storeName}: ${transaction.error?.message}`)
-        )
+        transaction.onerror = () => reject(new Error(`Bulk put failed in ${storeName}`))
       })
     } catch (error) {
       logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
