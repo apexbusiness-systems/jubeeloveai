@@ -177,40 +177,56 @@ export function ConflictResolutionDialog() {
         childrenProfiles: []
       }
 
-      // Map resolved data to correct conflicts using ID
-      for (const conflict of conflicts) {
-        const resolvedData = resolvedMap.get(conflict.id)
-        if (resolvedData && isStoreName(conflict.storeName)) {
-          byStore[conflict.storeName].push({ conflict, data: resolvedData })
+      // Validate alignment
+      if (resolvedDataArray.length !== conflicts.length) {
+        logger.error('[ConflictResolution] Array length mismatch', {
+          resolved: resolvedDataArray.length,
+          conflicts: conflicts.length
+        })
+        throw new Error('Conflict resolution produced mismatched data')
+      }
+
+      // Group resolved data by store
+      const byStore: Partial<Record<StoreName, Record<string, unknown>[]>> = {
+        gameProgress: [],
+        achievements: [],
+        drawings: [],
+        stickers: [],
+        childrenProfiles: []
+      }
+
+      for (let i = 0; i < resolvedDataArray.length; i++) {
+        const data = resolvedDataArray[i]
+        const conflict = conflicts[i]
+        if (conflict && isStoreName(conflict.storeName)) {
+            byStore[conflict.storeName]?.push(data)
         }
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
+      // Execute bulk updates in parallel
+      await Promise.all(
+        Object.entries(byStore)
+          .filter(([_, items]) => items && items.length > 0)
+          .map(([storeName, items]) => {
+            const store = storeName as StoreName
+            const storeItems = items as unknown[]
 
-      // Parallel operations across stores and sync
-      await Promise.all([
-        // Save to local stores (bulk per store)
-        ...Object.entries(byStore)
-          .filter(([_, items]) => items.length > 0)
-          .map(async ([storeName, items]) => {
-            const typedStore = storeName as StoreName
-            const dataArray = items.map(i => i.data)
-            await saveBulkToLocalStore(typedStore, dataArray)
-          }),
-
-        // Sync to server (parallel across items that need syncing)
-        // Only if user is logged in and choice requires sync
-        ...(user && (choice === 'local' || choice === 'merge')
-          ? conflicts
-            .filter(c => resolvedMap.has(c.id))
-            .map(async (c) => {
-              const data = resolvedMap.get(c.id)
-              if (data && isStoreName(c.storeName)) {
-                await syncToServer(c.storeName, data, user.id)
-              }
-            })
-          : [])
-      ])
+            switch (store) {
+              case 'gameProgress':
+                return jubeeDB.putBulk('gameProgress', storeItems as DBSchema['gameProgress']['value'][])
+              case 'achievements':
+                return jubeeDB.putBulk('achievements', storeItems as DBSchema['achievements']['value'][])
+              case 'drawings':
+                return jubeeDB.putBulk('drawings', storeItems as DBSchema['drawings']['value'][])
+              case 'stickers':
+                return jubeeDB.putBulk('stickers', storeItems as DBSchema['stickers']['value'][])
+              case 'childrenProfiles':
+                return jubeeDB.putBulk('childrenProfiles', storeItems as DBSchema['childrenProfiles']['value'][])
+              default:
+                return Promise.resolve()
+            }
+          })
+      )
 
       toast({
         title: "Conflicts Resolved",
@@ -237,50 +253,87 @@ export function ConflictResolutionDialog() {
     setIsResolving(true)
     try {
       const diagnosis = conflictResolver.getDiagnosis()
-      const resolvedConflicts: ResolvedConflict[] = []
 
-      // Group conflicts by recommended strategy
-      const byStrategy: Record<ResolutionChoice, string[]> = {
+      // Group conflicts by recommended strategy to preserve object references
+      const conflictsByStrategy: Record<ResolutionChoice, ConflictGroup[]> = {
         local: [],
         server: [],
         merge: []
       }
 
-      Object.entries(diagnosis).forEach(([id, strategy]) => {
-        byStrategy[strategy].push(id)
+      conflicts.forEach(c => {
+         const strategy = diagnosis[c.id]
+         conflictsByStrategy[strategy].push(c)
       })
 
-      // Resolve each group and maintain id mapping
-      for (const [strategy, ids] of Object.entries(byStrategy) as [ResolutionChoice, string[]][]) {
-        if (ids.length > 0) {
-          const resolved = await conflictResolver.resolveBatch(ids, strategy)
-          resolvedConflicts.push(...resolved)
+      const resolvedPairs: { conflict: ConflictGroup, data: Record<string, unknown> }[] = []
+
+      // Resolve each group
+      for (const [strategy, group] of Object.entries(conflictsByStrategy) as [ResolutionChoice, ConflictGroup[]][]) {
+        if (group.length > 0) {
+          const ids = group.map(c => c.id)
+          const results = await conflictResolver.resolveBatch(ids, strategy)
+
+          results.forEach((data, idx) => {
+              resolvedPairs.push({
+                  conflict: group[idx],
+                  data: data
+              })
+          })
         }
       }
 
-      // Create lookup map: id → resolved data
-      const resolvedMap = new Map(
-        resolvedConflicts.map(r => [r.id, r.data])
+      // Group by store for bulk update
+      const byStore: Partial<Record<StoreName, Record<string, unknown>[]>> = {
+        gameProgress: [],
+        achievements: [],
+        drawings: [],
+        stickers: [],
+        childrenProfiles: []
+      }
+
+      resolvedPairs.forEach(({ conflict, data }) => {
+        if (isStoreName(conflict.storeName)) {
+           byStore[conflict.storeName]?.push(data)
+        }
+      })
+
+      // Execute bulk updates
+      await Promise.all(
+        Object.entries(byStore)
+          .filter(([_, items]) => items && items.length > 0)
+          .map(([storeName, items]) => {
+            const store = storeName as StoreName
+            const storeItems = items as unknown[]
+
+            switch (store) {
+              case 'gameProgress':
+                return jubeeDB.putBulk('gameProgress', storeItems as DBSchema['gameProgress']['value'][])
+              case 'achievements':
+                return jubeeDB.putBulk('achievements', storeItems as DBSchema['achievements']['value'][])
+              case 'drawings':
+                return jubeeDB.putBulk('drawings', storeItems as DBSchema['drawings']['value'][])
+              case 'stickers':
+                return jubeeDB.putBulk('stickers', storeItems as DBSchema['stickers']['value'][])
+              case 'childrenProfiles':
+                return jubeeDB.putBulk('childrenProfiles', storeItems as DBSchema['childrenProfiles']['value'][])
+              default:
+                return Promise.resolve()
+            }
+          })
       )
 
-      // Get auth once
+      // Sync to server
       const { data: { user } } = await supabase.auth.getUser()
 
       if (user) {
-        // Group by store for bulk operations
-        const byStore: Record<StoreName, Array<{ conflict: ConflictGroup, data: Record<string, unknown> }>> = {
-          gameProgress: [],
-          achievements: [],
-          drawings: [],
-          stickers: [],
-          childrenProfiles: []
-        }
+        for (const { conflict, data } of resolvedPairs) {
+          if (isStoreName(conflict.storeName)) {
+            // Already saved locally via putBulk above
 
-        // Map resolved data to correct conflicts using ID
-        for (const conflict of conflicts) {
-          const resolvedData = resolvedMap.get(conflict.id)
-          if (resolvedData && isStoreName(conflict.storeName)) {
-            byStore[conflict.storeName].push({ conflict, data: resolvedData })
+            if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
+              await syncToServer(conflict.storeName, data, user.id)
+            }
           }
         }
 
@@ -314,7 +367,7 @@ export function ConflictResolutionDialog() {
 
       toast({
         title: "Auto-Diagnosis Complete",
-        description: `${resolvedConflicts.length} conflict(s) automatically resolved`,
+        description: `${resolvedPairs.length} conflict(s) automatically resolved`,
       })
 
       setCurrentConflict(null)

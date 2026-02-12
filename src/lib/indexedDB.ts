@@ -192,34 +192,46 @@ class IndexedDBService {
 
   /**
    * Bulk insert/update records in a single transaction
+   * Critical for conflict resolution and batch sync operations
+   *
    * @param storeName - Name of the object store
    * @param items - Array of items to insert/update
    * @throws {Error} If bulk operation fails
+   *
+   * @example
+   * ```typescript
+   * // Batch update after conflict resolution
+   * await jubeeDB.putBulk('drawings', [
+   *   { id: '1', imageData: '...', synced: true },
+   *   { id: '2', imageData: '...', synced: true }
+   * ]);
+   * ```
    */
   async putBulk<K extends keyof DBSchema>(
     storeName: K,
     items: DBSchema[K]['value'][]
   ): Promise<void> {
+    if (items.length === 0) return
+
     try {
       const db = await this.init()
-      await new Promise<void>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
-        // Queue all operations in single transaction
         items.forEach(item => {
           store.put(item)
         })
 
         transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(new Error(`Bulk put failed in ${storeName}`))
+        transaction.onerror = () => reject(
+          new Error(`Bulk put failed in ${storeName}: ${transaction.error?.message}`)
+        )
       })
     } catch (error) {
       logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
-      // Fallback to individual localStorage operations
-      items.forEach(item => {
-        this.fallbackToLocalStorage('put', storeName, item)
-      })
+      // Fallback to optimized localStorage operations
+      this.fallbackToLocalStorage('putBulk', storeName, items)
     }
   }
 
@@ -429,6 +441,20 @@ class IndexedDBService {
             existing.push(putData)
           }
           localStorage.setItem(key, JSON.stringify(existing))
+          break
+        }
+        case 'putBulk': {
+          const existing = JSON.parse(localStorage.getItem(key) || '[]') as ItemWithId[]
+          const putItems = data as ItemWithId[]
+
+          // Use Map for O(1) lookup and update
+          const existingMap = new Map(existing.map(item => [item.id, item]))
+
+          putItems.forEach(item => {
+            existingMap.set(item.id, item)
+          })
+
+          localStorage.setItem(key, JSON.stringify(Array.from(existingMap.values())))
           break
         }
         case 'get': {

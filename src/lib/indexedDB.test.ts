@@ -1,63 +1,55 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { jubeeDB, DBSchema } from './indexedDB'
+import { jubeeDB } from './indexedDB'
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString()
-    },
-    clear: () => {
-      store = {}
-    },
-    removeItem: (key: string) => {
-      delete store[key]
+// Unmock to test real implementation
+vi.unmock('@/lib/indexedDB')
+
+describe('IndexedDBService.putBulk', () => {
+  beforeEach(async () => {
+    // Ensure DB is initialized and clear store
+    try {
+        await jubeeDB.clear('drawings')
+    } catch (e) {
+        // Ignore if DB not open or store empty
     }
-  }
-})()
-
-global.localStorage = localStorageMock as Storage
-
-describe('IndexedDBService - putBulk Fallback', () => {
-  beforeEach(() => {
-    localStorageMock.clear()
-    // Ensure indexedDB is undefined or throws to trigger fallback
   })
 
-  it('putBulk falls back to localStorage when IndexedDB is unavailable', async () => {
-    // We can spy on console.error to avoid noise
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    // Attempt putBulk
-    const items: DBSchema['gameProgress']['value'][] = [
-      {
-        id: '1',
-        score: 100,
-        activitiesCompleted: 1,
-        currentTheme: 'theme1',
-        updatedAt: '2024-01-01',
-        synced: false
-      },
-      {
-        id: '2',
-        score: 200,
-        activitiesCompleted: 2,
-        currentTheme: 'theme2',
-        updatedAt: '2024-01-02',
-        synced: false
-      }
+  it('should insert multiple records in single transaction', async () => {
+    const items = [
+      { id: '1', imageData: 'data1', createdAt: '2026-01-01', updatedAt: '2026-01-01', synced: false },
+      { id: '2', imageData: 'data2', createdAt: '2026-01-02', updatedAt: '2026-01-02', synced: false }
     ]
 
-    await jubeeDB.putBulk('gameProgress', items)
+    await jubeeDB.putBulk('drawings', items)
 
-    // Verify localStorage has items
-    const stored = JSON.parse(localStorageMock.getItem('jubee-love-db_gameProgress') || '[]')
-    expect(stored).toHaveLength(2)
-    expect(stored[0]).toMatchObject({ id: '1', score: 100 })
-    expect(stored[1]).toMatchObject({ id: '2', score: 200 })
+    const result1 = await jubeeDB.get('drawings', '1')
+    const result2 = await jubeeDB.get('drawings', '2')
 
-    errorSpy.mockRestore()
+    expect(result1).toBeDefined()
+    expect(result2).toBeDefined()
+    expect(result1?.imageData).toBe('data1')
+    expect(result2?.imageData).toBe('data2')
+  })
+
+  it('should handle empty array gracefully', async () => {
+    await expect(jubeeDB.putBulk('drawings', [])).resolves.not.toThrow()
+  })
+
+  it('should update existing records in bulk', async () => {
+    // Insert initial
+    await jubeeDB.put('drawings', {
+      id: '1', imageData: 'data',
+      createdAt: '2026-01-01', updatedAt: '2026-01-01', synced: false
+    })
+
+    // Bulk update
+    await jubeeDB.putBulk('drawings', [{
+      id: '1', imageData: 'data',
+      createdAt: '2026-01-01', updatedAt: '2026-01-02', synced: true
+    }])
+
+    const result = await jubeeDB.get('drawings', '1')
+    expect(result?.updatedAt).toBe('2026-01-02')
+    expect(result?.synced).toBe(true)
   })
 })
