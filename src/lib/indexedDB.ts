@@ -80,7 +80,7 @@ export interface DBSchema {
  * Manages all IndexedDB operations with automatic localStorage fallback.
  * Provides CRUD operations for all data stores with sync tracking.
  */
-class IndexedDBService {
+export class IndexedDBService {
   private db: IDBDatabase | null = null
   private dbPromise: Promise<IDBDatabase> | null = null
   private isSupported: boolean
@@ -187,6 +187,36 @@ class IndexedDBService {
       logger.error(`IndexedDB put error in ${storeName}:`, error)
       // Fallback to localStorage
       this.fallbackToLocalStorage('put', storeName, data)
+    }
+  }
+
+  /**
+   * Bulk insert/update records in a single transaction
+   * @param storeName - Name of the object store
+   * @param items - Array of items to insert/update
+   * @throws {Error} If bulk operation fails
+   */
+  async putBulk<K extends keyof DBSchema>(
+    storeName: K,
+    items: DBSchema[K]['value'][]
+  ): Promise<void> {
+    try {
+      const db = await this.init()
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], 'readwrite')
+        const store = transaction.objectStore(storeName)
+
+        items.forEach(item => store.put(item))
+
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(new Error(`Bulk put failed in ${storeName}`))
+      })
+    } catch (error) {
+      logger.error(`IndexedDB putBulk error in ${storeName}:`, error)
+      // Fallback to individual localStorage operations
+      items.forEach(item => {
+        this.fallbackToLocalStorage('put', storeName, item)
+      })
     }
   }
 
