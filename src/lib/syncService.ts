@@ -210,28 +210,22 @@ class SyncService {
       logger.dev(`Syncing ${unsynced.length} achievements`)
 
       const MAX_BATCH_SIZE = 50
-
-      // Handle large datasets by splitting into batches
       if (unsynced.length > MAX_BATCH_SIZE) {
-        logger.warn(`Large achievement count: ${unsynced.length}, splitting batches`)
+        logger.warn(`Unusually large achievement count: ${unsynced.length}, splitting batches`)
 
         for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
           const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
           const chunkResult = await this.syncAchievementsBatch(user, chunk)
-
           result.synced += chunkResult.synced
           result.failed += chunkResult.failed
           result.errors.push(...chunkResult.errors)
         }
-
         return result
       }
 
-      // Normal path: Single batch
       return await this.syncAchievementsBatch(user, unsynced)
-
     } catch (error) {
-      logger.error('syncAchievements error:', error)
+      logger.error('syncAchievements catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -240,9 +234,7 @@ class SyncService {
   }
 
   /**
-   * Sync a batch of achievements in a single operation
-   * Eliminates N+1 query pattern with Supabase batch upsert
-   * @private
+   * Sync a batch of achievements
    */
   private async syncAchievementsBatch(
     user: User,
@@ -250,7 +242,6 @@ class SyncService {
   ): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
-    // Prepare batch payload
     const batchData = achievements.map(item => ({
       user_id: user.id,
       child_profile_id: null,
@@ -258,7 +249,6 @@ class SyncService {
       unlocked_at: item.unlockedAt,
     }))
 
-    // Single batch upsert to Supabase
     const { error: batchError } = await supabase
       .from('achievements')
       .upsert(batchData, {
@@ -266,7 +256,7 @@ class SyncService {
       })
 
     if (!batchError) {
-      // Mark all as synced in single IndexedDB transaction
+      // Mark as synced using bulk put
       const syncedItems = achievements.map(item => ({ ...item, synced: true }))
       await jubeeDB.putBulk('achievements', syncedItems)
 
@@ -275,10 +265,10 @@ class SyncService {
       return result
     }
 
-    // Batch failed - check error type
+    // Batch failed - Analyze error
     logger.warn('Batch sync failed for achievements:', batchError)
 
-    // Transient error: queue for retry
+    // Transient error: Queue entire batch
     if (this.isTransientError(batchError)) {
       logger.info('Transient error - queueing batch for retry')
 
@@ -296,23 +286,21 @@ class SyncService {
       return result
     }
 
-    // Data-level error: fall back to individual processing
+    // Data-level error - Fall back to individual processing
     logger.info('Data-level error - falling back to individual sync')
     return await this.syncAchievementsIndividual(user, achievements)
   }
 
   /**
    * Individual sync fallback for achievements
-   * Used when batch operations fail with data-level errors
-   * @private
    */
   private async syncAchievementsIndividual(
     user: User,
-    achievements: DBSchema['achievements']['value'][]
+    items: DBSchema['achievements']['value'][]
   ): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
-    for (const item of achievements) {
+    for (const item of items) {
       try {
         const { error } = await supabase
           .from('achievements')
@@ -334,6 +322,7 @@ class SyncService {
         result.failed++
         result.errors.push(error instanceof Error ? error.message : 'Unknown error')
 
+        // Add to retry queue
         syncQueue.add({
           storeName: 'achievements',
           operation: 'sync',
@@ -410,28 +399,22 @@ class SyncService {
       logger.dev(`Syncing ${unsynced.length} stickers`)
 
       const MAX_BATCH_SIZE = 50
-
-      // Handle large datasets by splitting into batches
       if (unsynced.length > MAX_BATCH_SIZE) {
-        logger.warn(`Large sticker count: ${unsynced.length}, splitting batches`)
+        logger.warn(`Unusually large sticker count: ${unsynced.length}, splitting batches`)
 
         for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
           const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
           const chunkResult = await this.syncStickersBatch(user, chunk)
-
           result.synced += chunkResult.synced
           result.failed += chunkResult.failed
           result.errors.push(...chunkResult.errors)
         }
-
         return result
       }
 
-      // Normal path: Single batch
       return await this.syncStickersBatch(user, unsynced)
-
     } catch (error) {
-      logger.error('syncStickers error:', error)
+      logger.error('syncStickers catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -440,9 +423,7 @@ class SyncService {
   }
 
   /**
-   * Sync a batch of stickers in a single operation
-   * Eliminates N+1 query pattern with Supabase batch upsert
-   * @private
+   * Sync a batch of stickers
    */
   private async syncStickersBatch(
     user: User,
@@ -450,7 +431,6 @@ class SyncService {
   ): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
-    // Prepare batch payload
     const batchData = stickers.map(item => ({
       user_id: user.id,
       child_profile_id: null,
@@ -458,7 +438,6 @@ class SyncService {
       unlocked_at: item.unlockedAt,
     }))
 
-    // Single batch upsert to Supabase
     const { error: batchError } = await supabase
       .from('stickers')
       .upsert(batchData, {
@@ -466,7 +445,7 @@ class SyncService {
       })
 
     if (!batchError) {
-      // Mark all as synced in single IndexedDB transaction
+      // Mark as synced using bulk put
       const syncedItems = stickers.map(item => ({ ...item, synced: true }))
       await jubeeDB.putBulk('stickers', syncedItems)
 
@@ -475,10 +454,10 @@ class SyncService {
       return result
     }
 
-    // Batch failed - check error type
+    // Batch failed - Analyze error
     logger.warn('Batch sync failed for stickers:', batchError)
 
-    // Transient error: queue for retry
+    // Transient error: Queue entire batch
     if (this.isTransientError(batchError)) {
       logger.info('Transient error - queueing batch for retry')
 
@@ -496,23 +475,21 @@ class SyncService {
       return result
     }
 
-    // Data-level error: fall back to individual processing
+    // Data-level error - Fall back to individual processing
     logger.info('Data-level error - falling back to individual sync')
     return await this.syncStickersIndividual(user, stickers)
   }
 
   /**
    * Individual sync fallback for stickers
-   * Used when batch operations fail with data-level errors
-   * @private
    */
   private async syncStickersIndividual(
     user: User,
-    stickers: DBSchema['stickers']['value'][]
+    items: DBSchema['stickers']['value'][]
   ): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
 
-    for (const item of stickers) {
+    for (const item of items) {
       try {
         const { error } = await supabase
           .from('stickers')
@@ -534,6 +511,7 @@ class SyncService {
         result.failed++
         result.errors.push(error instanceof Error ? error.message : 'Unknown error')
 
+        // Add to retry queue
         syncQueue.add({
           storeName: 'stickers',
           operation: 'sync',

@@ -192,20 +192,9 @@ class IndexedDBService {
 
   /**
    * Bulk insert/update records in a single transaction
-   * Critical for sync batch operations and ACID compliance
-   *
    * @param storeName - Name of the object store
-   * @param items - Array of items to insert/update (must include id)
+   * @param items - Array of items to insert/update
    * @throws {Error} If bulk operation fails
-   *
-   * @example
-   * ```typescript
-   * // Batch update after sync
-   * await jubeeDB.putBulk('stickers', [
-   *   { id: '1', stickerId: 'star', unlockedAt: '2026-01-01', synced: true },
-   *   { id: '2', stickerId: 'heart', unlockedAt: '2026-01-02', synced: true }
-   * ]);
-   * ```
    */
   async putBulk<K extends keyof DBSchema>(
     storeName: K,
@@ -219,13 +208,11 @@ class IndexedDBService {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
-        items.forEach(item => {
-          store.put(item)
-        })
+        items.forEach(item => store.put(item))
 
         transaction.oncomplete = () => resolve()
         transaction.onerror = () => reject(
-          new Error(`Bulk put failed in ${storeName}: ${transaction.error?.message}`)
+          new Error(`Bulk put failed in ${storeName}`)
         )
       })
     } catch (error) {
