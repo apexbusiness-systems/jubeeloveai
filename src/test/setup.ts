@@ -44,7 +44,6 @@ vi.mock('@/lib/indexedDB', () => ({
     delete: vi.fn().mockResolvedValue(undefined),
     getUnsynced: vi.fn().mockResolvedValue([]),
     clear: vi.fn().mockResolvedValue(undefined),
-    putBulk: vi.fn().mockResolvedValue(undefined),
   },
 }))
 
