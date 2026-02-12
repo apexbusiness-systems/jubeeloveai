@@ -17,10 +17,10 @@ const localStorageMock = (() => {
   }
 })()
 
-global.localStorage = localStorageMock as any
+global.localStorage = localStorageMock as Storage
 
 // Import after setting up globals
-import { conflictResolver, ConflictGroup } from './conflictResolver'
+import { conflictResolver, ConflictGroup, ResolvedConflict } from './conflictResolver'
 
 describe('ConflictResolver', () => {
   beforeEach(() => {
@@ -52,7 +52,7 @@ describe('ConflictResolver', () => {
     conflictResolver.addConflict(conflict2)
 
     // Resolve batch
-    const results = await conflictResolver.resolveBatch(['c1', 'c2'], 'local') as any[]
+    const results = await conflictResolver.resolveBatch(['c1', 'c2'], 'local')
 
     expect(results).toHaveLength(2)
 
@@ -61,13 +61,13 @@ describe('ConflictResolver', () => {
     expect(results[0]).toHaveProperty('data')
 
     // Verify mapping
-    const r1 = results.find((r: any) => r.id === 'c1')
+    const r1 = results.find((r: ResolvedConflict) => r.id === 'c1')
     expect(r1).toBeDefined()
-    expect(r1.data).toEqual({ val: 'local1', synced: true })
+    expect(r1?.data).toEqual({ val: 'local1', synced: true })
 
-    const r2 = results.find((r: any) => r.id === 'c2')
+    const r2 = results.find((r: ResolvedConflict) => r.id === 'c2')
     expect(r2).toBeDefined()
-    expect(r2.data).toEqual({ val: 'local2', synced: true })
+    expect(r2?.data).toEqual({ val: 'local2', synced: true })
   })
 
   it('resolveAll returns mapped data with IDs', async () => {
@@ -82,7 +82,7 @@ describe('ConflictResolver', () => {
     }
     conflictResolver.addConflict(conflict1)
 
-    const results = await conflictResolver.resolveAll('server') as any[]
+    const results = await conflictResolver.resolveAll('server')
 
     expect(results).toHaveLength(1)
     expect(results[0]).toHaveProperty('id')
@@ -112,7 +112,7 @@ describe('ConflictResolver', () => {
     conflictResolver.addConflict(conflict1)
     conflictResolver.addConflict(conflict2)
 
-    const results = await conflictResolver.resolveByStore('store1', 'local') as any[]
+    const results = await conflictResolver.resolveByStore('store1', 'local')
 
     expect(results).toHaveLength(1)
     expect(results[0].id).toBe('c1')
