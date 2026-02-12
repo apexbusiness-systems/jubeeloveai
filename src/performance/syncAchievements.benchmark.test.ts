@@ -3,12 +3,11 @@ import { syncService } from '@/lib/syncService'
 import { jubeeDB } from '@/lib/indexedDB'
 import { supabase } from '@/integrations/supabase/client'
 
-// Unmock dependencies to test real logic
 vi.unmock('@/lib/syncService')
 vi.unmock('@/lib/indexedDB')
-vi.unmock('../indexedDB') // Just in case
+vi.unmock('../indexedDB')
 
-describe('syncStickers Performance Benchmarks', () => {
+describe('syncAchievements Performance Benchmarks', () => {
   const mockLatency = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms))
 
@@ -23,38 +22,30 @@ describe('syncStickers Performance Benchmarks', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
-    // Reset DB state
-    // We need to make sure we are using the real jubeeDB instance if unmocked
-    // But since JSDOM indexedDB is transient, we might just need to clear it if tests reuse environment.
     try {
-        await jubeeDB.clear('stickers')
+        await jubeeDB.clear('achievements')
     } catch (e) {
-        // If clear fails (e.g. DB not open), ignore
+      // ignore
     }
   })
 
   it('MEASURE: 50-item sync completes under 1s with batch optimization', async () => {
-    // Generate 50 test stickers
-    const testStickers = Array.from({ length: 50 }, (_, i) => ({
-      id: `sticker-${i}`,
-      stickerId: `sticker-${i}`,
+    const testItems = Array.from({ length: 50 }, (_, i) => ({
+      id: `achievement-${i}`,
+      achievementId: `achievement-${i}`,
       unlockedAt: new Date().toISOString(),
       synced: false
     }))
 
-    // Seed IndexedDB
-    // We use putBulk if available or loop put
-    // Since we just implemented putBulk, let's use it to seed faster!
-    await jubeeDB.putBulk('stickers', testStickers)
+    await jubeeDB.putBulk('achievements', testItems)
 
-    // Mock Supabase with 300ms network latency (3G simulation)
     const upsertSpy = vi.fn().mockImplementation(async () => {
       await mockLatency(300)
       return { error: null, data: [] }
     })
 
     vi.spyOn(supabase, 'from').mockImplementation((table) => {
-      if (table === 'stickers') {
+      if (table === 'achievements') {
         return {
           upsert: upsertSpy,
           insert: vi.fn().mockReturnThis(),
@@ -69,17 +60,14 @@ describe('syncStickers Performance Benchmarks', () => {
     })
 
     const startTime = performance.now()
-    // Call private method
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (syncService as any).syncStickers(mockUser)
+    await (syncService as any).syncAchievements(mockUser)
     const duration = performance.now() - startTime
 
     console.log(`Duration: ${duration.toFixed(2)}ms`)
     console.log(`Upsert calls: ${upsertSpy.mock.calls.length}`)
 
-    // Expectation: < 1000ms and 1 call
-    // This will fail before optimization (should take ~15s and 50 calls)
-    expect(duration).toBeLessThan(1500) // Slightly generous buffer for test env overhead
+    expect(duration).toBeLessThan(1500)
     expect(upsertSpy).toHaveBeenCalledTimes(1)
   })
 })

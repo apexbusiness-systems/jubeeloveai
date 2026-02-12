@@ -192,9 +192,19 @@ class IndexedDBService {
 
   /**
    * Bulk insert/update records in a single transaction
+   * Reduces N IndexedDB operations to 1 transaction
+   *
    * @param storeName - Name of the object store
    * @param items - Array of items to insert/update
    * @throws {Error} If bulk operation fails
+   *
+   * @example
+   * ```typescript
+   * await jubeeDB.putBulk('stickers', [
+   *   { id: '1', stickerId: 's1', unlockedAt: '2026-01-01', synced: true },
+   *   { id: '2', stickerId: 's2', unlockedAt: '2026-01-02', synced: true }
+   * ]);
+   * ```
    */
   async putBulk<K extends keyof DBSchema>(
     storeName: K,
@@ -202,7 +212,7 @@ class IndexedDBService {
   ): Promise<void> {
     try {
       const db = await this.init()
-      await new Promise<void>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
