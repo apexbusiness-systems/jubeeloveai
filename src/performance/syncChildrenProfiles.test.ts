@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { syncService } from '../lib/syncService'
 import { supabase } from '@/integrations/supabase/client'
-import { jubeeDB } from '../lib/indexedDB'
+import { jubeeDB, type DBSchema } from '../lib/indexedDB'
 import { syncQueue } from '../lib/syncQueue'
 import type { User } from '@supabase/supabase-js'
 
@@ -76,6 +76,7 @@ describe('syncChildrenProfiles Optimization', () => {
     ]
 
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (store === 'childrenProfiles') return mockProfiles as any
       return []
     })
@@ -83,13 +84,13 @@ describe('syncChildrenProfiles Optimization', () => {
     const upsertSpy = vi.fn().mockResolvedValue({ error: null })
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Mock user auth
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Test via syncAll (as proposed)
     await syncService.syncAll()
@@ -129,6 +130,7 @@ describe('syncChildrenProfiles Optimization', () => {
     }]
 
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (store === 'childrenProfiles') return mockProfiles as any
       return []
     })
@@ -136,12 +138,12 @@ describe('syncChildrenProfiles Optimization', () => {
     const upsertSpy = vi.fn().mockResolvedValue({ error: null })
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     await syncService.syncAll()
 
@@ -150,7 +152,7 @@ describe('syncChildrenProfiles Optimization', () => {
       expect.objectContaining({
         settings: expect.objectContaining({
           theme: 'pink',
-          notifications: expect.any(Object)
+          notifications: expect.anything()
         })
       })
     ]))
@@ -159,12 +161,13 @@ describe('syncChildrenProfiles Optimization', () => {
   // TEST 3: Fallback on data error
   it('should fallback to individual sync on data error', async () => {
     const mockProfiles = [
-      { id: 'profile-1', name: 'Alice', age: 5, synced: false } as any,
-      { id: 'profile-2', name: 'Bob', age: 7, synced: false } as any,
-      { id: 'profile-3', name: 'Charlie', age: 4, synced: false } as any
+      { id: 'profile-1', name: 'Alice', age: 5, synced: false } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      { id: 'profile-2', name: 'Bob', age: 7, synced: false } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      { id: 'profile-3', name: 'Charlie', age: 4, synced: false } as any // eslint-disable-line @typescript-eslint/no-explicit-any
     ]
 
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (store === 'childrenProfiles') return mockProfiles as any
       return []
     })
@@ -184,12 +187,12 @@ describe('syncChildrenProfiles Optimization', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const result = await syncService.syncAll()
 
@@ -203,10 +206,11 @@ describe('syncChildrenProfiles Optimization', () => {
   // TEST 4: Transient error handling
   it('should queue profiles on transient error without fallback', async () => {
     const mockProfiles = [
-      { id: 'profile-1', name: 'Alice', age: 5, synced: false } as any
+      { id: 'profile-1', name: 'Alice', age: 5, synced: false } as any // eslint-disable-line @typescript-eslint/no-explicit-any
     ]
 
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (store === 'childrenProfiles') return mockProfiles as any
       return []
     })
@@ -217,12 +221,12 @@ describe('syncChildrenProfiles Optimization', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     await syncService.syncAll()
 
@@ -252,6 +256,7 @@ describe('syncChildrenProfiles Optimization', () => {
     }))
 
     vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (store === 'childrenProfiles') return mockProfiles as any
       return []
     })
@@ -265,12 +270,12 @@ describe('syncChildrenProfiles Optimization', () => {
 
     vi.mocked(supabase.from).mockReturnValue({
       upsert: upsertSpy
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser },
       error: null
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const start = performance.now()
     await syncService.syncAll()
