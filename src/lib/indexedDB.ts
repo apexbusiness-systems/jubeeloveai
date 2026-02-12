@@ -80,7 +80,7 @@ export interface DBSchema {
  * Manages all IndexedDB operations with automatic localStorage fallback.
  * Provides CRUD operations for all data stores with sync tracking.
  */
-class IndexedDBService {
+export class IndexedDBService {
   private db: IDBDatabase | null = null
   private dbPromise: Promise<IDBDatabase> | null = null
   private isSupported: boolean
@@ -192,8 +192,6 @@ class IndexedDBService {
 
   /**
    * Bulk insert/update records in a single transaction
-   * Reduces N IndexedDB operations to 1 transaction
-   *
    * @param storeName - Name of the object store
    * @param items - Array of items to insert/update
    * @throws {Error} If bulk operation fails
@@ -216,10 +214,7 @@ class IndexedDBService {
         const transaction = db.transaction([storeName], 'readwrite')
         const store = transaction.objectStore(storeName)
 
-        // Queue all operations in single transaction
-        items.forEach(item => {
-          store.put(item)
-        })
+        items.forEach(item => store.put(item))
 
         transaction.oncomplete = () => resolve()
         transaction.onerror = () => reject(new Error(`Bulk put failed in ${storeName}`))

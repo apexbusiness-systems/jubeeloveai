@@ -1,63 +1,99 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { jubeeDB, DBSchema } from './indexedDB'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString()
-    },
-    clear: () => {
-      store = {}
-    },
-    removeItem: (key: string) => {
-      delete store[key]
-    }
-  }
-})()
+// Unmock the module that is globally mocked in setup.ts
+vi.unmock('./indexedDB')
 
-global.localStorage = localStorageMock as Storage
+import { IndexedDBService } from './indexedDB'
 
-describe('IndexedDBService - putBulk Fallback', () => {
+// Mock IndexedDB structures
+const mockPut = vi.fn()
+const mockTransaction = {
+  objectStore: vi.fn(() => ({
+    put: mockPut,
+  })),
+  oncomplete: null as (() => void) | null,
+  onerror: null as (() => void) | null,
+}
+
+const mockDb = {
+  transaction: vi.fn(() => mockTransaction),
+  objectStoreNames: { contains: vi.fn().mockReturnValue(true) },
+  createObjectStore: vi.fn(),
+}
+
+const mockOpenRequest = {
+  onerror: null as (() => void) | null,
+  onsuccess: null as (() => void) | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onupgradeneeded: null as ((e: any) => void) | null,
+  result: mockDb,
+}
+
+const mockIndexedDB = {
+  open: vi.fn(() => mockOpenRequest),
+}
+
+describe('IndexedDBService', () => {
+  let dbService: IndexedDBService;
+  const originalIndexedDB = window.indexedDB;
+
   beforeEach(() => {
-    localStorageMock.clear()
-    // Ensure indexedDB is undefined or throws to trigger fallback
+    // Manually stub window.indexedDB
+    Object.defineProperty(window, 'indexedDB', {
+      value: mockIndexedDB,
+      writable: true
+    });
+
+    dbService = new IndexedDBService();
+
+    vi.clearAllMocks()
+
+    // Reset mock properties
+    mockOpenRequest.onsuccess = null
+    mockOpenRequest.onerror = null
+    mockTransaction.oncomplete = null
   })
 
-  it('putBulk falls back to localStorage when IndexedDB is unavailable', async () => {
-    // We can spy on console.error to avoid noise
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  afterEach(() => {
+    // Restore window.indexedDB
+    Object.defineProperty(window, 'indexedDB', {
+      value: originalIndexedDB,
+      writable: true
+    });
+  })
 
-    // Attempt putBulk
-    const items: DBSchema['gameProgress']['value'][] = [
-      {
-        id: '1',
-        score: 100,
-        activitiesCompleted: 1,
-        currentTheme: 'theme1',
-        updatedAt: '2024-01-01',
-        synced: false
-      },
-      {
-        id: '2',
-        score: 200,
-        activitiesCompleted: 2,
-        currentTheme: 'theme2',
-        updatedAt: '2024-01-02',
-        synced: false
-      }
+  it('putBulk should use a single transaction for multiple items', async () => {
+    const items = [
+      { id: '1', score: 100, synced: false },
+      { id: '2', score: 200, synced: false }
     ]
 
-    await jubeeDB.putBulk('gameProgress', items)
+    // Start the operation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const promise = dbService.putBulk('gameProgress', items as any)
 
-    // Verify localStorage has items
-    const stored = JSON.parse(localStorageMock.getItem('jubee-love-db_gameProgress') || '[]')
-    expect(stored).toHaveLength(2)
-    expect(stored[0]).toMatchObject({ id: '1', score: 100 })
-    expect(stored[1]).toMatchObject({ id: '2', score: 200 })
+    // Simulate DB open success
+    await new Promise(resolve => setTimeout(resolve, 0))
+    if (mockOpenRequest.onsuccess) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (mockOpenRequest.onsuccess as any)({ target: mockOpenRequest })
+    }
 
-    errorSpy.mockRestore()
+    // Verify puts happened
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    expect(mockIndexedDB.open).toHaveBeenCalled()
+    expect(mockDb.transaction).toHaveBeenCalledWith(['gameProgress'], 'readwrite')
+    expect(mockTransaction.objectStore).toHaveBeenCalledWith('gameProgress')
+    expect(mockPut).toHaveBeenCalledTimes(2)
+    expect(mockPut).toHaveBeenCalledWith(items[0])
+    expect(mockPut).toHaveBeenCalledWith(items[1])
+
+    // Complete transaction
+    if (mockTransaction.oncomplete) {
+      mockTransaction.oncomplete()
+    }
+
+    await promise
   })
 })

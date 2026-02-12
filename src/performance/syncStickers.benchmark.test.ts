@@ -2,39 +2,58 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { syncService } from '@/lib/syncService'
 import { jubeeDB } from '@/lib/indexedDB'
 import { supabase } from '@/integrations/supabase/client'
+import type { User } from '@supabase/supabase-js'
 
-// Unmock dependencies to test real logic
-vi.unmock('@/lib/syncService')
-vi.unmock('@/lib/indexedDB')
-vi.unmock('../indexedDB') // Just in case
+// Use vi.hoisted to share the mock between the factory and the test
+const { mockUpsert } = vi.hoisted(() => {
+  return { mockUpsert: vi.fn() }
+})
+
+// Mock Supabase client
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn(),
+    },
+    from: vi.fn(() => ({
+      upsert: mockUpsert,
+      insert: vi.fn().mockResolvedValue({ error: null, data: [] }),
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+  },
+}))
+
+// Mock IndexedDB
+vi.mock('@/lib/indexedDB', () => ({
+  jubeeDB: {
+    getUnsynced: vi.fn().mockResolvedValue([]),
+    put: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn(),
+    getAll: vi.fn(),
+    putBulk: vi.fn().mockResolvedValue(undefined),
+  },
+}))
 
 describe('syncStickers Performance Benchmarks', () => {
   const mockLatency = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms))
 
-  const mockUser = {
-    id: 'test-user-123',
-    email: 'test@jubee.love',
-    app_metadata: {},
-    user_metadata: {},
-    aud: 'authenticated',
-    created_at: new Date().toISOString()
-  }
+  const mockUser = { id: 'test-user-123', email: 'test@jubee.love' } as unknown as User
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
-    // Reset DB state
-    // We need to make sure we are using the real jubeeDB instance if unmocked
-    // But since JSDOM indexedDB is transient, we might just need to clear it if tests reuse environment.
-    try {
-        await jubeeDB.clear('stickers')
-    } catch (e) {
-        // If clear fails (e.g. DB not open), ignore
-    }
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+        data: { user: mockUser },
+        error: null,
+      })
+    // Reset mockUpsert default implementation
+    mockUpsert.mockResolvedValue({ error: null, data: [] })
   })
 
   it('MEASURE: 50-item sync completes under 1s with batch optimization', async () => {
-    // Generate 50 test stickers
     const testStickers = Array.from({ length: 50 }, (_, i) => ({
       id: `sticker-${i}`,
       stickerId: `sticker-${i}`,
@@ -42,44 +61,27 @@ describe('syncStickers Performance Benchmarks', () => {
       synced: false
     }))
 
-    // Seed IndexedDB
-    // We use putBulk if available or loop put
-    // Since we just implemented putBulk, let's use it to seed faster!
-    await jubeeDB.putBulk('stickers', testStickers)
-
-    // Mock Supabase with 300ms network latency (3G simulation)
-    const upsertSpy = vi.fn().mockImplementation(async () => {
-      await mockLatency(300)
-      return { error: null, data: [] }
+    // Mock getUnsynced to return our test stickers
+    vi.mocked(jubeeDB.getUnsynced).mockImplementation(async (store) => {
+        if (store === 'stickers') return testStickers as unknown as ReturnType<typeof jubeeDB.getUnsynced>
+        return []
     })
 
-    vi.spyOn(supabase, 'from').mockImplementation((table) => {
-      if (table === 'stickers') {
-        return {
-          upsert: upsertSpy,
-          insert: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
+    // Mock 300ms network latency (3G simulation) for the upsert call
+    mockUpsert.mockImplementation(async () => {
+        await mockLatency(300)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any
-      }
-      return {
-          upsert: vi.fn().mockResolvedValue({ error: null, data: [] }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any
+        return { error: null, data: [] } as any
     })
 
     const startTime = performance.now()
-    // Call private method
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (syncService as any).syncStickers(mockUser)
+    await syncService.syncAll()
     const duration = performance.now() - startTime
 
-    console.log(`Duration: ${duration.toFixed(2)}ms`)
-    console.log(`Upsert calls: ${upsertSpy.mock.calls.length}`)
+    console.log(`Duration: ${duration}ms`)
+    console.log(`Upsert calls: ${mockUpsert.mock.calls.length}`)
 
-    // Expectation: < 1000ms and 1 call
-    // This will fail before optimization (should take ~15s and 50 calls)
-    expect(duration).toBeLessThan(1500) // Slightly generous buffer for test env overhead
-    expect(upsertSpy).toHaveBeenCalledTimes(1)
+    expect(duration).toBeLessThan(1000)
+    expect(mockUpsert).toHaveBeenCalledTimes(1)
   })
 })
