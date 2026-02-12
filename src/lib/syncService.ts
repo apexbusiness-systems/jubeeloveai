@@ -205,42 +205,131 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('achievements')
-      
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('achievements')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              achievement_id: item.achievementId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,achievement_id'
-            })
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      logger.dev(`Syncing ${unsynced.length} achievements`)
 
-          await jubeeDB.put('achievements', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync achievement item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+      const MAX_BATCH_SIZE = 50
+      if (unsynced.length > MAX_BATCH_SIZE) {
+        logger.warn(`Unusually large achievement count: ${unsynced.length}, splitting batches`)
 
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'achievements',
-            operation: 'sync',
-            data: item,
-            priority: 4
-          })
+        for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
+          const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
+          const chunkResult = await this.syncAchievementsBatch(user, chunk)
+          result.synced += chunkResult.synced
+          result.failed += chunkResult.failed
+          result.errors.push(...chunkResult.errors)
         }
+        return result
       }
+
+      return await this.syncAchievementsBatch(user, unsynced)
     } catch (error) {
-      logger.error('syncAchievements error:', error)
+      logger.error('syncAchievements catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Sync a batch of achievements
+   */
+  private async syncAchievementsBatch(
+    user: User,
+    achievements: DBSchema['achievements']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    const batchData = achievements.map(item => ({
+      user_id: user.id,
+      child_profile_id: null,
+      achievement_id: item.achievementId,
+      unlocked_at: item.unlockedAt,
+    }))
+
+    const { error: batchError } = await supabase
+      .from('achievements')
+      .upsert(batchData, {
+        onConflict: 'user_id,child_profile_id,achievement_id'
+      })
+
+    if (!batchError) {
+      // Mark as synced using bulk put
+      const syncedItems = achievements.map(item => ({ ...item, synced: true }))
+      await jubeeDB.putBulk('achievements', syncedItems)
+
+      result.synced = achievements.length
+      logger.info(`✅ Batch synced ${achievements.length} achievements`)
+      return result
+    }
+
+    // Batch failed - Analyze error
+    logger.warn('Batch sync failed for achievements:', batchError)
+
+    // Transient error: Queue entire batch
+    if (this.isTransientError(batchError)) {
+      logger.info('Transient error - queueing batch for retry')
+
+      for (const item of achievements) {
+        syncQueue.add({
+          storeName: 'achievements',
+          operation: 'sync',
+          data: item,
+          priority: 4
+        })
+      }
+
+      result.failed = achievements.length
+      result.errors.push(`Transient batch error: ${batchError.message}`)
+      return result
+    }
+
+    // Data-level error - Fall back to individual processing
+    logger.info('Data-level error - falling back to individual sync')
+    return await this.syncAchievementsIndividual(user, achievements)
+  }
+
+  /**
+   * Individual sync fallback for achievements
+   */
+  private async syncAchievementsIndividual(
+    user: User,
+    items: DBSchema['achievements']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        const { error } = await supabase
+          .from('achievements')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            achievement_id: item.achievementId,
+            unlocked_at: item.unlockedAt,
+          }, {
+            onConflict: 'user_id,child_profile_id,achievement_id'
+          })
+
+        if (error) throw error
+
+        await jubeeDB.put('achievements', { ...item, synced: true })
+        result.synced++
+      } catch (error) {
+        logger.error('Failed to sync achievement item:', error)
+        result.failed++
+        result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+        // Add to retry queue
+        syncQueue.add({
+          storeName: 'achievements',
+          operation: 'sync',
+          data: item,
+          priority: 4
+        })
+      }
     }
 
     return result
@@ -305,42 +394,131 @@ class SyncService {
 
     try {
       const unsynced = await jubeeDB.getUnsynced('stickers')
-      
-      for (const item of unsynced) {
-        try {
-          const { error } = await supabase
-            .from('stickers')
-            .upsert({
-              user_id: user.id,
-              child_profile_id: null,
-              sticker_id: item.stickerId,
-              unlocked_at: item.unlockedAt,
-            }, {
-              onConflict: 'user_id,child_profile_id,sticker_id'
-            })
+      if (unsynced.length === 0) return result
 
-          if (error) throw error
+      logger.dev(`Syncing ${unsynced.length} stickers`)
 
-          await jubeeDB.put('stickers', { ...item, synced: true })
-          result.synced++
-        } catch (error) {
-          logger.error('Failed to sync sticker item:', error)
-          result.failed++
-          result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+      const MAX_BATCH_SIZE = 50
+      if (unsynced.length > MAX_BATCH_SIZE) {
+        logger.warn(`Unusually large sticker count: ${unsynced.length}, splitting batches`)
 
-          // Add to retry queue
-          syncQueue.add({
-            storeName: 'stickers',
-            operation: 'sync',
-            data: item,
-            priority: 2
-          })
+        for (let i = 0; i < unsynced.length; i += MAX_BATCH_SIZE) {
+          const chunk = unsynced.slice(i, i + MAX_BATCH_SIZE)
+          const chunkResult = await this.syncStickersBatch(user, chunk)
+          result.synced += chunkResult.synced
+          result.failed += chunkResult.failed
+          result.errors.push(...chunkResult.errors)
         }
+        return result
       }
+
+      return await this.syncStickersBatch(user, unsynced)
     } catch (error) {
-      logger.error('syncStickers error:', error)
+      logger.error('syncStickers catastrophic error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+    }
+
+    return result
+  }
+
+  /**
+   * Sync a batch of stickers
+   */
+  private async syncStickersBatch(
+    user: User,
+    stickers: DBSchema['stickers']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    const batchData = stickers.map(item => ({
+      user_id: user.id,
+      child_profile_id: null,
+      sticker_id: item.stickerId,
+      unlocked_at: item.unlockedAt,
+    }))
+
+    const { error: batchError } = await supabase
+      .from('stickers')
+      .upsert(batchData, {
+        onConflict: 'user_id,child_profile_id,sticker_id'
+      })
+
+    if (!batchError) {
+      // Mark as synced using bulk put
+      const syncedItems = stickers.map(item => ({ ...item, synced: true }))
+      await jubeeDB.putBulk('stickers', syncedItems)
+
+      result.synced = stickers.length
+      logger.info(`✅ Batch synced ${stickers.length} stickers`)
+      return result
+    }
+
+    // Batch failed - Analyze error
+    logger.warn('Batch sync failed for stickers:', batchError)
+
+    // Transient error: Queue entire batch
+    if (this.isTransientError(batchError)) {
+      logger.info('Transient error - queueing batch for retry')
+
+      for (const item of stickers) {
+        syncQueue.add({
+          storeName: 'stickers',
+          operation: 'sync',
+          data: item,
+          priority: 2
+        })
+      }
+
+      result.failed = stickers.length
+      result.errors.push(`Transient batch error: ${batchError.message}`)
+      return result
+    }
+
+    // Data-level error - Fall back to individual processing
+    logger.info('Data-level error - falling back to individual sync')
+    return await this.syncStickersIndividual(user, stickers)
+  }
+
+  /**
+   * Individual sync fallback for stickers
+   */
+  private async syncStickersIndividual(
+    user: User,
+    items: DBSchema['stickers']['value'][]
+  ): Promise<SyncResult> {
+    const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+
+    for (const item of items) {
+      try {
+        const { error } = await supabase
+          .from('stickers')
+          .upsert({
+            user_id: user.id,
+            child_profile_id: null,
+            sticker_id: item.stickerId,
+            unlocked_at: item.unlockedAt,
+          }, {
+            onConflict: 'user_id,child_profile_id,sticker_id'
+          })
+
+        if (error) throw error
+
+        await jubeeDB.put('stickers', { ...item, synced: true })
+        result.synced++
+      } catch (error) {
+        logger.error('Failed to sync sticker item:', error)
+        result.failed++
+        result.errors.push(error instanceof Error ? error.message : 'Unknown error')
+
+        // Add to retry queue
+        syncQueue.add({
+          storeName: 'stickers',
+          operation: 'sync',
+          data: item,
+          priority: 2
+        })
+      }
     }
 
     return result
