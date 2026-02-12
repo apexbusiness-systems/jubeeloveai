@@ -293,7 +293,7 @@ class SyncService {
         }
       }
     } catch (error) {
-      logger.error('syncAchievements error:', error)
+      logger.error('Catastrophic syncAchievements error:', error)
       result.success = false
       result.errors.push(error instanceof Error ? error.message : 'Unknown error')
     }
@@ -307,6 +307,7 @@ class SyncService {
    */
   private async syncDrawings(user: User): Promise<SyncResult> {
     const result: SyncResult = { success: true, synced: 0, failed: 0, errors: [] }
+    const BATCH_SIZE = 10
 
     try {
       const unsynced = await jubeeDB.getUnsynced('drawings')
@@ -449,6 +450,36 @@ class SyncService {
     }
 
     return result
+  }
+
+  /**
+   * Helper: Determine if error is transient (network/server)
+   */
+  private isTransientError(error: unknown): boolean {
+    const transientCodes = ['PGRST301', 'ECONNREFUSED', 'ETIMEDOUT', '503', '429']
+    const errorStr = JSON.stringify(error)
+    return transientCodes.some(code => errorStr.includes(code)) ||
+           errorStr.includes('network') ||
+           errorStr.includes('timeout')
+  }
+
+  /**
+   * Helper: Mark multiple items as synced in IndexedDB
+   */
+  private async markItemsSynced<K extends keyof DBSchema>(
+    items: DBSchema[K]['value'][],
+    storeName: K
+  ): Promise<void> {
+    const syncedItems = items.map(item => ({ ...item, synced: true }))
+
+    if (typeof jubeeDB.putBulk === 'function') {
+      await jubeeDB.putBulk(storeName, syncedItems)
+    } else {
+      // Fallback: serial local updates
+      for (const item of syncedItems) {
+        await jubeeDB.put(storeName, item)
+      }
+    }
   }
 
   /**

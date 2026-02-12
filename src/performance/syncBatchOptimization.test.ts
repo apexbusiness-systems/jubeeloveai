@@ -80,9 +80,18 @@ describe('SyncService Batch Optimization', () => {
 
     await syncService.syncAll()
 
+    // OPTIMIZED BEHAVIOR (Batch): Expect 1 call for all 50 items
     expect(upsertSpy).toHaveBeenCalledTimes(1)
+
+    // Verify payload of the call
     const callArgs = upsertSpy.mock.calls[0][0]
     expect(callArgs).toHaveLength(50)
+    expect(callArgs[0]).toMatchObject({
+      user_id: 'test-user',
+      score: 0
+    })
+
+    // Verify putBulk was called
     expect(jubeeDB.putBulk).toHaveBeenCalledWith('gameProgress', expect.any(Array))
   })
 
@@ -167,9 +176,10 @@ describe('SyncService Batch Optimization', () => {
     await syncService.syncAll()
 
     // Assuming 50 items limit per batch, 20 items = 1 call
+    // If chunking was 10, it would be 2 calls. But code uses 50.
     expect(insertSpy).toHaveBeenCalledTimes(1)
     expect(insertSpy.mock.calls[0][0]).toHaveLength(20)
-    expect(jubeeDB.putBulk).toHaveBeenCalledTimes(1) // Called once for 1 batch
+    expect(jubeeDB.putBulk).toHaveBeenCalledTimes(1)
     expect(jubeeDB.putBulk).toHaveBeenCalledWith('drawings', expect.any(Array))
   })
 })
