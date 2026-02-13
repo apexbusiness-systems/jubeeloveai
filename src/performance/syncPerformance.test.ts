@@ -27,7 +27,6 @@ vi.mock('../lib/indexedDB', () => ({
     put: vi.fn(),
     get: vi.fn(),
     getAll: vi.fn(),
-    putBulk: vi.fn(),
   },
 }))
 
