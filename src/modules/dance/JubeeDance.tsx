@@ -387,6 +387,7 @@ export default function JubeeDancePage() {
                   <ComboCounter
                     combo={context.score.combo}
                     reducedMotion={prefersReducedMotion}
+                    onScreenShake={handleScreenShake}
                   />
                 </div>
 
