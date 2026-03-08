@@ -41,6 +41,7 @@ export default function JubeeDancePage() {
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
   const [partyMode, setPartyMode] = useState(false);
+  const [screenShake, setScreenShake] = useState(false);
   const pendingAutoStartRef = useRef(false);
   const prefersReducedMotion = useReducedMotion() ?? false;
 
