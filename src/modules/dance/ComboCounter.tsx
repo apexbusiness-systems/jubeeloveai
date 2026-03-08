@@ -67,12 +67,34 @@ interface ComboCounterProps {
   onScreenShake?: () => void;
 }
 
-function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
+function ComboCounterComponent({ combo, reducedMotion, onScreenShake }: ComboCounterProps) {
   const [milestone, setMilestone] = useState<number | null>(null);
   const [pulse, setPulse] = useState(false);
   const prevComboRef = useRef(0);
   const tier = getComboTier(combo);
   const style = tierStyles[tier];
+
+  const fireConfetti = useCallback(() => {
+    if (reducedMotion) return;
+    // Left burst
+    confetti({
+      particleCount: 80,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.65 },
+      colors: ['#FFD700', '#FF6B35', '#FF1493', '#00E5FF', '#76FF03'],
+      disableForReducedMotion: true,
+    });
+    // Right burst
+    confetti({
+      particleCount: 80,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.65 },
+      colors: ['#FFD700', '#FF6B35', '#FF1493', '#00E5FF', '#76FF03'],
+      disableForReducedMotion: true,
+    });
+  }, [reducedMotion]);
 
   useEffect(() => {
     // Detect combo increase
@@ -82,11 +104,19 @@ function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
       if (MILESTONES.includes(combo)) {
         setMilestone(combo);
         const timer = setTimeout(() => setMilestone(null), 1800);
+
+        // Legendary milestone: confetti + screen shake
+        if (LEGENDARY_MILESTONES.includes(combo)) {
+          fireConfetti();
+          onScreenShake?.();
+        }
+
+        prevComboRef.current = combo;
         return () => clearTimeout(timer);
       }
     }
     prevComboRef.current = combo;
-  }, [combo, reducedMotion]);
+  }, [combo, reducedMotion, fireConfetti, onScreenShake]);
 
   useEffect(() => {
     if (!pulse) return;
