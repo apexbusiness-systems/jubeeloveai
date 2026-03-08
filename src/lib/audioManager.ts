@@ -93,8 +93,18 @@ class AudioManager {
           if (response.ok) {
             return await response.blob();
           }
-        } catch {
-          // Silently fail for preloads
+
+          // If TTS is unavailable (503), signal caller to abort remaining preloads
+          if (response.status === 503) {
+            console.log('TTS unavailable (503), aborting remaining preloads');
+            throw new Error('TTS_UNAVAILABLE_ABORT');
+          }
+        } catch (err) {
+          // Re-throw abort signal so voiceCache.preloadCommonPhrases can stop early
+          if (err instanceof Error && err.message === 'TTS_UNAVAILABLE_ABORT') {
+            throw err;
+          }
+          // Silently fail for other preload errors
         }
         return null;
       });
