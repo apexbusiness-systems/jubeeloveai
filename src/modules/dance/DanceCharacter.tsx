@@ -212,7 +212,7 @@ function DanceCharacterComponent({
     // Body (64 segments, physical material)
     const bodyGeometry = new THREE.SphereGeometry(0.6, 64, 64);
     const bodyMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       metalness: 0.05,
       roughness: 0.35,
       clearcoat: 0.6,
@@ -244,7 +244,7 @@ function DanceCharacterComponent({
     // Head (64 segments)
     const headGeometry = new THREE.SphereGeometry(0.35, 64, 64);
     const headMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       metalness: 0.05,
       roughness: 0.35,
       clearcoat: 0.6,
@@ -320,7 +320,7 @@ function DanceCharacterComponent({
     // Antenna tips (shiny)
     const tipGeometry = new THREE.SphereGeometry(0.06, 16, 16);
     const tipMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       emissive: 0xffa000,
       emissiveIntensity: 0.3,
       metalness: 0.4,
@@ -341,7 +341,7 @@ function DanceCharacterComponent({
     // Wings (iridescent physical material)
     const wingGeometry = new THREE.SphereGeometry(0.4, 32, 32);
     const wingMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xeeffff,
+      color: 0xE0F7FF,
       transparent: true,
       opacity: 0.65,
       transmission: 0.6,
@@ -372,7 +372,7 @@ function DanceCharacterComponent({
     // Arms
     const armGeometry = new THREE.CapsuleGeometry(0.08, 0.4, 8, 12);
     const armMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       roughness: 0.4,
       clearcoat: 0.4,
       envMap,
@@ -413,7 +413,7 @@ function DanceCharacterComponent({
     // Glow ring for perfect streaks
     const glowRingGeometry = new THREE.RingGeometry(0.9, 1.1, 64);
     const glowRingMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       transparent: true,
       opacity: 0,
       side: THREE.DoubleSide,
