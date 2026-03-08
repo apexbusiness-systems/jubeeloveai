@@ -27,20 +27,19 @@ import { toast } from 'sonner';
 import { useDanceGame } from './useDanceGame';
 import { DanceCharacter } from './DanceCharacter';
 import { ArrowButtons, StepZone } from './ArrowDisplay';
+import { ComboCounter } from './ComboCounter';
 import { getFreeSongs, getPremiumSongs } from './songLibrary';
 import type { DanceSong, Direction } from './types';
 import { useParentalStore } from '@/store/useParentalStore';
 import { SEO } from '@/components/SEO';
 
-const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
+
 
 export default function JubeeDancePage() {
   const navigate = useNavigate();
   const { isPremium } = useParentalStore();
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
-  const [comboMilestone, setComboMilestone] = useState<number | null>(null);
-  const [comboPulse, setComboPulse] = useState(false);
   const [partyMode, setPartyMode] = useState(false);
   const pendingAutoStartRef = useRef(false);
   const prefersReducedMotion = useReducedMotion() ?? false;
@@ -179,25 +178,6 @@ export default function JubeeDancePage() {
     return () => clearTimeout(timer);
   }, [view, partyMode, handleNextSong]);
 
-  useEffect(() => {
-    if (context.score.combo === 0) {
-      setComboMilestone(null);
-      return;
-    }
-
-    if (COMBO_MILESTONES.includes(context.score.combo)) {
-      setComboMilestone(context.score.combo);
-      if (!prefersReducedMotion) {
-        setComboPulse(true);
-      }
-      const pulseTimer = setTimeout(() => setComboPulse(false), 250);
-      const milestoneTimer = setTimeout(() => setComboMilestone(null), 900);
-      return () => {
-        clearTimeout(pulseTimer);
-        clearTimeout(milestoneTimer);
-      };
-    }
-  }, [context.score.combo, prefersReducedMotion]);
 
   const lookaheadMs = useMemo(() => {
     const difficulty = context.currentSong?.pattern.difficulty ?? 'medium';
@@ -391,35 +371,10 @@ export default function JubeeDancePage() {
                       Score {context.score.totalScore}
                     </span>
                   </div>
-                  <motion.div
-                    className="dance-glass-card px-4 py-2 rounded-xl border border-white/40 min-w-[120px]"
-                    animate={
-                      comboPulse && !prefersReducedMotion
-                        ? { scale: 1.08, y: -2 }
-                        : { scale: 1, y: 0 }
-                    }
-                    transition={{ duration: 0.25, ease: easeSpring }}
-                  >
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Combo
-                    </div>
-                    <div className="text-lg font-semibold text-foreground">
-                      Combo {context.score.combo}x
-                    </div>
-                    <AnimatePresence>
-                      {comboMilestone && !prefersReducedMotion && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                          transition={{ duration: 0.25, ease: easeOutQuart }}
-                          className="text-xs font-semibold text-[hsl(var(--dance-hit-perfect))]"
-                        >
-                          Milestone x{comboMilestone}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                  <ComboCounter
+                    combo={context.score.combo}
+                    reducedMotion={prefersReducedMotion}
+                  />
                 </div>
 
                 {context.state === 'playing' ? (
