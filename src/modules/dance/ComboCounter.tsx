@@ -5,9 +5,12 @@
  * Milestone hits (5, 10, 15, 20, 25, 30, 50) trigger burst animations.
  */
 
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Zap, Star, Trophy } from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+const LEGENDARY_MILESTONES = [30, 50];
 
 const MILESTONES = [5, 10, 15, 20, 25, 30, 50];
 
