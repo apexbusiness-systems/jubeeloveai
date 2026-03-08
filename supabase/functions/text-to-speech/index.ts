@@ -281,6 +281,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // QUOTA EXHAUSTION: Short-circuit if both providers recently failed
+  if (Date.now() < quotaExhaustedUntil) {
+    console.log('Quota cooldown active, returning 503 immediately');
+    return new Response(
+      JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
+      {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
   // RATE LIMITING: Check before processing
   const clientIp = getRateLimitKey(req);
   const rateLimit = checkRateLimit(clientIp);
