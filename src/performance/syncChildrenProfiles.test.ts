@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { syncService } from '../lib/syncService'
 import { supabase } from '@/integrations/supabase/client'
-import { jubeeDB, type DBSchema } from '../lib/indexedDB'
+import { jubeeDB } from '../lib/indexedDB'
 import { syncQueue } from '../lib/syncQueue'
 import type { User } from '@supabase/supabase-js'
 
