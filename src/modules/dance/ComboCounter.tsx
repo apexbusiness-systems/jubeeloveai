@@ -55,8 +55,8 @@ const tierStyles = {
   },
 } as const;
 
-const easeSpring = [0.34, 1.56, 0.64, 1] as const;
-const easeOutExpo = [0.16, 1, 0.3, 1] as const;
+const easeSpring: [number, number, number, number] = [0.34, 1.56, 0.64, 1];
+const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 interface ComboCounterProps {
   combo: number;
