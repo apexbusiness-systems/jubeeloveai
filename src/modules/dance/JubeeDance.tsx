@@ -33,7 +33,7 @@ import type { DanceSong, Direction } from './types';
 import { useParentalStore } from '@/store/useParentalStore';
 import { SEO } from '@/components/SEO';
 
-const COMBO_MILESTONES = [5, 10, 15, 20, 25, 30, 50];
+
 
 export default function JubeeDancePage() {
   const navigate = useNavigate();
