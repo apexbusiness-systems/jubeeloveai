@@ -277,9 +277,7 @@ describe('syncChildrenProfiles Optimization', () => {
       error: null
     } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
-    const start = performance.now()
     await syncService.syncAll()
-    const _duration = performance.now() - start
 
     // With batch: ~10ms (single call)
     // Without batch: ~50ms (5 serial calls)
