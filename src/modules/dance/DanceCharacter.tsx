@@ -372,7 +372,7 @@ function DanceCharacterComponent({
     // Arms
     const armGeometry = new THREE.CapsuleGeometry(0.08, 0.4, 8, 12);
     const armMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       roughness: 0.4,
       clearcoat: 0.4,
       envMap,
