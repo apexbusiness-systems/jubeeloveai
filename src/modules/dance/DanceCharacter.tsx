@@ -244,7 +244,7 @@ function DanceCharacterComponent({
     // Head (64 segments)
     const headGeometry = new THREE.SphereGeometry(0.35, 64, 64);
     const headMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       metalness: 0.05,
       roughness: 0.35,
       clearcoat: 0.6,
