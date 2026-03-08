@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { Volume1 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -5,13 +6,21 @@ import { AnimatePresence, motion } from 'framer-motion'
 /**
  * Shows a subtle indicator when browser speech synthesis is being used
  * instead of cloud TTS (ElevenLabs/OpenAI).
+ * Persists for a few seconds after speech ends so the user can read it.
  */
 export function VoiceFallbackIndicator() {
   const usingFallbackVoice = useJubeeStore((s) => s.usingFallbackVoice)
-  const speechText = useJubeeStore((s) => s.speechText)
+  const [visible, setVisible] = useState(false)
 
-  // Only show when actively speaking with fallback
-  const visible = usingFallbackVoice && !!speechText
+  useEffect(() => {
+    if (usingFallbackVoice) {
+      setVisible(true)
+    } else {
+      // Keep indicator visible briefly after fallback flag clears
+      const timer = setTimeout(() => setVisible(false), 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [usingFallbackVoice])
 
   return (
     <AnimatePresence>

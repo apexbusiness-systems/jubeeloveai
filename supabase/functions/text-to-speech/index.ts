@@ -385,12 +385,17 @@ serve(async (req) => {
                           errorMessage.includes('Invalid') ||
                           errorMessage.includes('required');
     
+    if (isClientError) {
+      return new Response(
+        JSON.stringify({ error: errorMessage }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Any server-side failure → signal client to use browser fallback
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: isClientError ? 400 : 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
