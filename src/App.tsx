@@ -359,6 +359,7 @@ function AppShell() {
 
         {/* No longer need recovery button - new 3D engine is more stable */}
       </div>
+      <VoiceFallbackIndicator />
       <Toaster />
     </>
   );
