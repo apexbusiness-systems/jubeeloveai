@@ -111,7 +111,7 @@ function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
             ? { scale: 1.12, y: -3 }
             : { scale: 1, y: 0 }
         }
-        transition={{ duration: 0.2, ease: easeSpring as unknown as number[] }}
+        transition={{ duration: 0.2, ease: easeSpring }}
       >
         {/* Tier icon */}
         <motion.div
