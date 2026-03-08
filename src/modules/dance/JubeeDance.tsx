@@ -41,6 +41,7 @@ export default function JubeeDancePage() {
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
   const [partyMode, setPartyMode] = useState(false);
+  const [screenShake, setScreenShake] = useState(false);
   const pendingAutoStartRef = useRef(false);
   const prefersReducedMotion = useReducedMotion() ?? false;
 
@@ -61,6 +62,12 @@ export default function JubeeDancePage() {
     getNextMove,
     getSongTimeMs,
   } = useDanceGame();
+  // Screen shake handler for legendary combo milestones
+  const handleScreenShake = useCallback(() => {
+    if (prefersReducedMotion) return;
+    setScreenShake(true);
+    setTimeout(() => setScreenShake(false), 500);
+  }, [prefersReducedMotion]);
 
   // Handle song selection
   const handleSelectSong = useCallback((song: DanceSong) => {
@@ -329,9 +336,15 @@ export default function JubeeDancePage() {
             <motion.div
               key="playing"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={screenShake
+                ? { opacity: 1, x: [0, -4, 4, -3, 3, -1, 0], y: [0, 2, -2, 1, -1, 0] }
+                : { opacity: 1, x: 0, y: 0 }
+              }
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: easeOutQuart }}
+              transition={screenShake
+                ? { duration: 0.5, ease: 'easeOut' }
+                : { duration: 0.25, ease: easeOutQuart }
+              }
               className="min-h-[80vh] flex flex-col"
             >
               {/* Countdown Overlay */}
@@ -374,6 +387,7 @@ export default function JubeeDancePage() {
                   <ComboCounter
                     combo={context.score.combo}
                     reducedMotion={prefersReducedMotion}
+                    onScreenShake={handleScreenShake}
                   />
                 </div>
 
