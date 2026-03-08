@@ -5,14 +5,13 @@ import { useGameStore } from '../../store/useGameStore'
 interface PatternItem {
   id: number
   emoji: string
-  color: string
 }
 
 const patterns: PatternItem[] = [
-  { id: 1, emoji: '🐝', color: '#FFD93D' },
-  { id: 2, emoji: '🌺', color: '#FF4757' },
-  { id: 3, emoji: '🦋', color: '#FF6348' },
-  { id: 4, emoji: '⭐', color: '#FFEB3B' }
+  { id: 1, emoji: '🐝' },
+  { id: 2, emoji: '🌺' },
+  { id: 3, emoji: '🦋' },
+  { id: 4, emoji: '⭐' }
 ]
 
 export default function PatternGame() {
