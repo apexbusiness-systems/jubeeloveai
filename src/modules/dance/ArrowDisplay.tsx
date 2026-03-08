@@ -1,12 +1,14 @@
 /**
- * Arrow Display + StepZone Components
+ * Arrow Display, StepZone, and ThumbPad Components – Premium Edition
  *
- * Token-based arrow visuals, DDR-style StepZone highway,
- * and ThumbPad input controls for JubeeDance.
+ * Token-based arrow visuals, DDR-style StepZone with note trails,
+ * receptor pulse, proximity scaling, and premium ThumbPad with
+ * 3D press effects and directional glow.
  */
 
 import { memo, useEffect, useMemo, useRef } from 'react';
 import type { Direction, DanceMove } from './types';
+import { triggerHaptic } from '@/lib/hapticFeedback';
 
 const arrowSurface: Record<Direction, string> = {
   up: 'bg-[hsl(var(--dance-arrow-up))]',
@@ -35,16 +37,11 @@ const iconSizes = {
 
 function getRotation(direction: Direction) {
   switch (direction) {
-    case 'up':
-      return 'rotate(0deg)';
-    case 'right':
-      return 'rotate(90deg)';
-    case 'down':
-      return 'rotate(180deg)';
-    case 'left':
-      return 'rotate(-90deg)';
-    default:
-      return 'rotate(0deg)';
+    case 'up': return 'rotate(0deg)';
+    case 'right': return 'rotate(90deg)';
+    case 'down': return 'rotate(180deg)';
+    case 'left': return 'rotate(-90deg)';
+    default: return 'rotate(0deg)';
   }
 }
 
@@ -53,7 +50,7 @@ function ArrowGlyph({ direction, className }: { direction: Direction; className?
     <svg
       viewBox="0 0 24 24"
       className={className}
-      style={{ transform: getRotation(direction) }}
+      style={{ transform: getRotation(direction), filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}
       aria-hidden="true"
       focusable="false"
     >
@@ -72,12 +69,7 @@ interface ArrowDisplayProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-function ArrowDisplayComponent({
-  direction,
-  isActive,
-  result,
-  size = 'md',
-}: ArrowDisplayProps) {
+function ArrowDisplayComponent({ direction, isActive, result, size = 'md' }: ArrowDisplayProps) {
   const baseSurface = arrowSurface[direction];
   const resultClass = result ? resultSurface[result] : '';
 
@@ -99,6 +91,8 @@ function ArrowDisplayComponent({
 
 export const ArrowDisplay = memo(ArrowDisplayComponent);
 
+/* ── StepZone ── */
+
 interface StepZoneProps {
   moves: DanceMove[];
   getSongTimeMs: () => number;
@@ -115,24 +109,17 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
   const noteEntries = useMemo<NoteEntry[]>(() => moves.map((move, id) => ({ ...move, id })), [moves]);
   const noteEntriesRef = useRef<NoteEntry[]>(noteEntries);
   const rafRef = useRef<number | null>(null);
-  const travelPxRef = useRef(220);
+  const travelPxRef = useRef(240);
   const configRef = useRef({ lookaheadMs, reducedMotion: !!reducedMotion });
 
-  useEffect(() => {
-    noteEntriesRef.current = noteEntries;
-  }, [noteEntries]);
-
-  useEffect(() => {
-    configRef.current = { lookaheadMs, reducedMotion: !!reducedMotion };
-  }, [lookaheadMs, reducedMotion]);
+  useEffect(() => { noteEntriesRef.current = noteEntries; }, [noteEntries]);
+  useEffect(() => { configRef.current = { lookaheadMs, reducedMotion: !!reducedMotion }; }, [lookaheadMs, reducedMotion]);
 
   useEffect(() => {
     const updateMetrics = () => {
       if (!containerRef.current) return;
       const height = containerRef.current.clientHeight;
-      const receptorSize = 56;
-      const margin = 18;
-      travelPxRef.current = Math.max(140, height - receptorSize - margin);
+      travelPxRef.current = Math.max(160, height - 56 - 18);
     };
     updateMetrics();
     window.addEventListener('resize', updateMetrics);
@@ -141,10 +128,7 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
 
   useEffect(() => {
     const animate = () => {
-      if (!isPlaying) {
-        rafRef.current = null;
-        return;
-      }
+      if (!isPlaying) { rafRef.current = null; return; }
 
       const songTimeMs = getSongTimeMs();
       const { lookaheadMs: lookahead, reducedMotion: reduce } = configRef.current;
@@ -165,10 +149,14 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
         const progress = 1 - timeUntil / lookahead;
         const clamped = Math.min(1, Math.max(0, progress));
         const y = clamped * travel;
-        const scale = reduce ? 1 : timeUntil < 120 ? 1.06 : 1;
+
+        // Proximity scaling: notes grow as they approach receptor
+        const proximityFactor = reduce ? 1 : 1 + clamped * 0.12;
+        const pulseScale = reduce ? 1 : (timeUntil < 120 ? 1.08 : 1);
+        const finalScale = proximityFactor * pulseScale;
 
         el.style.opacity = '1';
-        el.style.transform = `translate3d(-50%, ${y}px, 0) scale(${scale})`;
+        el.style.transform = `translate3d(-50%, ${y}px, 0) scale(${finalScale})`;
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -197,7 +185,7 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
   }, [noteEntries]);
 
   return (
-    <div ref={containerRef} className="dance-stepzone">
+    <div ref={containerRef} className="dance-stepzone" data-playing={isPlaying}>
       {laneOrder.map((dir) => (
         <div key={dir} className="dance-lane">
           <div className="dance-lane-track" />
@@ -207,9 +195,7 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
           {laneMoves.get(dir)?.map((entry) => (
             <div
               key={entry.id}
-              ref={(el) => {
-                noteRefs.current[entry.id] = el;
-              }}
+              ref={(el) => { noteRefs.current[entry.id] = el; }}
               className={`dance-note ${arrowSurface[dir]}`}
               aria-hidden="true"
             >
@@ -224,38 +210,44 @@ function StepZoneComponent({ moves, getSongTimeMs, isPlaying, lookaheadMs, reduc
 
 export const StepZone = memo(StepZoneComponent);
 
+/* ── ThumbPad ── */
+
 interface ArrowButtonsProps {
   onInput: (direction: Direction) => void;
   disabled?: boolean;
   reducedMotion?: boolean;
 }
 
+const hapticMap: Record<Direction, 'light' | 'medium'> = {
+  up: 'light',
+  down: 'medium',
+  left: 'light',
+  right: 'light',
+};
+
 function ArrowButtonsComponent({ onInput, disabled, reducedMotion }: ArrowButtonsProps) {
   const handleClick = (direction: Direction) => {
-    if (!disabled) {
-      onInput(direction);
-    }
+    if (disabled) return;
+    triggerHaptic(hapticMap[direction]);
+    onInput(direction);
   };
-
-  const buttonStyle = {
-    transition:
-      'transform var(--duration-fast) var(--ease-out-expo), box-shadow var(--duration-normal) var(--ease-out-quart)',
-  } as const;
 
   return (
     <div className="dance-thumbpad">
       <div className="dance-thumbpad-row">
+        <div /> {/* spacer */}
         <button
           type="button"
           onClick={() => handleClick('up')}
           disabled={disabled}
           className={`dance-thumbpad-button ${arrowSurface.up}`}
-          style={buttonStyle}
           aria-label="Move up"
+          data-dir="up"
           data-reduced={reducedMotion ? 'true' : 'false'}
         >
           <ArrowGlyph direction="up" className="w-8 h-8 text-white" />
         </button>
+        <div /> {/* spacer */}
       </div>
       <div className="dance-thumbpad-row">
         <button
@@ -263,34 +255,42 @@ function ArrowButtonsComponent({ onInput, disabled, reducedMotion }: ArrowButton
           onClick={() => handleClick('left')}
           disabled={disabled}
           className={`dance-thumbpad-button ${arrowSurface.left}`}
-          style={buttonStyle}
           aria-label="Move left"
+          data-dir="left"
           data-reduced={reducedMotion ? 'true' : 'false'}
         >
           <ArrowGlyph direction="left" className="w-8 h-8 text-white" />
         </button>
-        <button
-          type="button"
-          onClick={() => handleClick('down')}
-          disabled={disabled}
-          className={`dance-thumbpad-button ${arrowSurface.down}`}
-          style={buttonStyle}
-          aria-label="Move down"
-          data-reduced={reducedMotion ? 'true' : 'false'}
-        >
-          <ArrowGlyph direction="down" className="w-8 h-8 text-white" />
-        </button>
+        {/* Center hub */}
+        <div className="flex items-center justify-center">
+          <div className="dance-thumbpad-hub" />
+        </div>
         <button
           type="button"
           onClick={() => handleClick('right')}
           disabled={disabled}
           className={`dance-thumbpad-button ${arrowSurface.right}`}
-          style={buttonStyle}
           aria-label="Move right"
+          data-dir="right"
           data-reduced={reducedMotion ? 'true' : 'false'}
         >
           <ArrowGlyph direction="right" className="w-8 h-8 text-white" />
         </button>
+      </div>
+      <div className="dance-thumbpad-row">
+        <div /> {/* spacer */}
+        <button
+          type="button"
+          onClick={() => handleClick('down')}
+          disabled={disabled}
+          className={`dance-thumbpad-button ${arrowSurface.down}`}
+          aria-label="Move down"
+          data-dir="down"
+          data-reduced={reducedMotion ? 'true' : 'false'}
+        >
+          <ArrowGlyph direction="down" className="w-8 h-8 text-white" />
+        </button>
+        <div /> {/* spacer */}
       </div>
     </div>
   );
