@@ -40,8 +40,6 @@ export default function JubeeDancePage() {
   const { isPremium } = useParentalStore();
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
-  const [comboMilestone, setComboMilestone] = useState<number | null>(null);
-  const [comboPulse, setComboPulse] = useState(false);
   const [partyMode, setPartyMode] = useState(false);
   const pendingAutoStartRef = useRef(false);
   const prefersReducedMotion = useReducedMotion() ?? false;
