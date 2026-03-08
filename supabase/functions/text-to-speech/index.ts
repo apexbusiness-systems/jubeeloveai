@@ -7,6 +7,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// QUOTA EXHAUSTION: Module-level cooldown when both providers fail
+let quotaExhaustedUntil = 0;
+const QUOTA_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
 // RATE LIMITING: IP-based protection against abuse
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 15; // 15 requests per minute per IP
