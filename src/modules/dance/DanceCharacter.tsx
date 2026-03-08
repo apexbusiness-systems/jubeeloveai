@@ -320,7 +320,7 @@ function DanceCharacterComponent({
     // Antenna tips (shiny)
     const tipGeometry = new THREE.SphereGeometry(0.06, 16, 16);
     const tipMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       emissive: 0xffa000,
       emissiveIntensity: 0.3,
       metalness: 0.4,
