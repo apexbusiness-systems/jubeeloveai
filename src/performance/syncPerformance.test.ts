@@ -54,10 +54,6 @@ describe('SyncService Performance', () => {
   })
 
   it('should call getUser only once during processQueue', async () => {
-    const mockQueue = [
-      { storeName: 'drawings', data: { id: '1' } },
-      { storeName: 'achievements', data: { id: '2' } }
-    ]
 
     // We need to mock syncQueue.processQueue or ensure it runs
     // For this test, we can just check syncService.processQueue calls getUser

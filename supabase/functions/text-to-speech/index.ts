@@ -339,16 +339,34 @@ serve(async (req) => {
     // Fall back to OpenAI if ElevenLabs fails
     if (!audioData) {
       console.log('Falling back to OpenAI TTS');
-      audioData = await synthesizeWithOpenAI(
-        sanitizedText,
-        sanitizedMood,
-        gender,
-        sanitizedLanguage
-      );
+      try {
+        audioData = await synthesizeWithOpenAI(
+          sanitizedText,
+          sanitizedMood,
+          gender,
+          sanitizedLanguage
+        );
+      } catch (openAiError) {
+        console.warn('OpenAI TTS also failed, signaling browser fallback:', openAiError);
+        // Return a specific status so the client uses browser speech synthesis
+        return new Response(
+          JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
+          {
+            status: 503,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
     }
     
     if (!audioData || audioData.byteLength === 0) {
-      throw new Error('Invalid audio response');
+      return new Response(
+        JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
     
     return new Response(audioData, {
