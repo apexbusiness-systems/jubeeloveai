@@ -86,6 +86,7 @@ export const useJubeeStore = create<JubeeState>()(
       interactionCount: 0,
       soundEffectsVolume: 0.3,
       voiceVolume: 1.0,
+      usingFallbackVoice: false,
 
       setGender: (gender) => set((state) => { state.gender = gender }),
       setVoice: (voice) => set((state) => { state.voice = voice }),
