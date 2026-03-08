@@ -178,25 +178,6 @@ export default function JubeeDancePage() {
     return () => clearTimeout(timer);
   }, [view, partyMode, handleNextSong]);
 
-  useEffect(() => {
-    if (context.score.combo === 0) {
-      setComboMilestone(null);
-      return;
-    }
-
-    if (COMBO_MILESTONES.includes(context.score.combo)) {
-      setComboMilestone(context.score.combo);
-      if (!prefersReducedMotion) {
-        setComboPulse(true);
-      }
-      const pulseTimer = setTimeout(() => setComboPulse(false), 250);
-      const milestoneTimer = setTimeout(() => setComboMilestone(null), 900);
-      return () => {
-        clearTimeout(pulseTimer);
-        clearTimeout(milestoneTimer);
-      };
-    }
-  }, [context.score.combo, prefersReducedMotion]);
 
   const lookaheadMs = useMemo(() => {
     const difficulty = context.currentSong?.pattern.difficulty ?? 'medium';
