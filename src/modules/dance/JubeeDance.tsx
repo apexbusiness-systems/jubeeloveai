@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { useDanceGame } from './useDanceGame';
 import { DanceCharacter } from './DanceCharacter';
 import { ArrowButtons, StepZone } from './ArrowDisplay';
+import { ComboCounter } from './ComboCounter';
 import { getFreeSongs, getPremiumSongs } from './songLibrary';
 import type { DanceSong, Direction } from './types';
 import { useParentalStore } from '@/store/useParentalStore';
