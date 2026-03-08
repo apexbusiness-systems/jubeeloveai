@@ -54,7 +54,7 @@ describe('SyncService Performance', () => {
   })
 
   it('should call getUser only once during processQueue', async () => {
-    const mockQueue = [
+    const _mockQueue = [
       { storeName: 'drawings', data: { id: '1' } },
       { storeName: 'achievements', data: { id: '2' } }
     ]

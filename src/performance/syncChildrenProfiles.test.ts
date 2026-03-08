@@ -279,7 +279,7 @@ describe('syncChildrenProfiles Optimization', () => {
 
     const start = performance.now()
     await syncService.syncAll()
-    const duration = performance.now() - start
+    const _duration = performance.now() - start
 
     // With batch: ~10ms (single call)
     // Without batch: ~50ms (5 serial calls)

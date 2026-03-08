@@ -43,7 +43,7 @@ export default function JubeeDancePage() {
   const [comboPulse, setComboPulse] = useState(false);
   const [partyMode, setPartyMode] = useState(false);
   const pendingAutoStartRef = useRef(false);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion() ?? false;
 
   const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
   const easeOutQuart: [number, number, number, number] = [0.25, 1, 0.5, 1];
