@@ -392,35 +392,10 @@ export default function JubeeDancePage() {
                       Score {context.score.totalScore}
                     </span>
                   </div>
-                  <motion.div
-                    className="dance-glass-card px-4 py-2 rounded-xl border border-white/40 min-w-[120px]"
-                    animate={
-                      comboPulse && !prefersReducedMotion
-                        ? { scale: 1.08, y: -2 }
-                        : { scale: 1, y: 0 }
-                    }
-                    transition={{ duration: 0.25, ease: easeSpring }}
-                  >
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Combo
-                    </div>
-                    <div className="text-lg font-semibold text-foreground">
-                      Combo {context.score.combo}x
-                    </div>
-                    <AnimatePresence>
-                      {comboMilestone && !prefersReducedMotion && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                          transition={{ duration: 0.25, ease: easeOutQuart }}
-                          className="text-xs font-semibold text-[hsl(var(--dance-hit-perfect))]"
-                        >
-                          Milestone x{comboMilestone}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
+                  <ComboCounter
+                    combo={context.score.combo}
+                    reducedMotion={prefersReducedMotion}
+                  />
                 </div>
 
                 {context.state === 'playing' ? (
