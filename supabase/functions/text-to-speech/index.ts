@@ -7,6 +7,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// QUOTA EXHAUSTION: Module-level cooldown when both providers fail
+let quotaExhaustedUntil = 0;
+const QUOTA_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
 // RATE LIMITING: IP-based protection against abuse
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 15; // 15 requests per minute per IP
@@ -277,6 +281,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // QUOTA EXHAUSTION: Short-circuit if both providers recently failed
+  if (Date.now() < quotaExhaustedUntil) {
+    console.log('Quota cooldown active, returning 503 immediately');
+    return new Response(
+      JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
+      {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
   // RATE LIMITING: Check before processing
   const clientIp = getRateLimitKey(req);
   const rateLimit = checkRateLimit(clientIp);
@@ -349,6 +365,9 @@ serve(async (req) => {
         );
       } catch (openAiError) {
         console.warn('OpenAI TTS also failed, signaling browser fallback:', openAiError);
+        // Activate cooldown so subsequent requests skip provider calls
+        quotaExhaustedUntil = Date.now() + QUOTA_COOLDOWN_MS;
+        console.log(`Quota cooldown activated for ${QUOTA_COOLDOWN_MS / 1000}s`);
         // Return a specific status so the client uses browser speech synthesis
         return new Response(
           JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),

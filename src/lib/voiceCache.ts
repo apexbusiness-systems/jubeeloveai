@@ -354,6 +354,11 @@ class VoiceCacheService {
         // Small delay to avoid overwhelming the API
         await new Promise(r => setTimeout(r, 200));
       } catch (error) {
+        // If TTS is unavailable, stop all remaining preloads immediately
+        if (error instanceof Error && error.message === 'TTS_UNAVAILABLE_ABORT') {
+          console.log('🔇 TTS unavailable, stopping preload early');
+          break;
+        }
         console.debug('Preload skip:', phrase.text.substring(0, 30));
       }
     }
