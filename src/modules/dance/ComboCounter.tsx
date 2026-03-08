@@ -138,7 +138,7 @@ function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
               initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.7 }}
               animate={reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
               exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.7 }}
-              transition={{ duration: 0.2, ease: easeOutExpo as unknown as number[] }}
+              transition={{ duration: 0.2, ease: easeOutExpo }}
             >
               {combo}x
             </motion.span>
