@@ -160,7 +160,7 @@ export default function GamesMenu() {
               focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
               ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
             style={{
-              background: 'linear-gradient(135deg, #ff6b9d, #c44ce0, #4facfe)',
+              background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-accent)'
             }}
             role="listitem"

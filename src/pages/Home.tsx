@@ -23,12 +23,12 @@ export default function HomePage() {
 
   const activityCatalog = useMemo<Record<string, ActivityMeta>>(
     () => ({
-      '/write': { title: 'Writing Practice', icon: '✏️', description: 'Fine-motor magic', accent: 'from-amber-200 to-orange-400' },
-      '/stories': { title: 'Story Time', icon: '📖', description: 'Calm, cozy focus', accent: 'from-sky-200 to-indigo-400' },
-      '/games': { title: 'Games', icon: '🎮', description: 'Challenge + play', accent: 'from-pink-200 to-purple-400' },
-      '/shapes': { title: 'Shapes', icon: '⭐', description: 'Spatial spark', accent: 'from-lime-200 to-emerald-400' },
-      '/reading': { title: 'Reading Practice', icon: '📚', description: 'Phonics boost', accent: 'from-cyan-200 to-teal-400' },
-      '/music': { title: 'Music', icon: '🎵', description: 'Wind-down vibes', accent: 'from-rose-200 to-amber-300' },
+      '/write': { title: 'Writing Practice', icon: '✏️', description: 'Fine-motor magic', accent: 'from-accent/80 via-accent/55 to-primary/35' },
+      '/stories': { title: 'Story Time', icon: '📖', description: 'Calm, cozy focus', accent: 'from-secondary via-accent/45 to-primary/25' },
+      '/games': { title: 'Games', icon: '🎮', description: 'Challenge + play', accent: 'from-primary/35 via-accent/45 to-primary/60' },
+      '/shapes': { title: 'Shapes', icon: '⭐', description: 'Spatial spark', accent: 'from-accent/60 via-secondary to-primary/30' },
+      '/reading': { title: 'Reading Practice', icon: '📚', description: 'Phonics boost', accent: 'from-secondary via-accent/50 to-primary/40' },
+      '/music': { title: 'Music', icon: '🎵', description: 'Wind-down vibes', accent: 'from-primary/20 via-accent/50 to-secondary' },
     }),
     []
   );
@@ -169,7 +169,7 @@ export default function HomePage() {
                   title="Discover something new"
                   description="Try a fresh mini-lesson tailored to your mood"
                   icon="🌈"
-                  accent="from-amber-200 to-fuchsia-300"
+                  accent="from-accent/65 via-secondary to-primary/35"
                   path="/reading"
                   badge="New"
                 />
@@ -177,7 +177,7 @@ export default function HomePage() {
                   title="Calm wind-down"
                   description="Soothing music and gentle stories for quiet time"
                   icon="🌙"
-                  accent="from-slate-200 to-indigo-300"
+                  accent="from-secondary via-accent/40 to-primary/25"
                   path="/music"
                   badge="Calm"
                 />
