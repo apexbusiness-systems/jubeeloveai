@@ -149,6 +149,11 @@ export async function callEdgeFunction<T = unknown>(
       },
     });
   } catch (error) {
+    if (await isExpectedTtsFallback(functionName, error)) {
+      logger.warn('[Edge Function] text-to-speech unavailable after retries; using browser fallback.');
+      return null as T;
+    }
+
     logger.error(`[Edge Function] Failed after retries for ${functionName}:`, error);
 
     // Provide user-friendly error message
