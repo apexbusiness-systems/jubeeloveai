@@ -212,7 +212,7 @@ function DanceCharacterComponent({
     // Body (64 segments, physical material)
     const bodyGeometry = new THREE.SphereGeometry(0.6, 64, 64);
     const bodyMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       metalness: 0.05,
       roughness: 0.35,
       clearcoat: 0.6,
