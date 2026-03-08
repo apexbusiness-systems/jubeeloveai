@@ -123,7 +123,7 @@ export default function ColorGame() {
             onClick={() => startGame('easy')}
             className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
             style={{
-              background: 'linear-gradient(135deg, #FF6B6B, #FFD93D)',
+              background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-game)'
             }}
           >
