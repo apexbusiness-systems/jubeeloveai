@@ -132,10 +132,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
               playClearSound()
               onClose()
             }}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-white border-3 border-purple-400"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-muted"
             style={{
-              background: 'linear-gradient(135deg, hsl(270, 70%, 60%), hsl(280, 65%, 50%))',
-              boxShadow: '0 4px 10px hsl(270, 70%, 40% / 0.4)'
+              background: 'var(--gradient-warm)',
+              boxShadow: 'var(--shadow-game)'
             }}
           >
             Cancel
@@ -143,10 +143,10 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
 
           <button
             onClick={handleSave}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-white border-3 border-yellow-400"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-accent"
             style={{
-              background: 'linear-gradient(135deg, hsl(45, 90%, 55%), hsl(35, 95%, 50%))',
-              boxShadow: '0 6px 15px hsl(40, 90%, 50% / 0.5)'
+              background: 'var(--gradient-game)',
+              boxShadow: 'var(--shadow-accent)'
             }}
           >
             Save Changes
