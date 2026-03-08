@@ -169,7 +169,7 @@ export default function HomePage() {
                   title="Discover something new"
                   description="Try a fresh mini-lesson tailored to your mood"
                   icon="🌈"
-                  accent="from-amber-200 to-fuchsia-300"
+                  accent="from-accent/65 via-secondary to-primary/35"
                   path="/reading"
                   badge="New"
                 />
@@ -177,7 +177,7 @@ export default function HomePage() {
                   title="Calm wind-down"
                   description="Soothing music and gentle stories for quiet time"
                   icon="🌙"
-                  accent="from-slate-200 to-indigo-300"
+                  accent="from-secondary via-accent/40 to-primary/25"
                   path="/music"
                   badge="Calm"
                 />
