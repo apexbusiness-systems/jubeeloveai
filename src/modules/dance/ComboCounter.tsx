@@ -166,7 +166,7 @@ function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
                 ? { opacity: 0, x: '-50%' }
                 : { opacity: 0, y: -16, x: '-50%', scale: 0.8 }
             }
-            transition={{ duration: 0.35, ease: easeSpring as unknown as number[] }}
+            transition={{ duration: 0.35, ease: easeSpring }}
           >
             <span
               className="inline-block rounded-full px-3 py-1 text-sm font-bold shadow-lg"
