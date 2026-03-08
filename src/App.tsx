@@ -18,6 +18,7 @@ import { ChildSelector } from './components/ChildSelector';
 import { useAchievementTracker } from './hooks/useAchievementTracker';
 import { VoiceCommandButton } from './components/VoiceCommandButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { VoiceFallbackIndicator } from './components/VoiceFallbackIndicator';
 import { ScreenTimeIndicator } from './components/ScreenTimeIndicator';
 import { ConflictResolutionDialog } from './components/ConflictResolutionDialog';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
