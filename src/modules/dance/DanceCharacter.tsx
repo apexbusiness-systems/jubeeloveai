@@ -341,7 +341,7 @@ function DanceCharacterComponent({
     // Wings (iridescent physical material)
     const wingGeometry = new THREE.SphereGeometry(0.4, 32, 32);
     const wingMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xeeffff,
+      color: 0xE0F7FF,
       transparent: true,
       opacity: 0.65,
       transmission: 0.6,
