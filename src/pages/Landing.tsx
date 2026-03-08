@@ -254,7 +254,7 @@ export default function Landing() {
         {/* Footer */}
         <footer className="py-8 px-4 border-t border-border">
           <div className="max-w-4xl mx-auto text-center text-muted-foreground text-sm">
-            <p className="mb-2">© 2024 Jubee.Love - Part of the Apex Ecosystem</p>
+            <p className="mb-2">© 2026 Jubee.Love - Part of the Apex Ecosystem</p>
             <p>Made with 💛 for little learners everywhere</p>
           </div>
         </footer>
