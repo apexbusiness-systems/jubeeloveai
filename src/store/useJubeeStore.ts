@@ -173,6 +173,7 @@ export const useJubeeStore = create<JubeeState>()(
             state.currentMood = mood;
             state.lastError = null;
             state.interactionCount += 1;
+            state.usingFallbackVoice = false;
         });
 
         // 4. Try Cache (memory + IndexedDB) / Edge Function
@@ -202,7 +203,8 @@ export const useJubeeStore = create<JubeeState>()(
             }
         } catch (error) {
             if (signal.aborted) return;
-            logger.warn('[Jubee] TTS service unavailable, using fallback');
+            logger.warn('[Jubee] TTS service unavailable, using browser fallback');
+            set((state) => { state.usingFallbackVoice = true });
             browserSpeech(text, gender, mood, voiceVolume);
         } finally {
             if (!signal.aborted) {
