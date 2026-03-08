@@ -64,6 +64,7 @@ const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 interface ComboCounterProps {
   combo: number;
   reducedMotion: boolean;
+  onScreenShake?: () => void;
 }
 
 function ComboCounterComponent({ combo, reducedMotion }: ComboCounterProps) {
