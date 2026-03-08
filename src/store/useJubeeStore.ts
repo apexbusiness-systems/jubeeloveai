@@ -188,15 +188,19 @@ export const useJubeeStore = create<JubeeState>()(
                 await audioManager.playAudio(cachedAudio, true, voiceVolume);
             } else {
                 // Fetch new from TTS service
-                const audioBlob = await callEdgeFunction<Blob>({
+                const audioBlob = await callEdgeFunction<Blob | null>({
                     functionName: 'text-to-speech',
                     body: { text, gender, language, mood, voice },
                     timeout: 8000,
                     retries: 0, // No retries - fall back to browser speech immediately
                 });
-                
+
                 if (signal.aborted) return;
-                
+
+                if (!(audioBlob instanceof Blob) || audioBlob.size === 0) {
+                    throw new Error('TTS_BROWSER_FALLBACK');
+                }
+
                 // Cache persistently for offline use
                 await audioManager.cacheAudioPersistent(text, audioBlob, voice, mood);
                 await audioManager.playAudio(audioBlob, true, voiceVolume);

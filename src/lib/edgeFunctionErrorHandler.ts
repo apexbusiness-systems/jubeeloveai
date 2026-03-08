@@ -16,6 +16,39 @@ export interface EdgeFunctionOptions {
   onRetry?: (attempt: number, error: Error) => void;
 }
 
+interface EdgeFunctionErrorLike {
+  message?: string;
+  context?: unknown;
+}
+
+function hasTtsFallbackMessage(error: unknown): boolean {
+  const message = (error as EdgeFunctionErrorLike)?.message ?? '';
+  return (
+    message.includes('ALL_TTS_UNAVAILABLE') ||
+    (message.includes('503') && message.toLowerCase().includes('text-to-speech'))
+  );
+}
+
+async function isExpectedTtsFallback(functionName: string, error: unknown): Promise<boolean> {
+  if (functionName !== 'text-to-speech') return false;
+
+  if (hasTtsFallbackMessage(error)) return true;
+
+  const maybeResponse = (error as EdgeFunctionErrorLike)?.context;
+  if (!(maybeResponse instanceof Response)) return false;
+
+  if (maybeResponse.status !== 503) return false;
+
+  try {
+    const payload = await maybeResponse.clone().json() as { error?: string; fallback?: string };
+    return payload.error === 'ALL_TTS_UNAVAILABLE' || payload.fallback === 'browser';
+  } catch {
+    // If body parsing fails but status is 503 for text-to-speech,
+    // still treat as expected fallback behavior.
+    return true;
+  }
+}
+
 /**
  * Call an edge function with automatic retry and error handling
  */
@@ -45,8 +78,13 @@ export async function callEdgeFunction<T = unknown>(
       clearTimeout(timeoutId);
 
       if (error) {
+        if (await isExpectedTtsFallback(functionName, error)) {
+          logger.warn('[Edge Function] text-to-speech unavailable; using browser fallback.');
+          return null as T;
+        }
+
         logger.error(`[Edge Function] Error from ${functionName}:`, error);
-        throw new Error(error.message || 'Edge function error');
+        throw new Error((error as EdgeFunctionErrorLike).message || 'Edge function error');
       }
 
       logger.dev(`[Edge Function] Success from ${functionName}`, data);
@@ -55,10 +93,8 @@ export async function callEdgeFunction<T = unknown>(
       clearTimeout(timeoutId);
 
       // Enhance error with context
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error(`Edge function '${functionName}' timed out after ${timeout}ms`);
-        }
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`Edge function '${functionName}' timed out after ${timeout}ms`);
       }
 
       throw error;
@@ -106,3 +142,4 @@ export function validateEdgeFunctionResponse<T>(
   }
   return data;
 }
+
