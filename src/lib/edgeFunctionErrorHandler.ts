@@ -19,13 +19,39 @@ export interface EdgeFunctionOptions {
 interface EdgeFunctionErrorLike {
   message?: string;
   context?: unknown;
+  status?: number;
+  cause?: unknown;
+}
+
+interface ResponseLike {
+  status?: number;
+  clone?: () => ResponseLike;
+  json?: () => Promise<unknown>;
+}
+
+function isResponseLike(value: unknown): value is ResponseLike {
+  return typeof value === 'object' && value !== null;
+}
+
+function getStatusCode(error: unknown): number | null {
+  const directStatus = (error as EdgeFunctionErrorLike)?.status;
+  if (typeof directStatus === 'number') return directStatus;
+
+  const context = (error as EdgeFunctionErrorLike)?.context;
+  if (isResponseLike(context) && typeof context.status === 'number') {
+    return context.status;
+  }
+
+  return null;
 }
 
 function hasTtsFallbackMessage(error: unknown): boolean {
-  const message = (error as EdgeFunctionErrorLike)?.message ?? '';
+  const message = ((error as EdgeFunctionErrorLike)?.message ?? '').toLowerCase();
   return (
-    message.includes('ALL_TTS_UNAVAILABLE') ||
-    (message.includes('503') && message.toLowerCase().includes('text-to-speech'))
+    message.includes('all_tts_unavailable') ||
+    message.includes('"fallback":"browser"') ||
+    message.includes('status code 503') ||
+    message.includes('returned 503')
   );
 }
 
@@ -34,16 +60,26 @@ async function isExpectedTtsFallback(functionName: string, error: unknown): Prom
 
   if (hasTtsFallbackMessage(error)) return true;
 
-  const maybeResponse = (error as EdgeFunctionErrorLike)?.context;
-  if (!(maybeResponse instanceof Response)) return false;
+  const status = getStatusCode(error);
+  if (status !== 503) return false;
 
-  if (maybeResponse.status !== 503) return false;
+  const maybeResponse = (error as EdgeFunctionErrorLike)?.context;
+  if (!isResponseLike(maybeResponse)) {
+    // For text-to-speech, any 503 is expected fallback behavior.
+    return true;
+  }
 
   try {
-    const payload = await maybeResponse.clone().json() as { error?: string; fallback?: string };
+    const clone = typeof maybeResponse.clone === 'function' ? maybeResponse.clone() : maybeResponse;
+    const payload = typeof clone.json === 'function'
+      ? await clone.json() as { error?: string; fallback?: string }
+      : null;
+
+    if (!payload) return true;
+
     return payload.error === 'ALL_TTS_UNAVAILABLE' || payload.fallback === 'browser';
   } catch {
-    // If body parsing fails but status is 503 for text-to-speech,
+    // If parsing fails but status is 503 for text-to-speech,
     // still treat as expected fallback behavior.
     return true;
   }
@@ -113,6 +149,11 @@ export async function callEdgeFunction<T = unknown>(
       },
     });
   } catch (error) {
+    if (await isExpectedTtsFallback(functionName, error)) {
+      logger.warn('[Edge Function] text-to-speech unavailable after retries; using browser fallback.');
+      return null as T;
+    }
+
     logger.error(`[Edge Function] Failed after retries for ${functionName}:`, error);
 
     // Provide user-friendly error message
