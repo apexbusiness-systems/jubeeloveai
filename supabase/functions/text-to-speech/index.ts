@@ -365,6 +365,9 @@ serve(async (req) => {
         );
       } catch (openAiError) {
         console.warn('OpenAI TTS also failed, signaling browser fallback:', openAiError);
+        // Activate cooldown so subsequent requests skip provider calls
+        quotaExhaustedUntil = Date.now() + QUOTA_COOLDOWN_MS;
+        console.log(`Quota cooldown activated for ${QUOTA_COOLDOWN_MS / 1000}s`);
         // Return a specific status so the client uses browser speech synthesis
         return new Response(
           JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
