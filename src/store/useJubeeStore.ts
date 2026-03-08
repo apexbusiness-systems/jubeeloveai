@@ -43,6 +43,7 @@ interface JubeeState {
   interactionCount: number
   soundEffectsVolume: number
   voiceVolume: number
+  usingFallbackVoice: boolean
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: Position3D | null | undefined) => void
@@ -85,6 +86,7 @@ export const useJubeeStore = create<JubeeState>()(
       interactionCount: 0,
       soundEffectsVolume: 0.3,
       voiceVolume: 1.0,
+      usingFallbackVoice: false,
 
       setGender: (gender) => set((state) => { state.gender = gender }),
       setVoice: (voice) => set((state) => { state.voice = voice }),
@@ -171,6 +173,7 @@ export const useJubeeStore = create<JubeeState>()(
             state.currentMood = mood;
             state.lastError = null;
             state.interactionCount += 1;
+            state.usingFallbackVoice = false;
         });
 
         // 4. Try Cache (memory + IndexedDB) / Edge Function
@@ -200,7 +203,8 @@ export const useJubeeStore = create<JubeeState>()(
             }
         } catch (error) {
             if (signal.aborted) return;
-            logger.warn('[Jubee] TTS service unavailable, using fallback');
+            logger.warn('[Jubee] TTS service unavailable, using browser fallback');
+            set((state) => { state.usingFallbackVoice = true });
             browserSpeech(text, gender, mood, voiceVolume);
         } finally {
             if (!signal.aborted) {
