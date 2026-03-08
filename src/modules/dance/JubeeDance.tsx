@@ -62,6 +62,12 @@ export default function JubeeDancePage() {
     getNextMove,
     getSongTimeMs,
   } = useDanceGame();
+  // Screen shake handler for legendary combo milestones
+  const handleScreenShake = useCallback(() => {
+    if (prefersReducedMotion) return;
+    setScreenShake(true);
+    setTimeout(() => setScreenShake(false), 500);
+  }, [prefersReducedMotion]);
 
   // Handle song selection
   const handleSelectSong = useCallback((song: DanceSong) => {
