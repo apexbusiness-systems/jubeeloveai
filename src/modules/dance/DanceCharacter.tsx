@@ -413,7 +413,7 @@ function DanceCharacterComponent({
     // Glow ring for perfect streaks
     const glowRingGeometry = new THREE.RingGeometry(0.9, 1.1, 64);
     const glowRingMaterial = new THREE.MeshBasicMaterial({
-      color: 0xffd54a,
+      color: 0xFFD700,
       transparent: true,
       opacity: 0,
       side: THREE.DoubleSide,
