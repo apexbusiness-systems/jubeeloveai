@@ -189,7 +189,7 @@ export const useJubeeStore = create<JubeeState>()(
                     functionName: 'text-to-speech',
                     body: { text, gender, language, mood, voice },
                     timeout: 8000,
-                    retries: 1,
+                    retries: 0, // No retries - fall back to browser speech immediately
                 });
                 
                 if (signal.aborted) return;
