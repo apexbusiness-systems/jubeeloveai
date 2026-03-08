@@ -32,6 +32,20 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
+    /* Gradient and shadow tokens */
+    --gradient-warm: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+    --gradient-cool: linear-gradient(135deg, hsl(var(--accent) / 0.85), hsl(var(--primary) / 0.8));
+    --gradient-game: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-neutral: linear-gradient(135deg, hsl(var(--card)), hsl(var(--secondary)));
+    --gradient-beginner: linear-gradient(135deg, hsl(var(--beginner)), hsl(var(--beginner-border)));
+    --gradient-intermediate: linear-gradient(135deg, hsl(var(--intermediate)), hsl(var(--accent)));
+    --gradient-expert: linear-gradient(135deg, hsl(var(--expert)), hsl(var(--primary)));
+    --gradient-boy: linear-gradient(135deg, hsl(var(--boy-primary)), hsl(var(--accent)));
+    --gradient-girl: linear-gradient(135deg, hsl(var(--girl-primary)), hsl(var(--accent)));
+    --shadow-game: 0 10px 24px hsl(var(--primary) / 0.28);
+    --shadow-accent: 0 10px 24px hsl(var(--accent) / 0.24);
+    --shadow-elevated: 0 20px 50px hsl(var(--foreground) / 0.18);
+
     /* Game-specific tokens */
     --game-primary: 0 92% 60%;
     --game-accent: 45 100% 52%;
