@@ -43,6 +43,7 @@ interface JubeeState {
   interactionCount: number
   soundEffectsVolume: number
   voiceVolume: number
+  usingFallbackVoice: boolean
   setGender: (gender: 'male' | 'female') => void
   setVoice: (voice: JubeeVoice) => void
   updatePosition: (position: Position3D | null | undefined) => void
