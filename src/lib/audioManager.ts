@@ -342,6 +342,10 @@ class AudioManager {
     // Use idle callback for low priority preloads
     const executePreload = async () => {
       try {
+        if (this.isTtsCooldownActive()) {
+          return;
+        }
+
         const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -356,9 +360,15 @@ class AudioManager {
         })
 
         if (response.ok) {
+          this.clearTtsUnavailable();
           const blob = await response.blob()
           this.cacheAudio(text, blob, voice, mood)
           console.log('✓ Preloaded:', text.substring(0, 40))
+          return
+        }
+
+        if (response.status === 503) {
+          this.markTtsUnavailable()
         }
       } catch (error) {
         // Silent fail for preloads - not critical
