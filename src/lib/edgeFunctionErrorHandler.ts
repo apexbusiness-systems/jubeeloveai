@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from './logger';
 import { errorHandler } from './errorHandler';
 import { isNetworkError, getNetworkErrorMessage } from './networkErrorHandler';
+import { ttsCooldown } from './ttsCooldown';
 
 export interface EdgeFunctionOptions {
   functionName: string;
@@ -31,21 +32,6 @@ interface ResponseLike {
 
 function isResponseLike(value: unknown): value is ResponseLike {
   return typeof value === 'object' && value !== null;
-}
-
-const TTS_COOLDOWN_MS = 5 * 60 * 1000;
-let ttsUnavailableUntil = 0;
-
-function isTtsInCooldown(): boolean {
-  return Date.now() < ttsUnavailableUntil;
-}
-
-function markTtsUnavailable(): void {
-  ttsUnavailableUntil = Date.now() + TTS_COOLDOWN_MS;
-}
-
-function clearTtsUnavailable(): void {
-  ttsUnavailableUntil = 0;
 }
 
 function getStatusCode(error: unknown): number | null {
@@ -114,7 +100,7 @@ export async function callEdgeFunction<T = unknown>(
     onRetry,
   } = options;
 
-  if (functionName === 'text-to-speech' && isTtsInCooldown()) {
+  if (functionName === 'text-to-speech' && ttsCooldown.isActive()) {
     logger.warn('[Edge Function] text-to-speech cooldown active; using browser fallback.');
     return null as T;
   }
@@ -135,7 +121,7 @@ export async function callEdgeFunction<T = unknown>(
 
       if (error) {
         if (await isExpectedTtsFallback(functionName, error)) {
-          markTtsUnavailable();
+          ttsCooldown.markUnavailable();
           logger.warn('[Edge Function] text-to-speech unavailable; using browser fallback.');
           return null as T;
         }
@@ -145,7 +131,7 @@ export async function callEdgeFunction<T = unknown>(
       }
 
       if (functionName === 'text-to-speech') {
-        clearTtsUnavailable();
+        ttsCooldown.clear();
       }
 
       logger.dev(`[Edge Function] Success from ${functionName}`, data);
@@ -175,7 +161,7 @@ export async function callEdgeFunction<T = unknown>(
     });
   } catch (error) {
     if (await isExpectedTtsFallback(functionName, error)) {
-      markTtsUnavailable();
+      ttsCooldown.markUnavailable();
       logger.warn('[Edge Function] text-to-speech unavailable after retries; using browser fallback.');
       return null as T;
     }
@@ -209,4 +195,3 @@ export function validateEdgeFunctionResponse<T>(
   }
   return data;
 }
-

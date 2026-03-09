@@ -1,5 +1,7 @@
+import React from "react";
 import { createRoot } from "react-dom/client";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n/config";
@@ -92,6 +94,14 @@ if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
     );
   });
 }
+
+// Wrap next-themes provider with forwardRef to suppress React ref warning
+const ThemeProvider = React.forwardRef<HTMLElement, ThemeProviderProps>(
+  ({ children, ...props }, _ref) => (
+    <NextThemesProvider {...props}>{children}</NextThemesProvider>
+  )
+);
+ThemeProvider.displayName = 'ThemeProvider';
 
 createRoot(document.getElementById("root")!).render(
   envError ? (
