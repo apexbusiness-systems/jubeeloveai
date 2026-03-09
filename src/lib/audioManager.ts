@@ -63,9 +63,18 @@ class AudioManager {
     }
   }
 
-  /**
-   * Preload common phrases to IndexedDB for offline support
-   */
+  private isTtsCooldownActive(): boolean {
+    return Date.now() < this.ttsUnavailableUntil;
+  }
+
+  private markTtsUnavailable(): void {
+    this.ttsUnavailableUntil = Date.now() + this.TTS_COOLDOWN_MS;
+  }
+
+  private clearTtsUnavailable(): void {
+    this.ttsUnavailableUntil = 0;
+  }
+
   private async preloadForOffline(): Promise<void> {
     if (this.offlinePreloadDone) return;
     this.offlinePreloadDone = true;
