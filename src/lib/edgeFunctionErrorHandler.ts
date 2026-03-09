@@ -114,6 +114,11 @@ export async function callEdgeFunction<T = unknown>(
     onRetry,
   } = options;
 
+  if (functionName === 'text-to-speech' && isTtsInCooldown()) {
+    logger.warn('[Edge Function] text-to-speech cooldown active; using browser fallback.');
+    return null as T;
+  }
+
   const makeRequest = async (): Promise<T> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -130,12 +135,17 @@ export async function callEdgeFunction<T = unknown>(
 
       if (error) {
         if (await isExpectedTtsFallback(functionName, error)) {
+          markTtsUnavailable();
           logger.warn('[Edge Function] text-to-speech unavailable; using browser fallback.');
           return null as T;
         }
 
         logger.error(`[Edge Function] Error from ${functionName}:`, error);
         throw new Error((error as EdgeFunctionErrorLike).message || 'Edge function error');
+      }
+
+      if (functionName === 'text-to-speech') {
+        clearTtsUnavailable();
       }
 
       logger.dev(`[Edge Function] Success from ${functionName}`, data);
@@ -165,6 +175,7 @@ export async function callEdgeFunction<T = unknown>(
     });
   } catch (error) {
     if (await isExpectedTtsFallback(functionName, error)) {
+      markTtsUnavailable();
       logger.warn('[Edge Function] text-to-speech unavailable after retries; using browser fallback.');
       return null as T;
     }
