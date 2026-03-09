@@ -9,12 +9,16 @@ import { captureException } from './sentry';
 function isExpectedTtsFallbackError(reason: unknown): boolean {
   const message = reason instanceof Error
     ? reason.message
-    : typeof reason === 'string'
-      ? reason
-      : '';
-
-  const normalized = message.toLowerCase();
-  return normalized.includes('all_tts_unavailable') || normalized.includes('edge function returned 503');
+    : typeof reason === 'string' ? reason : '';
+  const n = message.toLowerCase();
+  return (
+    n.includes('all_tts_unavailable') ||
+    n.includes('edge function returned 503') ||
+    n.includes('status code 503') ||
+    n.includes('returned 503') ||
+    n.includes('"fallback":"browser"') ||
+    n.includes('tts_unavailable_abort')
+  );
 }
 
 export function initializeGlobalErrorHandlers() {

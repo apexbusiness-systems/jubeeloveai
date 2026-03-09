@@ -5,6 +5,7 @@
  */
 
 import { voiceCache } from './voiceCache';
+import { ttsCooldown } from './ttsCooldown';
 
 interface CachedAudio {
   blob: Blob;
@@ -23,8 +24,6 @@ class AudioManager {
   private audioCache: Map<string, CachedAudio> = new Map();
   private readonly MAX_CACHE_SIZE = 50; // Max cached audio items
   private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
-  private readonly TTS_COOLDOWN_MS = 5 * 60 * 1000;
-  private ttsUnavailableUntil = 0;
   private audioContext: AudioContext | null = null;
   private isAudioUnlocked = false;
   private offlinePreloadDone = false;
@@ -63,18 +62,6 @@ class AudioManager {
     }
   }
 
-  private isTtsCooldownActive(): boolean {
-    return Date.now() < this.ttsUnavailableUntil;
-  }
-
-  private markTtsUnavailable(): void {
-    this.ttsUnavailableUntil = Date.now() + this.TTS_COOLDOWN_MS;
-  }
-
-  private clearTtsUnavailable(): void {
-    this.ttsUnavailableUntil = 0;
-  }
-
   private async preloadForOffline(): Promise<void> {
     if (this.offlinePreloadDone) return;
     this.offlinePreloadDone = true;
@@ -88,7 +75,7 @@ class AudioManager {
 
       await voiceCache.preloadCommonPhrases(async (text, mood) => {
         try {
-          if (this.isTtsCooldownActive()) {
+          if (ttsCooldown.isActive()) {
             return null;
           }
 
@@ -106,13 +93,13 @@ class AudioManager {
           });
 
           if (response.ok) {
-            this.clearTtsUnavailable();
+            ttsCooldown.clear();
             return await response.blob();
           }
 
           // If TTS is unavailable (503), signal caller to abort remaining preloads
           if (response.status === 503) {
-            this.markTtsUnavailable();
+            ttsCooldown.markUnavailable();
             console.log('TTS unavailable (503), aborting remaining preloads');
             throw new Error('TTS_UNAVAILABLE_ABORT');
           }
@@ -342,7 +329,7 @@ class AudioManager {
     // Use idle callback for low priority preloads
     const executePreload = async () => {
       try {
-        if (this.isTtsCooldownActive()) {
+        if (ttsCooldown.isActive()) {
           return;
         }
 
@@ -360,7 +347,7 @@ class AudioManager {
         })
 
         if (response.ok) {
-          this.clearTtsUnavailable();
+          ttsCooldown.clear();
           const blob = await response.blob()
           this.cacheAudio(text, blob, voice, mood)
           console.log('✓ Preloaded:', text.substring(0, 40))
@@ -368,7 +355,7 @@ class AudioManager {
         }
 
         if (response.status === 503) {
-          this.markTtsUnavailable()
+          ttsCooldown.markUnavailable()
         }
       } catch (error) {
         // Silent fail for preloads - not critical
