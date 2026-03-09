@@ -95,7 +95,7 @@ if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
 }
 
 // Wrap next-themes provider with forwardRef to suppress React ref warning
-const ThemeProvider = React.forwardRef<HTMLElement, ThemeProviderProps>(
+const ThemeProvider = React.forwardRef<HTMLElement, React.ComponentProps<typeof NextThemesProvider>>(
   ({ children, ...props }, _ref) => (
     <NextThemesProvider {...props}>{children}</NextThemesProvider>
   )
