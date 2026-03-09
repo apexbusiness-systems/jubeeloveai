@@ -33,6 +33,21 @@ function isResponseLike(value: unknown): value is ResponseLike {
   return typeof value === 'object' && value !== null;
 }
 
+const TTS_COOLDOWN_MS = 5 * 60 * 1000;
+let ttsUnavailableUntil = 0;
+
+function isTtsInCooldown(): boolean {
+  return Date.now() < ttsUnavailableUntil;
+}
+
+function markTtsUnavailable(): void {
+  ttsUnavailableUntil = Date.now() + TTS_COOLDOWN_MS;
+}
+
+function clearTtsUnavailable(): void {
+  ttsUnavailableUntil = 0;
+}
+
 function getStatusCode(error: unknown): number | null {
   const directStatus = (error as EdgeFunctionErrorLike)?.status;
   if (typeof directStatus === 'number') return directStatus;
