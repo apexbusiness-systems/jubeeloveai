@@ -23,6 +23,8 @@ class AudioManager {
   private audioCache: Map<string, CachedAudio> = new Map();
   private readonly MAX_CACHE_SIZE = 50; // Max cached audio items
   private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
+  private readonly TTS_COOLDOWN_MS = 5 * 60 * 1000;
+  private ttsUnavailableUntil = 0;
   private audioContext: AudioContext | null = null;
   private isAudioUnlocked = false;
   private offlinePreloadDone = false;
