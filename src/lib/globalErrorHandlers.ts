@@ -6,9 +6,26 @@
 import { logger } from './logger';
 import { captureException } from './sentry';
 
+function isExpectedTtsFallbackError(reason: unknown): boolean {
+  const message = reason instanceof Error
+    ? reason.message
+    : typeof reason === 'string'
+      ? reason
+      : '';
+
+  const normalized = message.toLowerCase();
+  return normalized.includes('all_tts_unavailable') || normalized.includes('edge function returned 503');
+}
+
 export function initializeGlobalErrorHandlers() {
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
+    if (isExpectedTtsFallbackError(event.reason)) {
+      event.preventDefault();
+      logger.warn('[Unhandled Promise Rejection] Expected TTS fallback rejection suppressed');
+      return;
+    }
+
     event.preventDefault();
     
     const error = event.reason instanceof Error 
@@ -26,6 +43,12 @@ export function initializeGlobalErrorHandlers() {
 
   // Handle uncaught errors
   window.addEventListener('error', (event) => {
+    if (isExpectedTtsFallbackError(event.error || event.message)) {
+      event.preventDefault();
+      logger.warn('[Uncaught Error] Expected TTS fallback error suppressed');
+      return;
+    }
+
     event.preventDefault();
     
     logger.error('[Uncaught Error]', event.error || event.message);

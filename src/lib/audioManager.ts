@@ -23,6 +23,8 @@ class AudioManager {
   private audioCache: Map<string, CachedAudio> = new Map();
   private readonly MAX_CACHE_SIZE = 50; // Max cached audio items
   private readonly CACHE_EXPIRY = 1000 * 60 * 30; // 30 minutes
+  private readonly TTS_COOLDOWN_MS = 5 * 60 * 1000;
+  private ttsUnavailableUntil = 0;
   private audioContext: AudioContext | null = null;
   private isAudioUnlocked = false;
   private offlinePreloadDone = false;
@@ -61,9 +63,18 @@ class AudioManager {
     }
   }
 
-  /**
-   * Preload common phrases to IndexedDB for offline support
-   */
+  private isTtsCooldownActive(): boolean {
+    return Date.now() < this.ttsUnavailableUntil;
+  }
+
+  private markTtsUnavailable(): void {
+    this.ttsUnavailableUntil = Date.now() + this.TTS_COOLDOWN_MS;
+  }
+
+  private clearTtsUnavailable(): void {
+    this.ttsUnavailableUntil = 0;
+  }
+
   private async preloadForOffline(): Promise<void> {
     if (this.offlinePreloadDone) return;
     this.offlinePreloadDone = true;
@@ -77,6 +88,10 @@ class AudioManager {
 
       await voiceCache.preloadCommonPhrases(async (text, mood) => {
         try {
+          if (this.isTtsCooldownActive()) {
+            return null;
+          }
+
           const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -91,11 +106,13 @@ class AudioManager {
           });
 
           if (response.ok) {
+            this.clearTtsUnavailable();
             return await response.blob();
           }
 
           // If TTS is unavailable (503), signal caller to abort remaining preloads
           if (response.status === 503) {
+            this.markTtsUnavailable();
             console.log('TTS unavailable (503), aborting remaining preloads');
             throw new Error('TTS_UNAVAILABLE_ABORT');
           }
@@ -325,6 +342,10 @@ class AudioManager {
     // Use idle callback for low priority preloads
     const executePreload = async () => {
       try {
+        if (this.isTtsCooldownActive()) {
+          return;
+        }
+
         const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -339,9 +360,15 @@ class AudioManager {
         })
 
         if (response.ok) {
+          this.clearTtsUnavailable();
           const blob = await response.blob()
           this.cacheAudio(text, blob, voice, mood)
           console.log('✓ Preloaded:', text.substring(0, 40))
+          return
+        }
+
+        if (response.status === 503) {
+          this.markTtsUnavailable()
         }
       } catch (error) {
         // Silent fail for preloads - not critical
