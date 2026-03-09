@@ -88,6 +88,10 @@ class AudioManager {
 
       await voiceCache.preloadCommonPhrases(async (text, mood) => {
         try {
+          if (this.isTtsCooldownActive()) {
+            return null;
+          }
+
           const response = await fetch('https://kphdqgidwipqdthehckg.supabase.co/functions/v1/text-to-speech', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -102,11 +106,13 @@ class AudioManager {
           });
 
           if (response.ok) {
+            this.clearTtsUnavailable();
             return await response.blob();
           }
 
           // If TTS is unavailable (503), signal caller to abort remaining preloads
           if (response.status === 503) {
+            this.markTtsUnavailable();
             console.log('TTS unavailable (503), aborting remaining preloads');
             throw new Error('TTS_UNAVAILABLE_ABORT');
           }
