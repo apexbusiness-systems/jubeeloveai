@@ -25,7 +25,7 @@ import { toast } from '@/hooks/use-toast';
 import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 import { saveDrawing } from '@/types/drawing';
-import confetti from 'canvas-confetti';
+
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { useDrawingWorker } from '@/hooks/useDrawingWorker';
 
@@ -238,6 +238,7 @@ export default function WritingCanvas() {
       triggerHaptic('success');
       addScore(20);
       triggerAnimation('celebrate');
+      const confetti = (await import('canvas-confetti')).default;
       confetti({
         particleCount: 100,
         spread: 70,

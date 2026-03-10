@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import confetti from 'canvas-confetti';
+
 import { useDanceGame } from './useDanceGame';
 import { DanceCharacter } from './DanceCharacter';
 import { ArrowButtons, StepZone } from './ArrowDisplay';
@@ -199,8 +199,9 @@ export default function JubeeDancePage() {
   // Confetti on 3-star results
   useEffect(() => {
     if (view === 'results' && starCount === 3 && !prefersReducedMotion) {
-      const timer = setTimeout(() => {
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, disableForReducedMotion: true,
+      const timer = setTimeout(async () => {
+        const confetti = (await import('canvas-confetti')).default;
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, disableForReducedMotion: true,
           colors: ['#FFD700', '#FF6B35', '#FF1493', '#00E5FF', '#76FF03'] });
       }, 600);
       return () => clearTimeout(timer);
