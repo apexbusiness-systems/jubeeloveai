@@ -8,7 +8,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Zap, Star, Trophy } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { triggerConfetti } from '@/lib/confetti';
 
 const LEGENDARY_MILESTONES = [30, 50];
 
@@ -77,7 +77,7 @@ function ComboCounterComponent({ combo, reducedMotion, onScreenShake }: ComboCou
   const fireConfetti = useCallback(() => {
     if (reducedMotion) return;
     // Left burst
-    confetti({
+    triggerConfetti({
       particleCount: 80,
       angle: 60,
       spread: 55,
@@ -86,7 +86,7 @@ function ComboCounterComponent({ combo, reducedMotion, onScreenShake }: ComboCou
       disableForReducedMotion: true,
     });
     // Right burst
-    confetti({
+    triggerConfetti({
       particleCount: 80,
       angle: 120,
       spread: 55,
