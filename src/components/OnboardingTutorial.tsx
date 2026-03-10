@@ -6,7 +6,7 @@ import { useTranslatedContent } from '@/i18n/useTranslatedContent'
 import { Button } from '@/components/ui/button'
 import { X, ArrowRight, ArrowLeft, Sparkles, Hand, BookOpen, Shapes, Pen, Star, PartyPopper } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import type { Options as ConfettiOptions } from 'canvas-confetti'
+
 
 const tutorialSteps = [
   {
@@ -71,7 +71,8 @@ export function OnboardingTutorial() {
       
       const colors = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
       
-      const frame = () => {
+      const frame = async () => {
+const confetti = (await import('canvas-confetti')).default;
         confetti({
           particleCount: 3,
           angle: 60,

@@ -8,7 +8,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame, Zap, Star, Trophy } from 'lucide-react';
-import type { Options as ConfettiOptions } from 'canvas-confetti';
+
 
 const LEGENDARY_MILESTONES = [30, 50];
 
