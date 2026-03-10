@@ -18,7 +18,7 @@ describe('useAuth', () => {
   })
 
   it('should initialize with loading state', async () => {
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as any)
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as unknown as ReturnType<typeof supabase.auth.getSession>)
 
     const { result } = renderHook(() => useAuth())
 
@@ -38,8 +38,8 @@ describe('useAuth', () => {
       expires_at: Date.now() + 3600000
     }
     
-    const deferred = createDeferred<any>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as any)
+    const deferred = createDeferred<unknown>()
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as unknown as ReturnType<typeof supabase.auth.getSession>)
 
     const { result } = renderHook(() => useAuth())
 
@@ -56,8 +56,8 @@ describe('useAuth', () => {
   })
 
   it('should handle signOut', async () => {
-    const deferred = createDeferred<any>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as any)
+    const deferred = createDeferred<unknown>()
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as unknown as ReturnType<typeof supabase.auth.getSession>)
     vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null })
 
     const { result } = renderHook(() => useAuth())
