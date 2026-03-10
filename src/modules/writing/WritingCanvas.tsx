@@ -25,7 +25,7 @@ import { toast } from '@/hooks/use-toast';
 import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 import { saveDrawing } from '@/types/drawing';
-
+import { triggerConfetti } from '@/lib/confetti';
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { useDrawingWorker } from '@/hooks/useDrawingWorker';
 
@@ -238,8 +238,7 @@ export default function WritingCanvas() {
       triggerHaptic('success');
       addScore(20);
       triggerAnimation('celebrate');
-      const confetti = (await import('canvas-confetti')).default;
-      confetti({
+      triggerConfetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
@@ -254,25 +253,18 @@ export default function WritingCanvas() {
     }
   };
 
-  const triggerConfetti = () => {
-    import('canvas-confetti').then(({ default: confetti }) => {
-      const count = 200;
-      const defaults = {
-        origin: { y: 0.7 },
-        zIndex: 9999,
-      };
+  const triggerSuccessConfetti = () => {
+    const count = 200;
+    const defaults = {
+      origin: { y: 0.7 },
+      zIndex: 9999,
+    };
 
-      function fire(particleRatio: number, opts: ConfettiOptions) {
-        confetti({
-          ...defaults,
-          ...opts,
-          particleCount: Math.floor(count * particleRatio),
-        });
-      }
-
-      fire(0.25, {
-        spread: 26,
-        startVelocity: 55,
+    function fire(particleRatio: number, opts: Record<string, unknown>) {
+      triggerConfetti({
+        ...defaults,
+        ...opts,
+        particleCount: Math.floor(count * particleRatio),
       });
 
       fire(0.2, {
@@ -301,7 +293,7 @@ export default function WritingCanvas() {
 
   const nextCharacter = () => {
     playSuccessSound();
-    triggerConfetti();
+    triggerSuccessConfetti();
     
     if (mode === 'letter') {
       const currentIndex = letters.indexOf(currentLetter);

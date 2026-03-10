@@ -72,7 +72,7 @@ export function OnboardingTutorial() {
       const colors = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))']
       
       const frame = async () => {
-const confetti = (await import('canvas-confetti')).default;
+        const confetti = (await import('canvas-confetti')).default
         confetti({
           particleCount: 3,
           angle: 60,
