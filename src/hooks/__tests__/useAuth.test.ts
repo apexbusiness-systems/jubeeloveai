@@ -18,7 +18,7 @@ describe('useAuth', () => {
   })
 
   it('should initialize with loading state', async () => {
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as any)
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as unknown as ReturnType<typeof supabase.auth.getSession>)
 
     const { result } = renderHook(() => useAuth())
 
@@ -30,7 +30,7 @@ describe('useAuth', () => {
   it('should handle successful session', async () => {
     const mockUser = { id: '123', email: 'test@example.com', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() }
     const mockSession: Session = { 
-      user: mockUser,
+      user: mockUser as unknown as Session['user'],
       access_token: 'mock-token',
       refresh_token: 'mock-refresh',
       expires_in: 3600,
@@ -38,8 +38,9 @@ describe('useAuth', () => {
       expires_at: Date.now() + 3600000
     }
     
-    const deferred = createDeferred<any>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as any)
+    type GetSessionResult = ReturnType<typeof supabase.auth.getSession>;
+    const deferred = createDeferred<Awaited<GetSessionResult>>();
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as GetSessionResult);
 
     const { result } = renderHook(() => useAuth())
 
@@ -56,9 +57,10 @@ describe('useAuth', () => {
   })
 
   it('should handle signOut', async () => {
-    const deferred = createDeferred<any>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as any)
-    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null })
+    type GetSessionResult = ReturnType<typeof supabase.auth.getSession>;
+    const deferred = createDeferred<Awaited<GetSessionResult>>();
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as GetSessionResult);
+    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null } as unknown as ReturnType<typeof supabase.auth.signOut>)
 
     const { result } = renderHook(() => useAuth())
 
