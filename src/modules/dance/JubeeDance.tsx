@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import confetti from 'canvas-confetti';
+import type { Options as ConfettiOptions } from 'canvas-confetti';
 import { useDanceGame } from './useDanceGame';
 import { DanceCharacter } from './DanceCharacter';
 import { ArrowButtons, StepZone } from './ArrowDisplay';
