@@ -6,7 +6,7 @@ import { useTranslatedContent } from '@/i18n/useTranslatedContent'
 import { Button } from '@/components/ui/button'
 import { X, ArrowRight, ArrowLeft, Sparkles, Hand, BookOpen, Shapes, Pen, Star, PartyPopper } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import confetti from 'canvas-confetti'
+import type { Options as ConfettiOptions } from 'canvas-confetti'
 
 const tutorialSteps = [
   {

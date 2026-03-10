@@ -25,7 +25,7 @@ import { toast } from '@/hooks/use-toast';
 import { Eraser, SkipForward, Palette, Download, Image as ImageIcon } from 'lucide-react';
 import { useAudioEffects } from '@/hooks/useAudioEffects';
 import { saveDrawing } from '@/types/drawing';
-import confetti from 'canvas-confetti';
+import type { Options as ConfettiOptions } from 'canvas-confetti';
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { useDrawingWorker } from '@/hooks/useDrawingWorker';
 
@@ -238,10 +238,12 @@ export default function WritingCanvas() {
       triggerHaptic('success');
       addScore(20);
       triggerAnimation('celebrate');
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
+      import('canvas-confetti').then(({ default: confetti }) => {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
       });
     } catch (error) {
       console.error('Save drawing error:', error);
@@ -254,45 +256,47 @@ export default function WritingCanvas() {
   };
 
   const triggerConfetti = () => {
-    const count = 200;
-    const defaults = {
-      origin: { y: 0.7 },
-      zIndex: 9999,
-    };
+    import('canvas-confetti').then(({ default: confetti }) => {
+      const count = 200;
+      const defaults = {
+        origin: { y: 0.7 },
+        zIndex: 9999,
+      };
 
-    function fire(particleRatio: number, opts: confetti.Options) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio),
+      function fire(particleRatio: number, opts: ConfettiOptions) {
+        confetti({
+          ...defaults,
+          ...opts,
+          particleCount: Math.floor(count * particleRatio),
+        });
+      }
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
       });
-    }
 
-    fire(0.25, {
-      spread: 26,
-      startVelocity: 55,
-    });
+      fire(0.2, {
+        spread: 60,
+      });
 
-    fire(0.2, {
-      spread: 60,
-    });
+      fire(0.35, {
+        spread: 100,
+        decay: 0.91,
+        scalar: 0.8,
+      });
 
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8,
-    });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 25,
+        decay: 0.92,
+        scalar: 1.2,
+      });
 
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2,
-    });
-
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 45,
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 45,
+      });
     });
   };
 

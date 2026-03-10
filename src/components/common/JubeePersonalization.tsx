@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import confetti from 'canvas-confetti'
+import type { Options as ConfettiOptions } from 'canvas-confetti'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { Button } from '@/components/ui/button'
 import { useAudioEffects } from '@/hooks/useAudioEffects'
