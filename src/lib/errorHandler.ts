@@ -1,3 +1,4 @@
+import { captureException } from "./sentry";
 /**
  * Comprehensive Error Handler with Retry Logic
  * Provides graceful degradation and user-friendly error messages
@@ -238,9 +239,13 @@ class ErrorHandler {
    */
   private async sendToErrorTracking(errorLog: ErrorLog): Promise<void> {
     try {
-      // Implement error tracking service integration here
-      // Example: Sentry, LogRocket, or custom endpoint
-      console.log('Would send to error tracking:', errorLog)
+      const error = new Error(errorLog.message);
+      error.name = errorLog.name;
+      if (errorLog.stack) {
+        error.stack = errorLog.stack;
+      }
+
+      captureException(error, errorLog.context as Record<string, import('@/integrations/supabase/types').Json>);
     } catch (error) {
       console.error('Failed to send error to tracking service:', error)
     }
