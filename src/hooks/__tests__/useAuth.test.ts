@@ -30,7 +30,7 @@ describe('useAuth', () => {
   it('should handle successful session', async () => {
     const mockUser = { id: '123', email: 'test@example.com', app_metadata: {}, user_metadata: {}, aud: 'authenticated', created_at: new Date().toISOString() }
     const mockSession: Session = { 
-      user: mockUser,
+      user: mockUser as unknown as Session['user'],
       access_token: 'mock-token',
       refresh_token: 'mock-refresh',
       expires_in: 3600,
