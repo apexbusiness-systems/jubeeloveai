@@ -15,7 +15,7 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
   const { playSuccessSound, playClearSound } = useAudioEffects()
 
-  const handleSave = () => {
+  const handleSave = async () => {
     playSuccessSound()
     setGender(selectedGender)
     triggerAnimation('celebrate')
