@@ -354,6 +354,12 @@ class AudioManager {
         })
 
         if (response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          // If server returned JSON instead of audio, it's a fallback signal
+          if (contentType.includes('application/json')) {
+            ttsCooldown.markUnavailable();
+            return;
+          }
           ttsCooldown.clear();
           const blob = await response.blob()
           this.cacheAudio(text, blob, voice, mood)
