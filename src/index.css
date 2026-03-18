@@ -214,7 +214,7 @@ code {
    JUBEE CONTAINER
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.jubee-container {
+.jubee-page-container {
   min-height: 100vh;
   background: linear-gradient(135deg, hsl(var(--game-bg)) 0%, hsl(var(--game-surface)) 100%);
   transition: background 0.3s ease;
