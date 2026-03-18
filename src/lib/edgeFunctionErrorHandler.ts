@@ -130,6 +130,16 @@ export async function callEdgeFunction<T = unknown>(
         throw new Error((error as EdgeFunctionErrorLike).message || 'Edge function error');
       }
 
+      // Detect 200-with-JSON fallback signal from TTS edge function
+      if (functionName === 'text-to-speech' && data && typeof data === 'object' && !ArrayBuffer.isView(data) && !(data instanceof Blob)) {
+        const payload = data as Record<string, unknown>;
+        if (payload.fallback === 'browser' || payload.error === 'ALL_TTS_UNAVAILABLE') {
+          ttsCooldown.markUnavailable();
+          logger.warn('[Edge Function] text-to-speech returned fallback signal; using browser.');
+          return null as T;
+        }
+      }
+
       if (functionName === 'text-to-speech') {
         ttsCooldown.clear();
       }
