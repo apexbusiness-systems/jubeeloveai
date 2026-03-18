@@ -383,7 +383,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
         {
-          status: 503,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
