@@ -39,7 +39,7 @@ describe('useAuth', () => {
     }
     
     const deferred = createDeferred<unknown>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as unknown)
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as ReturnType<typeof supabase.auth.getSession>)
 
     const { result } = renderHook(() => useAuth())
 
