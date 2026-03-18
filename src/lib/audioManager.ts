@@ -93,6 +93,13 @@ class AudioManager {
           });
 
           if (response.ok) {
+            const contentType = response.headers.get('content-type') || '';
+            // If server returned JSON instead of audio, it's a fallback signal
+            if (contentType.includes('application/json')) {
+              ttsCooldown.markUnavailable();
+              console.log('TTS unavailable (fallback signal), aborting remaining preloads');
+              throw new Error('TTS_UNAVAILABLE_ABORT');
+            }
             ttsCooldown.clear();
             return await response.blob();
           }
