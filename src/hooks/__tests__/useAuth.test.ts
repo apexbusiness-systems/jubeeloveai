@@ -18,7 +18,7 @@ describe('useAuth', () => {
   })
 
   it('should initialize with loading state', async () => {
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as unknown)
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(new Promise(() => {}) as ReturnType<typeof supabase.auth.getSession>)
 
     const { result } = renderHook(() => useAuth())
 

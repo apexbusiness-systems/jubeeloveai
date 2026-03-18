@@ -245,7 +245,7 @@ class ErrorHandler {
         error.stack = errorLog.stack;
       }
 
-      captureException(error, errorLog.context as Record<string, import('@/integrations/supabase/types').Json>);
+      captureException(error, errorLog.context as unknown as Record<string, import('@/integrations/supabase/types').Json>);
     } catch (error) {
       console.error('Failed to send error to tracking service:', error)
     }
