@@ -414,7 +414,7 @@ serve(async (req) => {
     // Any server-side failure → signal client to use browser fallback
     return new Response(
       JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
-      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
