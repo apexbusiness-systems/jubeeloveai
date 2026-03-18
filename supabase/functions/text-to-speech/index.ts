@@ -283,11 +283,11 @@ serve(async (req) => {
 
   // QUOTA EXHAUSTION: Short-circuit if both providers recently failed
   if (Date.now() < quotaExhaustedUntil) {
-    console.log('Quota cooldown active, returning 503 immediately');
+    console.log('Quota cooldown active, returning fallback signal');
     return new Response(
       JSON.stringify({ error: 'ALL_TTS_UNAVAILABLE', fallback: 'browser' }),
       {
-        status: 503,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
