@@ -57,7 +57,7 @@ describe('useAuth', () => {
 
   it('should handle signOut', async () => {
     const deferred = createDeferred<unknown>()
-    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as unknown)
+    vi.mocked(supabase.auth.getSession).mockReturnValueOnce(deferred.promise as ReturnType<typeof supabase.auth.getSession>)
     vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null })
 
     const { result } = renderHook(() => useAuth())
