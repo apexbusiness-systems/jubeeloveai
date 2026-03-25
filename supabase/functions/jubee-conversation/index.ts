@@ -7,15 +7,14 @@ const corsHeaders = {
 };
 
 // RATE LIMITING: IP-based protection against abuse
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 25; // 25 requests per minute per IP
+const RATE_LIMIT_WINDOW = 60000;
+const MAX_REQUESTS_PER_WINDOW = 25;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function getRateLimitKey(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
   const cfConnecting = req.headers.get('cf-connecting-ip');
-  
   return forwarded?.split(',')[0].trim() || realIp || cfConnecting || 'unknown';
 }
 
@@ -23,7 +22,6 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
   const record = rateLimitMap.get(ip);
 
-  // Clean up expired entries periodically
   if (rateLimitMap.size > 10000) {
     for (const [key, value] of rateLimitMap.entries()) {
       if (value.resetAt < now) rateLimitMap.delete(key);
@@ -65,7 +63,7 @@ function validateMood(mood: string): string | undefined {
 }
 
 // ============================================================================
-// JUBEE PERSONA SYSTEM - The Heart of Jubee's Personality
+// JUBEE PERSONA SYSTEM
 // ============================================================================
 
 const JUBEE_CORE_PERSONA = `You are Jubee, a friendly bee companion for young children ages 2-6.
@@ -98,7 +96,6 @@ NEVER DO:
 - Never say "I don't know" - always redirect positively
 - Never be preachy or lecture`;
 
-// Sentiment analysis for empathetic responses
 function analyzeSentiment(message: string): {
   sentiment: string;
   intensity: string;
@@ -114,7 +111,6 @@ function analyzeSentiment(message: string): {
   try {
     const words = sanitized.split(/\s+/);
     
-    // Word categories for detection
     const excitementWords = ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'great', 'hooray'];
     const frustrationWords = ['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried', 'mad', 'angry'];
     const sadWords = ['sad', 'cry', 'hurt', 'miss', 'lonely', 'bad', 'sorry', 'scared', 'afraid'];
@@ -136,7 +132,6 @@ function analyzeSentiment(message: string): {
     let needsComfort = false;
     const keywords: string[] = [];
     
-    // Priority: comfort needs first
     if (sadCount >= 1 || (frustrationCount >= 1 && hasNegation)) {
       sentiment = 'frustrated';
       intensity = sadCount >= 2 || frustrationCount >= 2 ? 'high' : 'medium';
@@ -147,7 +142,7 @@ function analyzeSentiment(message: string): {
       intensity = 'high';
       keywords.push(...excitementWords.filter(w => sanitized.includes(w)).slice(0, 3));
     } else if (curiousCount >= 1 || hasQuestion) {
-      sentiment = 'neutral'; // Curious is neutral but engaged
+      sentiment = 'neutral';
       intensity = 'medium';
       keywords.push(...curiousWords.filter(w => sanitized.includes(w)).slice(0, 3));
     } else if (positiveCount > 0) {
@@ -170,7 +165,6 @@ function analyzeSentiment(message: string): {
   }
 }
 
-// Build contextual system prompt based on sentiment, language, and time
 function buildSystemPrompt(
   language: string,
   sentiment: { sentiment: string; intensity: string; needsComfort: boolean },
@@ -178,7 +172,6 @@ function buildSystemPrompt(
   timeOfDay?: string,
   activity?: string
 ): string {
-  // Emotional context based on detected sentiment
   let emotionalGuidance = '';
   
   if (sentiment.needsComfort) {
@@ -199,7 +192,6 @@ MATCH THEIR ENERGY: This child is excited!
 Be warm, curious, and gently encouraging.`;
   }
 
-  // Time-of-day personality adjustments
   let timeContext = '';
   if (timeOfDay === 'morning') {
     timeContext = '\nIt\'s morning - be bright and energizing! "Good morning sunshine!" energy.';
@@ -209,7 +201,6 @@ Be warm, curious, and gently encouraging.`;
     timeContext = '\nIt\'s late/night time - be very gentle and soothing. Quiet, calm voice.';
   }
 
-  // Activity-specific personality hints
   let activityContext = '';
   if (activity === 'games') {
     activityContext = '\nChild is playing games - be playful and competitive in a fun way!';
@@ -223,7 +214,6 @@ Be warm, curious, and gently encouraging.`;
     activityContext = '\nChild is in music - be rhythmic and musical in responses!';
   }
 
-  // Language-specific additions
   const languageNotes: Record<string, string> = {
     en: '',
     es: '\nRespond in Spanish. Use familiar "tú" form.',
@@ -249,7 +239,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting check
   const clientIp = getRateLimitKey(req);
   const rateLimit = checkRateLimit(clientIp);
   
@@ -278,7 +267,6 @@ serve(async (req) => {
 
     const { message, language = 'en', childName, context = {} } = body;
     
-    // Input validation
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       throw new Error('Valid message is required');
     }
@@ -291,25 +279,22 @@ serve(async (req) => {
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedChildName = childName ? sanitizeInput(childName, MAX_CHILD_NAME_LENGTH) : undefined;
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    // Use Groq API instead of OpenAI
+    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
     
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not configured');
+    if (!GROQ_API_KEY) {
+      console.error('GROQ_API_KEY is not configured');
       throw new Error('AI service unavailable');
     }
 
-    // Analyze sentiment for empathetic response
     const sentimentAnalysis = analyzeSentiment(sanitizedMessage);
-    console.log('Jubee conversation - Sentiment:', sentimentAnalysis.sentiment, 'Intensity:', sentimentAnalysis.intensity, 'NeedsComfort:', sentimentAnalysis.needsComfort);
+    console.log('Jubee conversation (Groq) - Sentiment:', sentimentAnalysis.sentiment, 'Intensity:', sentimentAnalysis.intensity);
 
-    // Extract time and activity context
     const timeOfDay = context.timeOfDay && typeof context.timeOfDay === 'string' ? context.timeOfDay : undefined;
     const activity = context.activity && typeof context.activity === 'string' ? context.activity : undefined;
 
-    // Build dynamic system prompt with time/activity context
     const systemPrompt = buildSystemPrompt(sanitizedLanguage, sentimentAnalysis, sanitizedChildName, timeOfDay, activity);
     
-    // Add activity context if provided
     let userContext = '';
     if (context.activity && typeof context.activity === 'string') {
       userContext = `[Context: Child is doing ${sanitizeInput(context.activity, MAX_CONTEXT_LENGTH)}] `;
@@ -320,26 +305,26 @@ serve(async (req) => {
       { role: 'user', content: userContext + sanitizedMessage }
     ];
 
-    console.log('Streaming Jubee response for language:', sanitizedLanguage);
+    console.log('Streaming Jubee response via Groq for language:', sanitizedLanguage);
 
-    // Use GPT-5-mini for fast, cost-effective responses
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Groq API - using llama-3.3-70b-versatile for fast, high-quality responses
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'llama-3.3-70b-versatile',
         messages,
-        max_completion_tokens: 100,
+        max_tokens: 100,
         stream: true,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('Groq API error:', response.status, errorText);
       
       if (response.status === 429) throw new Error('RATE_LIMIT');
       if (response.status === 401) throw new Error('AUTH_ERROR');
@@ -397,7 +382,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in jubee-conversation function:', error);
     
-    // Friendly fallback messages in each language
     const fallbackMessages: Record<string, string> = {
       en: "*Bzz-bzz!* 🐝 Oopsie! My antennae got a bit tangled! But I'm still here with you, little friend! ✨",
       es: "*Bzz-bzz!* 🐝 ¡Ay! ¡Mis antenas se enredaron! ¡Pero sigo aquí contigo, amiguito! ✨",

@@ -6,20 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// RATE LIMITING: IP-based protection against abuse
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute per IP (stricter for audio processing)
+// RATE LIMITING
+const RATE_LIMIT_WINDOW = 60000;
+const MAX_REQUESTS_PER_WINDOW = 10;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function getRateLimitKey(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
   const cfConnecting = req.headers.get('cf-connecting-ip');
-  
-  return forwarded?.split(',')[0].trim() || 
-         realIp || 
-         cfConnecting || 
-         'unknown';
+  return forwarded?.split(',')[0].trim() || realIp || cfConnecting || 'unknown';
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
@@ -28,9 +24,7 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
 
   if (rateLimitMap.size > 10000) {
     for (const [key, value] of rateLimitMap.entries()) {
-      if (value.resetAt < now) {
-        rateLimitMap.delete(key);
-      }
+      if (value.resetAt < now) rateLimitMap.delete(key);
     }
   }
 
@@ -48,18 +42,15 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   return { allowed: true };
 }
 
-// SECURITY: Input validation constants
-const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB max (Whisper API limit)
-const MIN_AUDIO_SIZE = 100; // Minimum reasonable audio size
+// SECURITY: Input validation
+const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB
+const MIN_AUDIO_SIZE = 100;
 
-// Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Array {
-  // SECURITY: Validate input
   if (!base64String || typeof base64String !== 'string') {
     throw new Error('Invalid audio data format');
   }
 
-  // SECURITY: Size check before processing
   const estimatedSize = (base64String.length * 3) / 4;
   if (estimatedSize > MAX_AUDIO_SIZE) {
     throw new Error(`Audio file too large (max ${MAX_AUDIO_SIZE / 1024 / 1024}MB)`);
@@ -76,11 +67,9 @@ function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Arra
       const chunk = base64String.slice(position, position + chunkSize);
       const binaryChunk = atob(chunk);
       const bytes = new Uint8Array(binaryChunk.length);
-      
       for (let i = 0; i < binaryChunk.length; i++) {
         bytes[i] = binaryChunk.charCodeAt(i);
       }
-      
       chunks.push(bytes);
       position += chunkSize;
     }
@@ -92,12 +81,10 @@ function processBase64Chunks(base64String: string, chunkSize = 32768): Uint8Arra
   const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
-
   for (const chunk of chunks) {
     result.set(chunk, offset);
     offset += chunk.length;
   }
-
   return result;
 }
 
@@ -106,7 +93,6 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // RATE LIMITING: Check before processing
   const clientIp = getRateLimitKey(req);
   const rateLimit = checkRateLimit(clientIp);
   
@@ -120,17 +106,12 @@ serve(async (req) => {
       }),
       {
         status: 429,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Retry-After': rateLimit.retryAfter?.toString() || '60'
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': rateLimit.retryAfter?.toString() || '60' },
       }
     );
   }
 
   try {
-    // SECURITY: Parse with error handling and timeout
     let body;
     try {
       body = await req.json();
@@ -140,18 +121,17 @@ serve(async (req) => {
 
     const { audio } = body;
     
-    // SECURITY: Validate audio data
     if (!audio || typeof audio !== 'string') {
       throw new Error('Valid audio data is required');
     }
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY not configured');
+    // Use Groq API for Whisper speech-to-text
+    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY')
+    if (!GROQ_API_KEY) {
+      console.error('GROQ_API_KEY not configured');
       throw new Error('Speech recognition service unavailable');
     }
 
-    // SECURITY: Process audio with validation
     let binaryAudio: Uint8Array;
     try {
       binaryAudio = processBase64Chunks(audio);
@@ -160,21 +140,20 @@ serve(async (req) => {
       throw new Error(message);
     }
     
-    // Prepare form data
     const formData = new FormData()
     const blob = new Blob([binaryAudio as BlobPart], { type: 'audio/webm' })
     formData.append('file', blob, 'audio.webm')
-    formData.append('model', 'whisper-1')
+    formData.append('model', 'whisper-large-v3')
 
-    // SECURITY: Send to OpenAI with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      // Groq's Whisper API - OpenAI-compatible endpoint
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
         },
         body: formData,
         signal: controller.signal,
@@ -184,7 +163,7 @@ serve(async (req) => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('OpenAI API error:', response.status, errorText);
+        console.error('Groq Whisper API error:', response.status, errorText);
         
         if (response.status === 429) {
           throw new Error('Rate limit exceeded. Please try again shortly.');
@@ -196,7 +175,6 @@ serve(async (req) => {
 
       const result = await response.json();
 
-      // SECURITY: Validate response
       if (!result.text || typeof result.text !== 'string') {
         throw new Error('Invalid response from speech service');
       }
