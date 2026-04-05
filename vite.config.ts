@@ -145,7 +145,7 @@ export default defineConfig(({ mode }) => ({
           // Vendor chunks
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select'],
+
           'vendor-animation': ['framer-motion', '@react-spring/three'],
           'vendor-query': ['@tanstack/react-query'],
           'vendor-supabase': ['@supabase/supabase-js'],

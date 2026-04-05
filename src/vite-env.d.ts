@@ -2,9 +2,9 @@
 
 // Provide NodeJS namespace for timer types used across the codebase
 declare namespace NodeJS {
-  interface Timeout {}
-  interface Timer {}
+  interface Timeout { _brand?: "Timeout" }
+  interface Timer { _brand?: "Timer" }
 }
 
 // Provide global for test setup files
-declare var global: typeof globalThis;
+declare let global: typeof globalThis;
