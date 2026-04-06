@@ -134,6 +134,7 @@ export function VoiceSelector({ onClose }: Props) {
                   }}
                   disabled={testingVoice === option.id}
                   className="h-8 w-8"
+                  aria-label={`Test ${option.name} voice`}
                   style={{
                     background: testingVoice === option.id 
                       ? 'hsl(var(--primary))' 
