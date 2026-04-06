@@ -290,7 +290,8 @@ function InfoPill({ icon, label, value }: InfoPillProps) {
 
 function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
   const navigate = useNavigate();
-  const { triggerAnimation } = useJubeeStore();
+  // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
+  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
 
   const handleClick = () => {
     triggerAnimation('excited');
@@ -326,7 +327,8 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
 
 function GameCard({ title, icon, path, description }: GameCardProps) {
   const navigate = useNavigate();
-  const { triggerAnimation } = useJubeeStore();
+  // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
+  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
 
   const handleClick = () => {
     triggerAnimation('excited');

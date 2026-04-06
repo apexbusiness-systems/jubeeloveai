@@ -5,7 +5,8 @@ import { useReducedMotion } from 'framer-motion';
 
 export default function GamesMenu() {
   const navigate = useNavigate();
-  const { triggerAnimation } = useJubeeStore();
+  // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
+  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
   const prefersReducedMotion = useReducedMotion();
 
   const handleGameClick = (path: string, _gameName: string) => {
