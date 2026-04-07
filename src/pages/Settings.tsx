@@ -210,6 +210,7 @@ export default function SettingsPage() {
                       variant="outline"
                       size="sm"
                       disabled={testingVoice === option.id}
+                      aria-label={`Test voice ${option.name}`}
                     >
                       <Play className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
                     </Button>

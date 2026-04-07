@@ -56,6 +56,7 @@ const DrawingCard = memo(({
           variant="secondary"
           size="sm"
           className="flex-1"
+          aria-label={`Download drawing of ${drawing.character}`}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -65,6 +66,7 @@ const DrawingCard = memo(({
               variant="destructive"
               size="sm"
               className="flex-1"
+              aria-label={`Delete drawing of ${drawing.character}`}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
