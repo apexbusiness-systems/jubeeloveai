@@ -1,19 +1,28 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, memo, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { HomeIcon, PencilIcon, StarIcon, ChartIcon, GiftIcon, GearIcon } from '@/components/icons/Icons';
 
-export function Navigation() {
+export const Navigation = memo(function Navigation() {
+  const icons = useMemo(() => ({
+    home: <HomeIcon className="w-8 h-8" />,
+    write: <PencilIcon className="w-8 h-8" />,
+    shapes: <StarIcon className="w-8 h-8" />,
+    progress: <ChartIcon className="w-8 h-8" />,
+    stickers: <GiftIcon className="w-8 h-8" />,
+    settings: <GearIcon className="w-8 h-8" />,
+  }), []);
+
   return (
     <nav className="tab-bar" role="navigation" aria-label="Main navigation">
-      <TabButton path="/" icon={<HomeIcon className="w-8 h-8" />} label="Home" />
-      <TabButton path="/write" icon={<PencilIcon className="w-8 h-8" />} label="Write" />
-      <TabButton path="/shapes" icon={<StarIcon className="w-8 h-8" />} label="Shapes" />
-      <TabButton path="/progress" icon={<ChartIcon className="w-8 h-8" />} label="Progress" />
-      <TabButton path="/stickers" icon={<GiftIcon className="w-8 h-8" />} label="Stickers" />
-      <TabButton path="/settings" icon={<GearIcon className="w-8 h-8" />} label="Settings" longPressPath="/parent" />
+      <TabButton path="/" icon={icons.home} label="Home" />
+      <TabButton path="/write" icon={icons.write} label="Write" />
+      <TabButton path="/shapes" icon={icons.shapes} label="Shapes" />
+      <TabButton path="/progress" icon={icons.progress} label="Progress" />
+      <TabButton path="/stickers" icon={icons.stickers} label="Stickers" />
+      <TabButton path="/settings" icon={icons.settings} label="Settings" longPressPath="/parent" />
     </nav>
   );
-}
+});
 
 interface TabButtonProps {
   path: string;
@@ -22,7 +31,7 @@ interface TabButtonProps {
   longPressPath?: string;
 }
 
-function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
+const TabButton = memo(function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = location.pathname === path;
@@ -83,4 +92,4 @@ function TabButton({ path, icon, label, longPressPath }: TabButtonProps) {
       <span className="text-xs font-bold text-foreground transition-colors duration-200 group-hover:text-primary">{label}</span>
     </button>
   );
-}
+});
