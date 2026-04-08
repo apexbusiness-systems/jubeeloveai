@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -86,41 +86,48 @@ export default function ConversationAnalytics() {
   }
 
   // Prepare chart data
-  const conversationTrend = analytics.map(day => ({
-    date: format(new Date(day.date), 'MMM dd'),
-    conversations: day.total_conversations,
-    confidence: Math.round(day.avg_confidence * 100)
-  }))
+  const conversationTrend = useMemo(() => {
+    return analytics.map(day => ({
+      date: format(new Date(day.date), 'MMM dd'),
+      conversations: day.total_conversations,
+      confidence: Math.round(day.avg_confidence * 100)
+    }))
+  }, [analytics])
 
   // Aggregate sentiment distribution
-  const sentimentData = Object.entries(
-    analytics.reduce((acc, day) => {
-      if (day.sentiment_distribution) {
-        Object.entries(day.sentiment_distribution).forEach(([sentiment, count]) => {
-          acc[sentiment] = (acc[sentiment] || 0) + Number(count)
-        })
-      }
-      return acc
-    }, {} as Record<string, number>)
-  ).map(([name, value]) => ({ name, value }))
+  const sentimentData = useMemo(() => {
+    return Object.entries(
+      analytics.reduce((acc, day) => {
+        if (day.sentiment_distribution) {
+          Object.entries(day.sentiment_distribution).forEach(([sentiment, count]) => {
+            acc[sentiment] = (acc[sentiment] || 0) + Number(count)
+          })
+        }
+        return acc
+      }, {} as Record<string, number>)
+    ).map(([name, value]) => ({ name, value }))
+  }, [analytics])
 
   // Aggregate mood distribution
-  const moodData = Object.entries(
-    analytics.reduce((acc, day) => {
-      if (day.mood_distribution) {
-        Object.entries(day.mood_distribution).forEach(([mood, count]) => {
-          acc[mood] = (acc[mood] || 0) + Number(count)
-        })
-      }
-      return acc
-    }, {} as Record<string, number>)
-  ).map(([name, value]) => ({ name, value }))
+  const moodData = useMemo(() => {
+    return Object.entries(
+      analytics.reduce((acc, day) => {
+        if (day.mood_distribution) {
+          Object.entries(day.mood_distribution).forEach(([mood, count]) => {
+            acc[mood] = (acc[mood] || 0) + Number(count)
+          })
+        }
+        return acc
+      }, {} as Record<string, number>)
+    ).map(([name, value]) => ({ name, value }))
+  }, [analytics])
 
   // Get all keywords
-  const allKeywords = analytics
-    .flatMap(day => day.most_common_keywords || [])
-    .filter((k, i, arr) => arr.indexOf(k) === i)
-    .slice(0, 10)
+  const allKeywords = useMemo(() => {
+    return Array.from(
+      new Set(analytics.flatMap(day => day.most_common_keywords || []))
+    ).slice(0, 10)
+  }, [analytics])
 
   if (loading) {
     return (
