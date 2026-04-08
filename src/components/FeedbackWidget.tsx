@@ -76,6 +76,7 @@ export function FeedbackWidget() {
           variant="ghost"
           size="icon"
           onClick={() => setIsOpen(false)}
+          aria-label="Close feedback widget"
         >
           <X className="w-4 h-4" />
         </Button>
