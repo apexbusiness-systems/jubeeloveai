@@ -70,6 +70,7 @@ export function VolumeControlDialog() {
             </div>
             <Slider
               id="sound-effects"
+              aria-label="Sound Effects Volume"
               value={[soundEffectsVolume]}
               onValueChange={handleSoundEffectsChange}
               max={1}
@@ -95,6 +96,7 @@ export function VolumeControlDialog() {
             </div>
             <Slider
               id="voice"
+              aria-label="Voice Volume"
               value={[voiceVolume]}
               onValueChange={handleVoiceChange}
               max={1}
