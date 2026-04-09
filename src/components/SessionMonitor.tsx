@@ -9,7 +9,10 @@ import { useState } from 'react';
 
 export function SessionMonitor() {
   const navigate = useNavigate();
-  const { activeChildId, children, updateSessionTime, endSession } = useParentalStore();
+  const activeChildId = useParentalStore(state => state.activeChildId);
+  const children = useParentalStore(state => state.children);
+  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
+  const endSession = useParentalStore(state => state.endSession);
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 

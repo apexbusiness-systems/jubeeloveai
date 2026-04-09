@@ -109,8 +109,9 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const { containerPosition } = useJubeeStore();
-  const { children, activeChildId } = useParentalStore();
+  const containerPosition = useJubeeStore(state => state.containerPosition);
+  const children = useParentalStore(state => state.children);
+  const activeChildId = useParentalStore(state => state.activeChildId);
 
   // Spring physics for container positioning
   const springBottom = useSpring(containerPosition.bottom, {
