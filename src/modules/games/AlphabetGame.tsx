@@ -16,8 +16,9 @@ export default function AlphabetGame() {
   const [challenge, setChallenge] = useState<LetterChallenge | null>(null)
   const [score, setScore] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (): LetterChallenge => {
     const letter = alphabet[Math.floor(Math.random() * alphabet.length)]

@@ -104,8 +104,11 @@ const StickerCard = memo(({
 StickerCard.displayName = 'StickerCard'
 
 export function StickerBook({ onClose }: Props) {
-  const { score, stickers: unlockedStickers, addSticker } = useGameStore()
-  const { speak, triggerAnimation } = useJubeeStore()
+  const score = useGameStore(state => state.score);
+const unlockedStickers = useGameStore(state => state.stickers);
+const addSticker = useGameStore(state => state.addSticker);
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
   // Memoize categorized stickers to avoid filtering on every render
   const categorizedStickers = useMemo(() => ({

@@ -6,16 +6,15 @@ import { toast } from '@/hooks/use-toast'
 import { useAchievementWorker } from './useAchievementWorker'
 
 export function useAchievementTracker() {
-  const { score, completedActivities } = useGameStore()
-  const {
-    initializeAchievements,
-    checkAndUnlockAchievements,
-    updateStreak,
-    trackSpecialAchievement,
-    achievements,
-    streakData
-  } = useAchievementStore()
-  const { speak } = useJubeeStore()
+  const score = useGameStore(state => state.score);
+const completedActivities = useGameStore(state => state.completedActivities);
+  const initializeAchievements = useAchievementStore(state => state.initializeAchievements);
+const checkAndUnlockAchievements = useAchievementStore(state => state.checkAndUnlockAchievements);
+const updateStreak = useAchievementStore(state => state.updateStreak);
+const trackSpecialAchievement = useAchievementStore(state => state.trackSpecialAchievement);
+const achievements = useAchievementStore(state => state.achievements);
+const streakData = useAchievementStore(state => state.streakData);
+  const speak = useJubeeStore(state => state.speak);
 
   // Initialize Web Worker for achievement calculations
   const { processAchievements, isWorkerSupported } = useAchievementWorker({

@@ -90,15 +90,13 @@ export function JubeeMascot({
   const [isHovered, setIsHovered] = useState(false);
   const [blinkTime, setBlinkTime] = useState(0);
   const [showClickFeedback, setShowClickFeedback] = useState(false);
-  const {
-    gender,
-    speechText,
-    currentMood,
-    updatePosition,
-    speak,
-    triggerAnimation,
-    cleanup,
-  } = useJubeeStore();
+  const gender = useJubeeStore(state => state.gender);
+const speechText = useJubeeStore(state => state.speechText);
+const currentMood = useJubeeStore(state => state.currentMood);
+const updatePosition = useJubeeStore(state => state.updatePosition);
+const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+const cleanup = useJubeeStore(state => state.cleanup);
 
   // Contextual greeting system - uses provided pathname since we're inside R3F context
   const { getGreeting } = useJubeeGreeting({ pathname });

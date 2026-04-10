@@ -94,7 +94,11 @@ function captureSnapshot(event: string, containerRef: React.RefObject<HTMLDivEle
 
 export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLDivElement>) {
   const prevStateRef = useRef<ReturnType<typeof useJubeeStore.getState> | null>(null)
-  const { isVisible, containerPosition, position, currentAnimation, isDragging } = useJubeeStore()
+  const isVisible = useJubeeStore(state => state.isVisible);
+const containerPosition = useJubeeStore(state => state.containerPosition);
+const position = useJubeeStore(state => state.position);
+const currentAnimation = useJubeeStore(state => state.currentAnimation);
+const isDragging = useJubeeStore(state => state.isDragging);
   
   // Track all state changes
   useEffect(() => {

@@ -14,7 +14,11 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 
 export function VolumeControlDialog() {
-  const { soundEffectsVolume, voiceVolume, setSoundEffectsVolume, setVoiceVolume, speak } = useJubeeStore();
+  const soundEffectsVolume = useJubeeStore(state => state.soundEffectsVolume);
+const voiceVolume = useJubeeStore(state => state.voiceVolume);
+const setSoundEffectsVolume = useJubeeStore(state => state.setSoundEffectsVolume);
+const setVoiceVolume = useJubeeStore(state => state.setVoiceVolume);
+const speak = useJubeeStore(state => state.speak);
   const [open, setOpen] = useState(false);
 
   const handleSoundEffectsChange = (value: number[]) => {

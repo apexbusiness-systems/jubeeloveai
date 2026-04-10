@@ -16,7 +16,7 @@ interface PreloadContext {
 
 export function useSmartAudioPreloader() {
   const location = useLocation()
-  const { voice } = useJubeeStore()
+  const voice = useJubeeStore(state => state.voice);
   const contextHistory = useRef<PreloadContext[]>([])
   const preloadedRoutes = useRef<Set<string>>(new Set())
 

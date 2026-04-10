@@ -16,12 +16,10 @@ export interface ScreenTimeStatus {
 }
 
 export function useScreenTimeEnforcement() {
-  const { 
-    activeChildId, 
-    children, 
-    updateSessionTime,
-    endSession 
-  } = useParentalStore();
+  const activeChildId = useParentalStore(state => state.activeChildId);
+const children = useParentalStore(state => state.children);
+const updateSessionTime = useParentalStore(state => state.updateSessionTime);
+const endSession = useParentalStore(state => state.endSession);
   
   const [status, setStatus] = useState<ScreenTimeStatus>({
     isWithinSchedule: true,

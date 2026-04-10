@@ -51,8 +51,9 @@ export default function WritingCanvas() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawColor, setDrawColor] = useState('hsl(217 91% 60%)');
   const navigate = useNavigate();
-  const { speak, triggerAnimation } = useJubeeStore();
-  const { addScore } = useGameStore();
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
   const { playDrawSound, playClearSound, playSuccessSound } = useAudioEffects();
   const { processDrawing, isProcessing } = useDrawingWorker();
 

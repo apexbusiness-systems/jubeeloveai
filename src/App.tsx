@@ -78,8 +78,11 @@ function AppShell() {
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
   const [shouldRenderMascot, setShouldRenderMascot] = useState(false);
-  const { currentTheme, updateTheme, score } = useGameStore();
-  const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore();
+  const currentTheme = useGameStore(state => state.currentTheme);
+const updateTheme = useGameStore(state => state.updateTheme);
+const score = useGameStore(state => state.score);
+  const hasCompletedOnboarding = useOnboardingStore(state => state.hasCompletedOnboarding);
+const startOnboarding = useOnboardingStore(state => state.startOnboarding);
   const { isSaving, lastSaved } = useSyncStatus();
   const location = useLocation();
   const navigate = useNavigate();

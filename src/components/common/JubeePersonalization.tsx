@@ -11,7 +11,10 @@ interface Props {
 }
 
 export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
-  const { gender, setGender, speak, triggerAnimation } = useJubeeStore()
+  const gender = useJubeeStore(state => state.gender);
+const setGender = useJubeeStore(state => state.setGender);
+const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
   const { playSuccessSound, playClearSound } = useAudioEffects()
 

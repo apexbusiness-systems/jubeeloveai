@@ -21,7 +21,8 @@ import {
 export default function ReadingPractice() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { speak, updatePosition } = useJubeeStore();
+  const speak = useJubeeStore(state => state.speak);
+const updatePosition = useJubeeStore(state => state.updatePosition);
   
   const [selectedCategory, setSelectedCategory] = useState<WordCategory | 'all'>('all');
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('easy');

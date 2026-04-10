@@ -99,7 +99,7 @@ export default function Gallery() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { speak } = useJubeeStore();
+  const speak = useJubeeStore(state => state.speak);
 
   useEffect(() => {
     loadDrawings();

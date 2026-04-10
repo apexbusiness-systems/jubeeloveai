@@ -10,7 +10,7 @@ export default function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { isPremium } = useParentalStore();
+  const isPremium = useParentalStore(state => state.isPremium);
 
   const playSong = useCallback((song: Song) => {
     const isLocked = song.tier === 'premium' && !isPremium;

@@ -50,8 +50,9 @@ export default function MemoryGame() {
   const [flippedCards, setFlippedCards] = useState<number[]>([])
   const [moves, setMoves] = useState(0)
   const [matches, setMatches] = useState(0)
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = useCallback((level: 'easy' | 'medium' | 'hard') => {
     const emojis = emojiSets[level]

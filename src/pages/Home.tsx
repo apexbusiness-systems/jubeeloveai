@@ -18,8 +18,10 @@ interface ActivityMeta {
 export default function HomePage() {
   const navigate = useNavigate();
   const [showInstallBanner, setShowInstallBanner] = useState(false);
-  const { favoritePages, totalTimeSpent, lastActivityTime } = useActivityStore();
-  const { currentTheme } = useGameStore();
+  const favoritePages = useActivityStore(state => state.favoritePages);
+const totalTimeSpent = useActivityStore(state => state.totalTimeSpent);
+const lastActivityTime = useActivityStore(state => state.lastActivityTime);
+  const currentTheme = useGameStore(state => state.currentTheme);
 
   const activityCatalog = useMemo<Record<string, ActivityMeta>>(
     () => ({

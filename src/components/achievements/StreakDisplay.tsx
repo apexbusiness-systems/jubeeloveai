@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAchievementStore } from '@/store/useAchievementStore'
 
 export function StreakDisplay() {
-  const { streakData } = useAchievementStore()
+  const streakData = useAchievementStore(state => state.streakData);
 
   const getStreakEmoji = (streak: number) => {
     if (streak === 0) return '⭐'

@@ -48,8 +48,13 @@ const tutorialSteps = [
 ]
 
 export function OnboardingTutorial() {
-  const { isActive, currentStep, nextStep, previousStep, completeOnboarding, skipOnboarding } = useOnboardingStore()
-  const { interactionCount } = useJubeeStore()
+  const isActive = useOnboardingStore(state => state.isActive);
+const currentStep = useOnboardingStore(state => state.currentStep);
+const nextStep = useOnboardingStore(state => state.nextStep);
+const previousStep = useOnboardingStore(state => state.previousStep);
+const completeOnboarding = useOnboardingStore(state => state.completeOnboarding);
+const skipOnboarding = useOnboardingStore(state => state.skipOnboarding);
+  const interactionCount = useJubeeStore(state => state.interactionCount);
   const { t } = useTranslatedContent()
   const highlightRef = useRef<HTMLDivElement>(null)
   const [showCelebration, setShowCelebration] = useState(false)
