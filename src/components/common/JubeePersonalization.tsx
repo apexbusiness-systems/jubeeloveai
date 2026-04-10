@@ -71,7 +71,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               playSuccessSound()
               setSelectedGender('male')
             }}
-            className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+            className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-boy)',
               border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--boy-primary) / 0.5)',
@@ -80,6 +80,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
                 : '0 4px 10px hsl(var(--boy-primary) / 0.2)',
               opacity: selectedGender === 'male' ? 1 : 0.7
             }}
+            aria-label="Select boy gender"
           >
             <div className="text-8xl mb-4">👦</div>
             <h3 className="text-3xl font-bold text-white">
@@ -95,7 +96,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               playSuccessSound()
               setSelectedGender('female')
             }}
-            className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300"
+            className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-girl)',
               border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--girl-primary) / 0.5)',
@@ -104,6 +105,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
                 : '0 4px 10px hsl(var(--girl-primary) / 0.2)',
               opacity: selectedGender === 'female' ? 1 : 0.7
             }}
+            aria-label="Select girl gender"
           >
             <div className="text-8xl mb-4">👧</div>
             <h3 className="text-3xl font-bold text-white">
@@ -135,22 +137,24 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               playClearSound()
               onClose()
             }}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-muted"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-muted focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Cancel customization"
           >
             Cancel
           </button>
 
           <button
             onClick={handleSave}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-accent"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-accent)'
             }}
+            aria-label="Save changes"
           >
             Save Changes
           </button>
