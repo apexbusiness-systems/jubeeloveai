@@ -39,6 +39,13 @@ function containsSensitiveData(data: unknown): boolean {
  * Sanitize data for logging
  */
 function sanitizeData(data: unknown): unknown {
+  if (typeof data === 'string') {
+    if (SENSITIVE_PATTERNS.some(pattern => pattern.test(data))) {
+      return '[REDACTED]';
+    }
+    return data;
+  }
+
   if (typeof data === 'object' && data !== null) {
     const sanitized: Record<string, unknown> = {};
     Object.entries(data).forEach(([key, value]) => {
