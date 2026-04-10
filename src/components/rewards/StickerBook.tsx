@@ -175,11 +175,12 @@ export function StickerBook({ onClose }: Props) {
         <div className="text-center mt-8">
           <button
             onClick={onClose}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Close sticker book"
           >
             Close
           </button>
