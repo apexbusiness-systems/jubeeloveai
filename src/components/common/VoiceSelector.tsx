@@ -61,7 +61,10 @@ const voiceOptions: VoiceOption[] = [
 ]
 
 export function VoiceSelector({ onClose }: Props) {
-  const { voice, setVoice, speak, triggerAnimation } = useJubeeStore()
+  const voice = useJubeeStore(state => state.voice);
+const setVoice = useJubeeStore(state => state.setVoice);
+const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
   const [selectedVoice, setSelectedVoice] = useState<JubeeVoice>(voice)
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null)
 

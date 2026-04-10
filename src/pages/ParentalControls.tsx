@@ -17,17 +17,15 @@ import { validatePIN, validateChildName } from '@/lib/inputValidation';
 
 export default function ParentalControls() {
   const navigate = useNavigate();
-  const { 
-    children, 
-    settings, 
-    isParentMode, 
-    addChild, 
-    updateChild, 
-    deleteChild, 
-    updateSettings, 
-    setParentMode,
-    verifyPin 
-  } = useParentalStore();
+  const children = useParentalStore(state => state.children);
+const settings = useParentalStore(state => state.settings);
+const isParentMode = useParentalStore(state => state.isParentMode);
+const addChild = useParentalStore(state => state.addChild);
+const updateChild = useParentalStore(state => state.updateChild);
+const deleteChild = useParentalStore(state => state.deleteChild);
+const updateSettings = useParentalStore(state => state.updateSettings);
+const setParentMode = useParentalStore(state => state.setParentMode);
+const verifyPin = useParentalStore(state => state.verifyPin);
 
   const [pinInput, setPinInput] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(!settings.isLocked || isParentMode);

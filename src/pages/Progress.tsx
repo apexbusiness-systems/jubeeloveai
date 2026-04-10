@@ -9,8 +9,11 @@ import { StreakDisplay } from '@/components/achievements/StreakDisplay';
 import { useEffect } from 'react';
 
 export default function ProgressPage() {
-  const { score, stickers, completedActivities } = useGameStore();
-  const { achievements, initializeAchievements } = useAchievementStore();
+  const score = useGameStore(state => state.score);
+const stickers = useGameStore(state => state.stickers);
+const completedActivities = useGameStore(state => state.completedActivities);
+  const achievements = useAchievementStore(state => state.achievements);
+const initializeAchievements = useAchievementStore(state => state.initializeAchievements);
 
   useEffect(() => {
     initializeAchievements();

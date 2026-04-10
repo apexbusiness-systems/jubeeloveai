@@ -20,8 +20,9 @@ export default function PuzzleGame() {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null)
   const [moves, setMoves] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = (level: 'easy' | 'medium' | 'hard') => {
     const size = level === 'easy' ? 4 : level === 'medium' ? 9 : 16

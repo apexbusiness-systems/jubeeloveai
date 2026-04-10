@@ -138,8 +138,9 @@ export default function StoryTime() {
   const [isPaused, setIsPaused] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
   const { user } = useAuth()
   const { preloadStoryContext } = useSmartAudioPreloader()
 

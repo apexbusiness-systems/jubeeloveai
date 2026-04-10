@@ -22,8 +22,9 @@ export default function PatternGame() {
   const [activePattern, setActivePattern] = useState<number | null>(null)
   const [level, setLevel] = useState(1)
   const [score, setScore] = useState(0)
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const speeds = {
     easy: 1000,

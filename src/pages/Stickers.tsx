@@ -8,7 +8,9 @@ import { toast } from '@/hooks/use-toast';
 const availableStickers = ['⭐', '🌟', '✨', '🎯', '🏆', '🎖️', '🥇', '👏', '🎉', '🎊', '🌈', '🦋', '🌺', '🌻', '🎨', '📚', '✏️', '📝'];
 
 export default function StickersPage() {
-  const { stickers, addSticker, score } = useGameStore();
+  const stickers = useGameStore(state => state.stickers);
+const addSticker = useGameStore(state => state.addSticker);
+const score = useGameStore(state => state.score);
   const stickerCost = 50;
 
   const handleBuySticker = (sticker: string) => {

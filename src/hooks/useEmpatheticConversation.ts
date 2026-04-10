@@ -17,7 +17,9 @@ const MAX_NAME_LENGTH = 50
 const MAX_ACTIVITY_LENGTH = 200
 
 export function useEmpatheticConversation() {
-  const { converse, speak, isProcessing } = useJubeeStore()
+  const converse = useJubeeStore(state => state.converse);
+const speak = useJubeeStore(state => state.speak);
+const isProcessing = useJubeeStore(state => state.isProcessing);
 
   /**
    * SECURE sentiment detection with input validation

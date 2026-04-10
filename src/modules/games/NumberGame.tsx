@@ -21,8 +21,9 @@ export default function NumberGame() {
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [totalQuestions, setTotalQuestions] = useState(0)
-  const { speak, triggerAnimation } = useJubeeStore()
-  const { addScore } = useGameStore()
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (level: 'easy' | 'medium' | 'hard'): NumberChallenge => {
     const config = difficultyLevels[level]

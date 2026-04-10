@@ -18,12 +18,17 @@ import { VolumeControlDialog } from '@/components/VolumeControlDialog';
 export default function SettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentTheme, updateTheme } = useGameStore();
-  const { gender, setGender, voice, setVoice, speak } = useJubeeStore();
-  const { children } = useParentalStore();
+  const currentTheme = useGameStore(state => state.currentTheme);
+const updateTheme = useGameStore(state => state.updateTheme);
+  const gender = useJubeeStore(state => state.gender);
+const setGender = useJubeeStore(state => state.setGender);
+const voice = useJubeeStore(state => state.voice);
+const setVoice = useJubeeStore(state => state.setVoice);
+const speak = useJubeeStore(state => state.speak);
+  const children = useParentalStore(state => state.children);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
-  const { startOnboarding } = useOnboardingStore();
+  const startOnboarding = useOnboardingStore(state => state.startOnboarding);
 
   const themes = [
     { name: 'morning', icon: Sunrise, label: 'Morning' },

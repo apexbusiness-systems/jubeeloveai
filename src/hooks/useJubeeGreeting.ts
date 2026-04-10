@@ -89,8 +89,9 @@ function checkFirstVisitToday(): { isFirst: boolean; totalVisits: number } {
 export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
   // Use provided pathname or default to home
   const pathname = options.pathname ?? '/'
-  const { currentMood } = useJubeeStore()
-  const { streakData, updateStreak } = useAchievementStore()
+  const currentMood = useJubeeStore(state => state.currentMood);
+  const streakData = useAchievementStore(state => state.streakData);
+const updateStreak = useAchievementStore(state => state.updateStreak);
   const greetingHistory = useRef<string[]>(loadGreetingHistory())
   const visitInfo = useRef(checkFirstVisitToday())
   

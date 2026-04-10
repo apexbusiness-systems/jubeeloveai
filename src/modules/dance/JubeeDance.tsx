@@ -42,7 +42,7 @@ const difficultyColors: Record<string, string> = {
 
 export default function JubeeDancePage() {
   const navigate = useNavigate();
-  const { isPremium } = useParentalStore();
+  const isPremium = useParentalStore(state => state.isPremium);
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
   const [partyMode, setPartyMode] = useState(false);

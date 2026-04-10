@@ -10,7 +10,7 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  const { triggerAnimation } = useJubeeStore();
+  const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
   const prefersReducedMotion = useReducedMotion();
   const [displayLocation, setDisplayLocation] = useState(location);
 

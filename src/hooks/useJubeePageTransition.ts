@@ -111,7 +111,11 @@ function getRandomLandingPosition(): { bottom: number; right: number } {
 
 export function useJubeePageTransition() {
   const location = useLocation();
-  const { containerPosition, setContainerPosition, isVisible, setMood, triggerAnimation } = useJubeeStore();
+  const containerPosition = useJubeeStore(state => state.containerPosition);
+const setContainerPosition = useJubeeStore(state => state.setContainerPosition);
+const isVisible = useJubeeStore(state => state.isVisible);
+const setMood = useJubeeStore(state => state.setMood);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
   const transitionStateRef = useRef<TransitionState | null>(null);
   const animationFrameRef = useRef<number>();
   const previousPathnameRef = useRef(location.pathname);

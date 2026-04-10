@@ -6,7 +6,9 @@ import { useJubeeStore } from '@/store/useJubeeStore'
  * Provides empathetic, child-friendly responses with fail-safes
  */
 export function useJubeeConversation() {
-  const { converse, isProcessing, lastError } = useJubeeStore()
+  const converse = useJubeeStore(state => state.converse);
+const isProcessing = useJubeeStore(state => state.isProcessing);
+const lastError = useJubeeStore(state => state.lastError);
 
   const askJubee = useCallback(async (
     message: string,

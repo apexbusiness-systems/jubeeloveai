@@ -8,7 +8,8 @@ const DEV_EMAILS = ['unseen_g4@yahoo.com'];
 
 export function DevAuthOverride() {
   const { user } = useAuth();
-  const { setPremiumStatus, isPremium } = useParentalStore();
+  const setPremiumStatus = useParentalStore(state => state.setPremiumStatus);
+const isPremium = useParentalStore(state => state.isPremium);
 
   useEffect(() => {
     if (user?.email && DEV_EMAILS.includes(user.email)) {

@@ -19,8 +19,9 @@ const shapeDescriptions: Record<Shape, string> = {
 export default function ShapeSorter() {
   const [targetShape, setTargetShape] = useState<Shape>('circle');
   const [score, setScore] = useState(0);
-  const { speak, triggerAnimation } = useJubeeStore();
-  const { addScore } = useGameStore();
+  const speak = useJubeeStore(state => state.speak);
+const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const addScore = useGameStore(state => state.addScore);
 
   const checkShape = (shape: Shape) => {
     if (shape === targetShape) {
