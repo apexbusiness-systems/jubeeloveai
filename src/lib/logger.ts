@@ -3,7 +3,6 @@
  * Prevents sensitive data logging in production
  */
 
-// const IS_PRODUCTION = import.meta.env.PROD;
 const IS_DEV = import.meta.env.DEV;
 
 // Sensitive patterns to filter
