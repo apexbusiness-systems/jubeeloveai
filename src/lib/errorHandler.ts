@@ -182,7 +182,6 @@ class ErrorHandler {
 
     // In production, send to error tracking service
     if (typeof window !== 'undefined' && import.meta.env.PROD) {
-      // TODO: Send to error tracking service (e.g., Sentry, LogRocket)
       this.sendToErrorTracking(errorLog)
     }
   }
