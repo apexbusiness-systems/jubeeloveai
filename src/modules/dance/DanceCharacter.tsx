@@ -62,6 +62,14 @@ function DanceCharacterComponent({
   const leftTipRef = useRef<THREE.Mesh | null>(null);
   const rightTipRef = useRef<THREE.Mesh | null>(null);
 
+  // Cached parts for animation loop optimization
+  const leftWingRef = useRef<THREE.Mesh | null>(null);
+  const rightWingRef = useRef<THREE.Mesh | null>(null);
+  const leftArmRef = useRef<THREE.Mesh | null>(null);
+  const rightArmRef = useRef<THREE.Mesh | null>(null);
+  const leftLegRef = useRef<THREE.Mesh | null>(null);
+  const rightLegRef = useRef<THREE.Mesh | null>(null);
+
   const renderStateRef = useRef({
     isPaused,
     isVisible: true,
@@ -360,6 +368,7 @@ function DanceCharacterComponent({
     leftWing.scale.set(0.3, 0.7, 0.1);
     leftWing.rotation.z = 0.5;
     leftWing.name = 'leftWing';
+    leftWingRef.current = leftWing;
     character.add(leftWing);
 
     const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
@@ -367,6 +376,7 @@ function DanceCharacterComponent({
     rightWing.scale.set(0.3, 0.7, 0.1);
     rightWing.rotation.z = -0.5;
     rightWing.name = 'rightWing';
+    rightWingRef.current = rightWing;
     character.add(rightWing);
 
     // Arms
@@ -382,12 +392,14 @@ function DanceCharacterComponent({
     leftArm.position.set(-0.6, 1, 0);
     leftArm.rotation.z = 0.5;
     leftArm.name = 'leftArm';
+    leftArmRef.current = leftArm;
     character.add(leftArm);
 
     const rightArm = new THREE.Mesh(armGeometry, armMaterial);
     rightArm.position.set(0.6, 1, 0);
     rightArm.rotation.z = -0.5;
     rightArm.name = 'rightArm';
+    rightArmRef.current = rightArm;
     character.add(rightArm);
 
     // Legs
@@ -403,11 +415,13 @@ function DanceCharacterComponent({
     const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
     leftLeg.position.set(-0.2, 0.3, 0);
     leftLeg.name = 'leftLeg';
+    leftLegRef.current = leftLeg;
     character.add(leftLeg);
 
     const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
     rightLeg.position.set(0.2, 0.3, 0);
     rightLeg.name = 'rightLeg';
+    rightLegRef.current = rightLeg;
     character.add(rightLeg);
 
     // Glow ring for perfect streaks
@@ -559,17 +573,17 @@ function DanceCharacterComponent({
       character.rotation.set(0, 0, 0);
 
       // Wing flutter
-      const lw = character.getObjectByName('leftWing') as THREE.Mesh | undefined;
-      const rw = character.getObjectByName('rightWing') as THREE.Mesh | undefined;
+      const lw = leftWingRef.current;
+      const rw = rightWingRef.current;
       if (lw && rw) {
         lw.rotation.z = 0.5 + Math.sin(t * wingSpeed) * 0.3 * motionScale;
         rw.rotation.z = -0.5 - Math.sin(t * wingSpeed) * 0.3 * motionScale;
       }
 
-      const la = character.getObjectByName('leftArm') as THREE.Mesh | undefined;
-      const ra = character.getObjectByName('rightArm') as THREE.Mesh | undefined;
-      const ll = character.getObjectByName('leftLeg') as THREE.Mesh | undefined;
-      const rl = character.getObjectByName('rightLeg') as THREE.Mesh | undefined;
+      const la = leftArmRef.current;
+      const ra = rightArmRef.current;
+      const ll = leftLegRef.current;
+      const rl = rightLegRef.current;
 
       switch (currentAnim) {
         case 'idle':
