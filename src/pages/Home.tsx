@@ -121,6 +121,7 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
                     variant="ghost"
                     size="sm"
                     className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                    aria-label="Dismiss install banner"
                   >
                     ✕
                   </Button>
