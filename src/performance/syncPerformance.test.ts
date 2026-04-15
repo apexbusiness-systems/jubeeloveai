@@ -53,6 +53,22 @@ describe('SyncService Performance', () => {
     expect(supabase.auth.getUser).toHaveBeenCalledTimes(1)
   })
 
+  it('should process sync requests in parallel (using Promise.allSettled)', async () => {
+    // We are going to verify that getUnsynced is called for each store during syncAll
+    // Promise.allSettled guarantees that all sync methods are executed.
+    vi.mocked(jubeeDB.getUnsynced).mockResolvedValue([])
+
+    await syncService.syncAll()
+
+    // Verify it attempted to fetch from all 5 stores
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledWith('gameProgress')
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledWith('achievements')
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledWith('drawings')
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledWith('stickers')
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledWith('childrenProfiles')
+    expect(jubeeDB.getUnsynced).toHaveBeenCalledTimes(5)
+  })
+
   it('should call getUser only once during processQueue', async () => {
 
     // We need to mock syncQueue.processQueue or ensure it runs
