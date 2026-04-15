@@ -125,11 +125,19 @@ class SyncService {
       }
 
       // Sync each store
-      results.gameProgress = await this.syncGameProgress(user)
-      results.achievements = await this.syncAchievements(user)
-      results.drawings = await this.syncDrawings(user)
-      results.stickers = await this.syncStickers(user)
-      results.childrenProfiles = await this.syncChildrenProfiles(user)
+      const syncResults = await Promise.allSettled([
+        this.syncGameProgress(user),
+        this.syncAchievements(user),
+        this.syncDrawings(user),
+        this.syncStickers(user),
+        this.syncChildrenProfiles(user)
+      ])
+
+      results.gameProgress = syncResults[0].status === 'fulfilled' ? syncResults[0].value : { success: false, synced: 0, failed: 0, errors: [syncResults[0].reason?.message || 'Unknown error'] }
+      results.achievements = syncResults[1].status === 'fulfilled' ? syncResults[1].value : { success: false, synced: 0, failed: 0, errors: [syncResults[1].reason?.message || 'Unknown error'] }
+      results.drawings = syncResults[2].status === 'fulfilled' ? syncResults[2].value : { success: false, synced: 0, failed: 0, errors: [syncResults[2].reason?.message || 'Unknown error'] }
+      results.stickers = syncResults[3].status === 'fulfilled' ? syncResults[3].value : { success: false, synced: 0, failed: 0, errors: [syncResults[3].reason?.message || 'Unknown error'] }
+      results.childrenProfiles = syncResults[4].status === 'fulfilled' ? syncResults[4].value : { success: false, synced: 0, failed: 0, errors: [syncResults[4].reason?.message || 'Unknown error'] }
 
       logger.info('Sync completed:', results)
       return results
