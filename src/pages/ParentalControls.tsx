@@ -162,17 +162,17 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                       onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
                     />
                   </div>
-                  <Button onClick={handleUnlock} className="w-full" size="lg">
+                  <Button onClick={handleUnlock} className="w-full" size="lg" aria-label="Unlock Parental Controls">
                     Unlock
                   </Button>
                 </>
               ) : (
-                <Button onClick={() => setShowPinSetup(true)} className="w-full" size="lg">
+                <Button onClick={() => setShowPinSetup(true)} className="w-full" size="lg" aria-label="Set Up PIN Protection">
                   <Shield className="mr-2 h-5 w-5" />
                   Set Up PIN Protection
                 </Button>
               )}
-              <Button onClick={() => navigate('/')} variant="outline" className="w-full">
+              <Button onClick={() => navigate('/')} variant="outline" className="w-full" aria-label="Return to home page">
                 Back to Home
               </Button>
             </CardContent>
@@ -216,10 +216,10 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setShowPinSetup(false)}>
+                <Button variant="outline" onClick={() => setShowPinSetup(false)} aria-label="Cancel PIN setup">
                   Cancel
                 </Button>
-                <Button onClick={handleSetupPin}>
+                <Button onClick={handleSetupPin} aria-label="Confirm PIN setup">
                   Set PIN
                 </Button>
               </DialogFooter>
@@ -242,7 +242,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
             <h1 className="text-4xl font-bold text-primary mb-2">Parental Controls</h1>
             <p className="text-muted-foreground text-lg">Manage your children's learning experience</p>
           </div>
-          <Button onClick={() => { setIsUnlocked(false); setParentMode(false); }} variant="outline">
+          <Button onClick={() => { setIsUnlocked(false); setParentMode(false); }} variant="outline" aria-label="Lock Parental Controls">
             <Lock className="mr-2 h-5 w-5" />
             Lock
           </Button>
@@ -310,7 +310,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddChild} className="w-full sm:w-auto">
+                <Button onClick={handleAddChild} className="w-full sm:w-auto" aria-label="Add new child profile">
                   Add Child
                 </Button>
               </CardContent>
@@ -343,7 +343,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                     <div className="flex gap-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="flex-1">
+                          <Button variant="outline" size="sm" className="flex-1" aria-label="Edit child profile">
                             Edit
                           </Button>
                         </DialogTrigger>
@@ -380,7 +380,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                             />
                           </div>
                           <DialogFooter>
-                            <Button onClick={() => toast({ title: "Profile updated!" })}>
+                            <Button onClick={() => toast({ title: "Profile updated!" })} aria-label="Save changes to child profile">
                               Save Changes
                             </Button>
                           </DialogFooter>
@@ -393,6 +393,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                           deleteChild(child.id);
                           toast({ title: "Profile deleted" });
                         }}
+                        aria-label="Delete child profile"
                       >
                         Delete
                       </Button>
@@ -444,7 +445,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
                     onCheckedChange={(checked) => updateSettings({ requirePinForSettings: checked })}
                   />
                 </div>
-                <Button onClick={() => setShowPinSetup(true)} variant="outline">
+                <Button onClick={() => setShowPinSetup(true)} variant="outline" aria-label="Change parental controls PIN">
                   Change PIN
                 </Button>
               </CardContent>
@@ -525,7 +526,7 @@ const verifyPin = useParentalStore(state => state.verifyPin);
         </Tabs>
 
         <div className="mt-8 text-center">
-          <Button onClick={() => navigate('/')} variant="outline" size="lg">
+          <Button onClick={() => navigate('/')} variant="outline" size="lg" aria-label="Return to home page">
             Back to Home
           </Button>
         </div>
