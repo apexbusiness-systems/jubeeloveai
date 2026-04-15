@@ -113,6 +113,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleReset}
                 size="lg"
                 className="gap-2"
+                aria-label="Try again after error"
               >
                 <RefreshCw className="h-4 w-4" />
                 {message.action}
@@ -122,6 +123,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 variant="outline"
                 size="lg"
                 className="gap-2"
+                aria-label="Return to home page after error"
               >
                 <Home className="h-4 w-4" />
                 Go Home

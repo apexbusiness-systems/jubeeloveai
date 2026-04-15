@@ -311,6 +311,7 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
         focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
         ${emphasis ? 'md:row-span-2' : ''}
       `}
+      aria-label={`${title} - ${description}`}
     >
       {badge && (
         <span className="absolute top-3 right-3 rounded-full bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 shadow-sm">

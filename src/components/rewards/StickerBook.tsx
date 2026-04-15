@@ -81,8 +81,10 @@ const StickerCard = memo(({
         : '0 4px 10px hsl(var(--muted) / 0.3)',
       opacity: isUnlocked ? 1 : 0.5
     }}
+    role="img"
+    aria-label={isUnlocked ? `Unlocked sticker: ${sticker.name}` : `Locked sticker: ${sticker.name}, requires ${sticker.unlockRequirement} points`}
   >
-    <div className="text-6xl mb-3 text-center">
+    <div className="text-6xl mb-3 text-center" aria-hidden="true">
       {isUnlocked ? sticker.emoji : '🔒'}
     </div>
     <h4

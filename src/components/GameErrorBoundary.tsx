@@ -59,11 +59,11 @@ export class GameErrorBoundary extends Component<Props, State> {
               )}
               
               <div className="flex gap-3">
-                <Button onClick={this.handleReset} className="flex-1">
+                <Button onClick={this.handleReset} className="flex-1" aria-label="Try again after game error">
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Try Again
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/'} className="flex-1">
+                <Button variant="outline" onClick={() => window.location.href = '/'} className="flex-1" aria-label="Return to home page after game error">
                   Go Home
                 </Button>
               </div>
