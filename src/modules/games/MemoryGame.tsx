@@ -19,14 +19,17 @@ const MemoryCard = memo(({
   card, 
   onClick,
   gradient,
-  isDisabled
+  isDisabled,
+  index
 }: { 
   card: Card; 
   onClick: (id: number) => void;
   gradient: string;
   isDisabled: boolean;
+  index: number;
 }) => (
   <button
+    aria-label={`Card ${index + 1}, ${card.isMatched ? 'matched showing ' + card.emoji : card.isFlipped ? 'flipped showing ' + card.emoji : 'unflipped'}`}
     onClick={() => onClick(card.id)}
     disabled={isDisabled || card.isMatched || card.isFlipped}
     className="card aspect-square rounded-2xl flex items-center justify-center text-6xl transform transition-all duration-300 hover:scale-105 border-4 border-game-accent"
@@ -228,10 +231,11 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           maxWidth: gridConfig.maxWidth
         }}
       >
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <MemoryCard
             key={card.id}
             card={card}
+            index={index}
             onClick={handleCardClick}
             gradient="var(--gradient-game)"
             isDisabled={flippedCards.length >= 2}
