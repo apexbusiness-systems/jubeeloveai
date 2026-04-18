@@ -175,6 +175,7 @@ export class JubeeErrorBoundary extends Component<Props, State> {
           {this.state.recoveryAttempts >= MAX_RECOVERY_ATTEMPTS && (
             <button
               onClick={this.handleReset}
+              aria-label="Try again to recover Jubee"
               style={{
                 padding: '8px 16px',
                 backgroundColor: '#4caf50',
