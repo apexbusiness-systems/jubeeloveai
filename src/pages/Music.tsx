@@ -2,9 +2,43 @@ import { useState, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { musicLibrary, Song } from '@/data/musicLibrary';
 import { Play, Lock, Music as MusicIcon } from 'lucide-react';
+import { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
+
+const MusicCard = memo(({ song, isLocked, isCurrent, isThisCardPlaying, playSong }: {
+  song: Song,
+  isLocked: boolean,
+  isCurrent: boolean,
+  isThisCardPlaying: boolean,
+  playSong: (song: Song) => void
+}) => {
+  return (
+    <Card
+      onClick={() => playSong(song)}
+      className={`cursor-pointer transition-all border-2 relative
+          ${isLocked ? 'opacity-75 grayscale border-muted bg-muted/20' : 'hover:scale-105 border-transparent hover:border-primary'}
+          ${isCurrent ? 'border-primary bg-primary/10 ring-2 ring-primary' : ''}
+      `}
+    >
+      {isLocked && (
+          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1 z-10">
+              <Lock className="w-3 h-3" /> Premium
+          </div>
+      )}
+      <CardContent className="p-4 flex items-center gap-4">
+        <div className="text-4xl">{song.emoji}</div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold truncate">{song.title}</h3>
+          <p className="text-sm text-muted-foreground">{song.artist}</p>
+          <Badge variant="outline" className="mt-2 text-xs capitalize">{song.genre}</Badge>
+        </div>
+        {isThisCardPlaying && <Play className="w-6 h-6 text-primary animate-pulse" />}
+      </CardContent>
+    </Card>
+  );
+});
 
 export default function MusicPage() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -44,29 +78,14 @@ export default function MusicPage() {
             const isCurrent = currentSong?.id === song.id;
 
             return (
-              <Card 
-                key={song.id} 
-                onClick={() => playSong(song)}
-                className={`cursor-pointer transition-all border-2 relative 
-                    ${isLocked ? 'opacity-75 grayscale border-muted bg-muted/20' : 'hover:scale-105 border-transparent hover:border-primary'}
-                    ${isCurrent ? 'border-primary bg-primary/10 ring-2 ring-primary' : ''}
-                `}
-              >
-                {isLocked && (
-                    <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1 z-10">
-                        <Lock className="w-3 h-3" /> Premium
-                    </div>
-                )}
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="text-4xl">{song.emoji}</div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-bold truncate">{song.title}</h3>
-                    <p className="text-sm text-muted-foreground">{song.artist}</p>
-                    <Badge variant="outline" className="mt-2 text-xs capitalize">{song.genre}</Badge>
-                  </div>
-                  {isCurrent && isPlaying && <Play className="w-6 h-6 text-primary animate-pulse" />}
-                </CardContent>
-              </Card>
+              <MusicCard
+                key={song.id}
+                song={song}
+                isLocked={isLocked}
+                isCurrent={isCurrent}
+                isThisCardPlaying={isCurrent && isPlaying}
+                playSong={playSong}
+              />
             );
         })}
       </div>
