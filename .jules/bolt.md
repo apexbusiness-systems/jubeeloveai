@@ -1,7 +1,3 @@
-## 2024-04-13 - [Three.js getObjectByName in Animation Loop]
-**Learning:** Using `getObjectByName` in a Three.js animation loop (e.g. running at 60 FPS) is a significant performance bottleneck due to recursive scene graph traversal.
-**Action:** Always cache references to Three.js objects (e.g., using `useRef` in React) during scene setup and use these cached references in the render/animation loop to avoid expensive lookups.
-## 2024-04-14 - [Optimize syncAll with Promise.allSettled]\n**Learning:** When performing multiple independent asynchronous data sync operations in a single block, sequential `await`s are a significant performance bottleneck and don't cleanly handle partial failures.\n**Action:** Use `Promise.allSettled` to fire off the promises concurrently while safely handling individual rejections without failing the entire batch.
-## 2025-04-18 - Memoize mapped components with complex props
-**Learning:** When using `React.memo` on list items generated inside a `map` function, passing generic boolean state props (like `isPlaying`) directly to the items will cause all of them to re-render whenever the global playback state changes.
-**Action:** Instead of passing the broad `isPlaying` boolean state, pass a combined prop like `isThisCardPlaying={isCurrent && isPlaying}` to ensure only the actually affected component re-renders when the state toggles.
+## 2025-03-02 - O(n log n) sorting optimization on dynamic UI list categorization
+**Learning:** React `useMemo` blocks with arrays often contain multiple successive filters and sorts to display content in tabs. These multiple loops (like what `AchievementList` did with 5 `.filter()` passes + 5 `.sort()` passes dynamically) degrade quickly.
+**Action:** Replace multiple map/filter passes with a single `O(n)` category separation block that leverages an initial `O(n log n)` global sort, then iterate the items once. Doing this in `useMemo` avoids redundant iteration and computation per render. If returning functions, use `React.useCallback`.
