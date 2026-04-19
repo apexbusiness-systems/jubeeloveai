@@ -1,4 +1,4 @@
-import { useMemo, memo } from 'react'
+import React, { useMemo, memo } from 'react'
 import { Achievement } from '@/types/achievements'
 import { AchievementBadge } from './AchievementBadge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,30 +12,42 @@ const MemoizedAchievementBadge = memo(AchievementBadge)
 
 export function AchievementList({ achievements }: Props) {
   // Memoize categorization to avoid recalculation on every render
-  const categories = useMemo(() => ({
-    all: achievements,
-    activity: achievements.filter(a => a.category === 'activity'),
-    streak: achievements.filter(a => a.category === 'streak'),
-    milestone: achievements.filter(a => a.category === 'milestone'),
-    special: achievements.filter(a => a.category === 'special')
-  }), [achievements])
+  // Memoize sorting, categorization, and earned count in a single pass O(n log n)
+  const { categories, earnedCount } = useMemo(() => {
+    // 1. Sort all achievements first
+    const sortedAll = [...achievements].sort((a, b) => {
+      if (a.earned && !b.earned) return -1
+      if (!a.earned && b.earned) return 1
+      return b.progress - a.progress
+    })
 
-  // Memoize earned count
-  const earnedCount = useMemo(
-    () => achievements.filter(a => a.earned).length,
-    [achievements]
-  )
-
-  // Memoize sorting function O(n log n)
-  const sortAchievements = useMemo(() => {
-    return (achievementList: Achievement[]) => {
-      return [...achievementList].sort((a, b) => {
-        if (a.earned && !b.earned) return -1
-        if (!a.earned && b.earned) return 1
-        return b.progress - a.progress
-      })
+    // 2. Categorize and count earned in a single pass (O(n))
+    const cats: Record<string, Achievement[]> = {
+      activity: [],
+      streak: [],
+      milestone: [],
+      special: []
     }
-  }, [])
+
+    let earned = 0
+
+    for (const achievement of sortedAll) {
+      if (achievement.earned) earned++
+
+      const category = achievement.category
+      if (cats[category]) {
+        cats[category].push(achievement)
+      }
+    }
+
+    cats.all = sortedAll;
+
+    return { categories: cats, earnedCount: earned }
+  }, [achievements])
+
+  // Return categories as-is since they are already sorted
+  // We use useCallback to keep the same reference across renders, matching the original behavior
+  const sortAchievements = React.useCallback((achievementList: Achievement[]) => achievementList, [])
 
   const renderAchievements = (achievementList: Achievement[]) => {
     if (achievementList.length === 0) {
