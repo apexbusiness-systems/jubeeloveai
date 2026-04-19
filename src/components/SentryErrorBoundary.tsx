@@ -22,7 +22,7 @@ export function SentryErrorBoundary({ children }: SentryErrorBoundaryProps) {
             <p className="text-muted-foreground max-w-md">
               {error instanceof Error ? error.message : 'An unexpected error occurred'}
             </p>
-            <Button onClick={resetError}>Try Again</Button>
+            <Button onClick={resetError} aria-label="Try again after application error">Try Again</Button>
           </div>
         </div>
       )}
