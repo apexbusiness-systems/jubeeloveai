@@ -139,7 +139,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <button
             onClick={() => startGame('easy')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
@@ -152,7 +152,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => startGame('medium')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
@@ -165,7 +165,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => startGame('hard')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
             style={{
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-game)'
