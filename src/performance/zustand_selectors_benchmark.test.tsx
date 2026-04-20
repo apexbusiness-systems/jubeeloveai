@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { render, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useParentalStore } from '../store/useParentalStore';
@@ -11,7 +11,7 @@ function UnoptimizedComponent() {
   renders.current++;
 
   // Subscribes to the ENTIRE store state
-  const { activeChildId } = useParentalStore();
+  useParentalStore();
 
   return <div data-testid="unoptimized-renders">{renders.current}</div>;
 }
@@ -21,21 +21,32 @@ function OptimizedComponent() {
   renders.current++;
 
   // Subscribes ONLY to activeChildId
-  const activeChildId = useParentalStore(state => state.activeChildId);
+  useParentalStore((state) => state.activeChildId);
 
   return <div data-testid="optimized-renders">{renders.current}</div>;
 }
 
 describe('Zustand Selectors Performance Benchmark', () => {
   beforeEach(() => {
-    // Mock localStorage
-    const store = {};
-    global.localStorage = {
-      getItem: vi.fn(key => store[key] || null),
-      setItem: vi.fn((key, value) => { store[key] = value.toString() }),
-      removeItem: vi.fn(key => { delete store[key] }),
-      clear: vi.fn(() => { for (const key in store) delete store[key] }),
+    // Mock localStorage with full Storage interface
+    const store: Record<string, string> = {};
+    const mockStorage: Storage = {
+      getItem: vi.fn((key: string) => store[key] ?? null),
+      setItem: vi.fn((key: string, value: string) => {
+        store[key] = String(value);
+      }),
+      removeItem: vi.fn((key: string) => {
+        delete store[key];
+      }),
+      clear: vi.fn(() => {
+        for (const key in store) delete store[key];
+      }),
+      key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+      get length() {
+        return Object.keys(store).length;
+      },
     };
+    global.localStorage = mockStorage;
   });
 
   beforeEach(() => {
@@ -55,27 +66,20 @@ describe('Zustand Selectors Performance Benchmark', () => {
       </>
     );
 
-    // Initial render count should be 1 for both
     expect(getByTestId('unoptimized-renders').textContent).toBe('1');
     expect(getByTestId('optimized-renders').textContent).toBe('1');
 
-    // Act: Update an unrelated piece of state (e.g., isParentMode)
     act(() => {
       useParentalStore.setState({ isParentMode: true });
     });
 
-    // Unoptimized component re-renders because the store state changed (even though activeChildId didn't)
     expect(getByTestId('unoptimized-renders').textContent).toBe('2');
-
-    // Optimized component does NOT re-render because it only listens to activeChildId, which remained null
     expect(getByTestId('optimized-renders').textContent).toBe('1');
 
-    // Act: Update the related state
     act(() => {
       useParentalStore.setState({ activeChildId: 'test-id' });
     });
 
-    // Both update when the specific state they care about changes
     expect(getByTestId('unoptimized-renders').textContent).toBe('3');
     expect(getByTestId('optimized-renders').textContent).toBe('2');
   });
