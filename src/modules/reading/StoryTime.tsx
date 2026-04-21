@@ -55,6 +55,7 @@ const StoryCard = memo(({ story, onSelect }: StoryCardProps) => (
     data-testid="story-card"
     onClick={() => onSelect(story)}
     className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95 relative"
+    aria-label={`Read ${story.title}`}
     style={{
       background: 'var(--gradient-warm)',
       boxShadow: 'var(--shadow-game)',
@@ -483,6 +484,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
             onClick={handlePrevPage}
             disabled={currentPage === 0}
             className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            aria-label="Previous page"
             style={{
               background: currentPage === 0 ? 'var(--gradient-neutral)' : 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)',
@@ -496,6 +498,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           <button
             onClick={handleReadAloud}
             className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            aria-label="Read page aloud"
             style={{
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-accent)',
@@ -509,6 +512,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           <button
             onClick={handleNextPage}
             className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            aria-label={currentPage === selectedStory.pages.length - 1 ? 'Finish story' : 'Next page'}
             style={{
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-game)',
