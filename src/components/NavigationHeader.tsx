@@ -42,21 +42,27 @@ export const NavigationHeader = memo(function NavigationHeader({
             </Button>
           )}
           
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onPersonalizeClick}
-            className="p-2 rounded-lg hover:bg-accent/10 transition-colors text-foreground"
+            className="text-foreground"
             aria-label="Personalize Jubee"
+            title="Personalize Jubee"
           >
             🎨
-          </button>
+          </Button>
           
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onVoiceClick}
-            className="p-2 rounded-lg hover:bg-accent/10 transition-colors text-foreground"
+            className="text-foreground"
             aria-label="Change voice"
+            title="Change voice"
           >
             🔊
-          </button>
+          </Button>
         </div>
       </div>
     </header>
