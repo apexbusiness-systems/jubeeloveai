@@ -94,32 +94,28 @@ export default function ConversationAnalytics() {
     }))
   }, [analytics])
 
-  // Aggregate sentiment distribution
-  const sentimentData = useMemo(() => {
-    return Object.entries(
-      analytics.reduce((acc, day) => {
-        if (day.sentiment_distribution) {
-          Object.entries(day.sentiment_distribution).forEach(([sentiment, count]) => {
-            acc[sentiment] = (acc[sentiment] || 0) + Number(count)
-          })
-        }
-        return acc
-      }, {} as Record<string, number>)
-    ).map(([name, value]) => ({ name, value }))
-  }, [analytics])
+  // Aggregate sentiment and mood distribution in a single pass O(n)
+  const { sentimentData, moodData } = useMemo(() => {
+    const sentiments: Record<string, number> = {}
+    const moods: Record<string, number> = {}
 
-  // Aggregate mood distribution
-  const moodData = useMemo(() => {
-    return Object.entries(
-      analytics.reduce((acc, day) => {
-        if (day.mood_distribution) {
-          Object.entries(day.mood_distribution).forEach(([mood, count]) => {
-            acc[mood] = (acc[mood] || 0) + Number(count)
-          })
+    for (const day of analytics) {
+      if (day.sentiment_distribution) {
+        for (const [sentiment, count] of Object.entries(day.sentiment_distribution)) {
+          sentiments[sentiment] = (sentiments[sentiment] || 0) + Number(count)
         }
-        return acc
-      }, {} as Record<string, number>)
-    ).map(([name, value]) => ({ name, value }))
+      }
+      if (day.mood_distribution) {
+        for (const [mood, count] of Object.entries(day.mood_distribution)) {
+          moods[mood] = (moods[mood] || 0) + Number(count)
+        }
+      }
+    }
+
+    return {
+      sentimentData: Object.entries(sentiments).map(([name, value]) => ({ name, value })),
+      moodData: Object.entries(moods).map(([name, value]) => ({ name, value })),
+    }
   }, [analytics])
 
   // Get all keywords
