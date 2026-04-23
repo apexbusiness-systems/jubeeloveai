@@ -88,6 +88,7 @@ export function FeedbackWidget() {
           onChange={(e) => setFeedback(e.target.value)}
           rows={5}
           className="resize-none"
+          aria-label="Feedback input"
         />
         <div className="flex gap-2">
           <Button

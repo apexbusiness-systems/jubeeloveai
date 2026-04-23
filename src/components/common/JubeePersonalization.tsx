@@ -72,6 +72,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               setSelectedGender('male')
             }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            aria-label="Select boy gender"
             style={{
               background: 'var(--gradient-boy)',
               border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--boy-primary) / 0.5)',
@@ -97,6 +98,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               setSelectedGender('female')
             }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            aria-label="Select girl gender"
             style={{
               background: 'var(--gradient-girl)',
               border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--girl-primary) / 0.5)',
