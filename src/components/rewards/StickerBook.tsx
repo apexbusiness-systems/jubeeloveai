@@ -112,12 +112,21 @@ const addSticker = useGameStore(state => state.addSticker);
   const speak = useJubeeStore(state => state.speak);
 const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
-  // Memoize categorized stickers to avoid filtering on every render
-  const categorizedStickers = useMemo(() => ({
-    beginner: stickers.filter(s => s.category === 'beginner'),
-    intermediate: stickers.filter(s => s.category === 'intermediate'),
-    expert: stickers.filter(s => s.category === 'expert')
-  }), [])
+  // Memoize categorized stickers to avoid filtering on every render O(n) instead of O(3n)
+  const categorizedStickers = useMemo(() => {
+    const categories = {
+      beginner: [] as Sticker[],
+      intermediate: [] as Sticker[],
+      expert: [] as Sticker[]
+    };
+
+    for (let i = 0; i < stickers.length; i++) {
+      const sticker = stickers[i];
+      categories[sticker.category].push(sticker);
+    }
+
+    return categories;
+  }, []);
 
   // Memoize unlock check to avoid creating new Set on every render
   const unlockedSet = useMemo(() => new Set(unlockedStickers), [unlockedStickers])
