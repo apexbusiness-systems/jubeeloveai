@@ -9,3 +9,7 @@
 ## 2024-04-22 - Missing Tooltips on Icon-Only Buttons
 **Learning:** Icon-only buttons (like the personalize '🎨' and voice '🔊' buttons) often lack visual context. While `aria-label` provides context for screen readers, sighted users who hover with a mouse do not see it.
 **Action:** Always provide `title` attributes on icon-only buttons to ensure standard browser tooltips appear on hover, and use the design system's `<Button size="icon">` to ensure correct `focus-visible` styling for keyboard users.
+
+## 2024-04-24 - Make interactive Card elements accessible buttons
+**Learning:** Found an accessibility issue pattern where `Card` components from the design system are used as interactive elements with just an `onClick` handler, making them completely inaccessible to keyboard and screen reader users.
+**Action:** Next time I see a Card used for navigation or selection, ensure it has `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown` for Enter/Space), appropriate focus styling, and an `aria-label`.

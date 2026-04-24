@@ -52,8 +52,17 @@ const startSession = useParentalStore(state => state.startSession);
             {children.map((child) => (
               <Card
                 key={child.id}
-                className="cursor-pointer hover:border-primary transition-all transform hover:scale-105 border-2"
+                role="button"
+                tabIndex={0}
+                aria-label={`Select profile for ${child.name}`}
+                className="cursor-pointer hover:border-primary transition-all transform hover:scale-105 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={() => handleSelectChild(child.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelectChild(child.id);
+                  }
+                }}
               >
                 <CardContent className="p-6 text-center space-y-3">
                   <div className="text-6xl">{child.avatar}</div>
