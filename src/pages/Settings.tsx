@@ -155,6 +155,7 @@ const speak = useJubeeStore(state => state.speak);
               variant={gender === 'female' ? 'default' : 'outline'}
               size="lg"
               className="flex-1"
+              aria-pressed={gender === 'female'}
             >
               {t('personalization.girl')} {t('personalization.female')}
             </Button>
@@ -163,6 +164,7 @@ const speak = useJubeeStore(state => state.speak);
               variant={gender === 'male' ? 'default' : 'outline'}
               size="lg"
               className="flex-1"
+              aria-pressed={gender === 'male'}
             >
               {t('personalization.boy')} {t('personalization.male')}
             </Button>
@@ -207,6 +209,7 @@ const speak = useJubeeStore(state => state.speak);
                       variant={voice === option.id ? 'default' : 'outline'}
                       size="sm"
                       className="flex-1"
+                      aria-pressed={voice === option.id}
                     >
                       {voice === option.id ? '✓ Selected' : 'Select'}
                     </Button>
@@ -239,6 +242,7 @@ const speak = useJubeeStore(state => state.speak);
                   onClick={() => handleThemeChange(name)}
                   variant={currentTheme === name ? 'default' : 'outline'}
                   className="h-24 flex-col gap-2"
+                  aria-pressed={currentTheme === name}
                 >
                   <Icon className="w-8 h-8" />
                   <span>{label}</span>
