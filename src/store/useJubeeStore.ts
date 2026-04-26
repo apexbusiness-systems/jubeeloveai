@@ -88,7 +88,20 @@ export const useJubeeStore = create<JubeeState>()(
       voiceVolume: 1.0,
       usingFallbackVoice: false,
 
-      setGender: (gender) => set((state) => { state.gender = gender }),
+      setGender: (gender) => set((state) => {
+        state.gender = gender
+        // Auto-pair voice to gender for sonic distinction
+        // Female: shimmer (warm/sparkly). Male: onyx (deep/strong).
+        // Only auto-switch if user hasn't picked a clearly cross-gender voice.
+        const femaleVoices: JubeeVoice[] = ['shimmer', 'nova', 'alloy']
+        const maleVoices: JubeeVoice[] = ['onyx', 'echo', 'fable']
+        const currentlyMatches = gender === 'female'
+          ? femaleVoices.includes(state.voice)
+          : maleVoices.includes(state.voice)
+        if (!currentlyMatches) {
+          state.voice = gender === 'female' ? 'shimmer' : 'onyx'
+        }
+      }),
       setVoice: (voice) => set((state) => { state.voice = voice }),
 
       updatePosition: (position) => {
@@ -232,7 +245,9 @@ export const useJubeeStore = create<JubeeState>()(
             functionName: 'jubee-conversation',
             body: {
               message,
-              context: { ...context, mood: state.currentMood, language: window.i18nextLanguage || 'en' },
+              gender: state.gender,
+              language: window.i18nextLanguage || 'en',
+              context: { ...context, mood: state.currentMood },
             },
             timeout: 15000,
             retries: 2,
