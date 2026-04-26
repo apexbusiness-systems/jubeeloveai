@@ -138,6 +138,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
                   disabled={testingVoice === option.id}
                   className="h-8 w-8"
                   aria-label={`Test ${option.name} voice`}
+                  title={`Test ${option.name} voice`}
                   style={{
                     background: testingVoice === option.id 
                       ? 'hsl(var(--primary))' 
