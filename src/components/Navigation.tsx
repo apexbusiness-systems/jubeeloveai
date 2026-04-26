@@ -53,7 +53,7 @@ export const Navigation = memo(function Navigation() {
   );
 });
 
-interface TabButtonProps extends NavItem {}
+type TabButtonProps = NavItem;
 
 const TabButton = memo(function TabButton({ path, emoji, label, longPressPath }: TabButtonProps) {
   const navigate = useNavigate();
