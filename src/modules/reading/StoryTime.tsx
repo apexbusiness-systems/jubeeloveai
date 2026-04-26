@@ -11,6 +11,7 @@ import { initializeStories } from '@/lib/initializeStories'
 import { audioManager } from '@/lib/audioManager'
 import { Slider } from '@/components/ui/slider'
 import { useSmartAudioPreloader } from '@/hooks/useSmartAudioPreloader'
+import StoryIllustration from '@/components/stories/StoryIllustration'
 
 // -----------------------------------------------------------------------------
 // 1. Strict Type Definitions
