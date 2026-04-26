@@ -113,7 +113,7 @@ const startOnboarding = useOnboardingStore(state => state.startOnboarding);
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
   const containerPosition = useJubeeStore(state => state.containerPosition);
-  const children = useParentalStore(state => state.children);
+  const hasChildren = useParentalStore(state => state.children.length > 0);
   const activeChildId = useParentalStore(state => state.activeChildId);
 
   // Spring physics for container positioning
@@ -188,10 +188,10 @@ const startOnboarding = useOnboardingStore(state => state.startOnboarding);
 
   // Show child selector if profiles exist but no active child
   useEffect(() => {
-    if (children.length > 0 && !activeChildId) {
+    if (hasChildren && !activeChildId) {
       setShowChildSelector(true);
     }
-  }, [children.length, activeChildId]);
+  }, [hasChildren, activeChildId]);
 
   const mainTopPadding = (isAuthRoute || isLandingRoute) ? 'pt-6' : 'pt-[76px] sm:pt-[80px]';
   const mainBottomPadding = (isAuthRoute || isLandingRoute) ? 'pb-8' : 'pb-[88px]';
