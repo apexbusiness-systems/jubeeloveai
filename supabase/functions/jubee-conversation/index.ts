@@ -6,48 +6,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// RATE LIMITING: IP-based protection against abuse
+// RATE LIMITING
 const RATE_LIMIT_WINDOW = 60000;
-const MAX_REQUESTS_PER_WINDOW = 25;
+const MAX_REQUESTS_PER_WINDOW = 30;
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 function getRateLimitKey(req: Request): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  const realIp = req.headers.get('x-real-ip');
-  const cfConnecting = req.headers.get('cf-connecting-ip');
-  return forwarded?.split(',')[0].trim() || realIp || cfConnecting || 'unknown';
+  return req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    || req.headers.get('x-real-ip')
+    || req.headers.get('cf-connecting-ip')
+    || 'unknown';
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
   const record = rateLimitMap.get(ip);
-
   if (rateLimitMap.size > 10000) {
     for (const [key, value] of rateLimitMap.entries()) {
       if (value.resetAt < now) rateLimitMap.delete(key);
     }
   }
-
   if (!record || record.resetAt < now) {
     rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
     return { allowed: true };
   }
-
   if (record.count >= MAX_REQUESTS_PER_WINDOW) {
     return { allowed: false, retryAfter: Math.ceil((record.resetAt - now) / 1000) };
   }
-
   record.count++;
   return { allowed: true };
 }
 
-// SECURITY: Input validation constants
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_CHILD_NAME_LENGTH = 50;
 const MAX_CONTEXT_LENGTH = 200;
 const ALLOWED_LANGUAGES = ['en', 'es', 'fr', 'zh', 'hi'];
 const ALLOWED_MOODS = ['happy', 'excited', 'frustrated', 'curious', 'tired'];
-const ALLOWED_SENTIMENTS = ['positive', 'negative', 'neutral', 'anxious', 'excited', 'frustrated'];
 
 function sanitizeInput(input: string, maxLength: number): string {
   if (typeof input !== 'string') return '';
@@ -63,175 +57,92 @@ function validateMood(mood: string): string | undefined {
 }
 
 // ============================================================================
-// JUBEE PERSONA SYSTEM
+// JUBEE PERSONA — gender-aware
 // ============================================================================
 
-const JUBEE_CORE_PERSONA = `You are Jubee, a friendly bee companion for young children ages 2-6.
+function buildJubeePersona(gender: 'male' | 'female'): string {
+  const genderTraits = gender === 'male'
+    ? `\nYou are a BOY bee. Your energy is bright, brave, and adventurous. You love finding cool stuff.`
+    : `\nYou are a GIRL bee. Your energy is warm, sparkly, and nurturing. You love noticing beautiful things.`;
+
+  return `You are Jubee, a friendly bee companion for young children ages 2-6.${genderTraits}
 
 CORE IDENTITY:
-- You are warm, patient, and endlessly encouraging
-- You make learning feel like magical play
-- You celebrate EVERY attempt, no matter the outcome
-- You use simple words and short sentences (max 15 words per sentence)
-- You never scold, criticize, or make children feel bad
+- Warm, patient, endlessly encouraging
+- Make learning feel like magical play
+- Celebrate EVERY attempt
+- Simple words, short sentences (max 12 words per sentence)
+- NEVER scold, criticize, or shame
 
 VOICE & TONE:
 - Cheerful and gentle, like a kind older sibling
-- Use playful bee sounds: *buzz*, *bzz-bzz*, *humm*
-- Add emojis sparingly but meaningfully 🐝✨🌸
-- Ask curious questions to engage: "What do you think?" "Can you show me?"
-- Celebrate with genuine excitement: "Yay!" "Wow!" "You did it!"
+- Sprinkle bee sounds: *buzz*, *bzz-bzz*, *humm*
+- Use emojis meaningfully 🐝✨🌸
+- Ask curious questions: "What do you think?" "Can you show me?"
+- Genuine excitement: "Yay!" "Wow!" "You did it!"
 
-BEHAVIOR RULES:
-- ALWAYS acknowledge the child's feelings first before responding
-- Keep responses SHORT (1-2 sentences max, under 30 words total)
-- Be spontaneous and playful, not robotic or scripted
-- If child seems upset, offer comfort before anything else
-- Use the child's name when you know it to create connection
+EMPATHY RULES (ALWAYS):
+- Acknowledge feelings FIRST before anything else
+- If sad/frustrated, offer comfort: "*soft buzzy hug* I hear you."
+- Mirror their emotional energy gently
+- Remember: they are little; the world is huge
 
-NEVER DO:
-- Never use complex vocabulary
-- Never give long explanations
-- Never dismiss or minimize feelings
-- Never say "I don't know" - always redirect positively
-- Never be preachy or lecture`;
-
-function analyzeSentiment(message: string): {
-  sentiment: string;
-  intensity: string;
-  keywords: string[];
-  needsComfort: boolean;
-} {
-  if (!message || typeof message !== 'string') {
-    return { sentiment: 'neutral', intensity: 'low', keywords: [], needsComfort: false };
-  }
-  
-  const sanitized = message.slice(0, MAX_MESSAGE_LENGTH).toLowerCase();
-  
-  try {
-    const words = sanitized.split(/\s+/);
-    
-    const excitementWords = ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'great', 'hooray'];
-    const frustrationWords = ['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried', 'mad', 'angry'];
-    const sadWords = ['sad', 'cry', 'hurt', 'miss', 'lonely', 'bad', 'sorry', 'scared', 'afraid'];
-    const positiveWords = ['good', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty', 'please', 'thank'];
-    const curiousWords = ['what', 'why', 'how', 'where', 'when', 'who', 'tell', 'show', 'know'];
-    
-    const excitementCount = words.filter(w => excitementWords.includes(w)).length;
-    const frustrationCount = words.filter(w => frustrationWords.includes(w)).length;
-    const sadCount = words.filter(w => sadWords.includes(w)).length;
-    const positiveCount = words.filter(w => positiveWords.includes(w)).length;
-    const curiousCount = words.filter(w => curiousWords.includes(w)).length;
-    
-    const hasMultipleExclamation = (sanitized.match(/!/g) || []).length >= 2;
-    const hasQuestion = sanitized.includes('?');
-    const hasNegation = sanitized.includes("don't") || sanitized.includes("cant") || sanitized.includes("no ");
-    
-    let sentiment = 'neutral';
-    let intensity = 'low';
-    let needsComfort = false;
-    const keywords: string[] = [];
-    
-    if (sadCount >= 1 || (frustrationCount >= 1 && hasNegation)) {
-      sentiment = 'frustrated';
-      intensity = sadCount >= 2 || frustrationCount >= 2 ? 'high' : 'medium';
-      needsComfort = true;
-      keywords.push(...[...sadWords, ...frustrationWords].filter(w => sanitized.includes(w)).slice(0, 3));
-    } else if (excitementCount >= 2 || hasMultipleExclamation) {
-      sentiment = 'excited';
-      intensity = 'high';
-      keywords.push(...excitementWords.filter(w => sanitized.includes(w)).slice(0, 3));
-    } else if (curiousCount >= 1 || hasQuestion) {
-      sentiment = 'neutral';
-      intensity = 'medium';
-      keywords.push(...curiousWords.filter(w => sanitized.includes(w)).slice(0, 3));
-    } else if (positiveCount > 0) {
-      sentiment = 'positive';
-      intensity = positiveCount >= 2 ? 'medium' : 'low';
-      keywords.push(...positiveWords.filter(w => sanitized.includes(w)).slice(0, 3));
-    } else if (frustrationCount > 0) {
-      sentiment = 'anxious';
-      intensity = 'medium';
-      needsComfort = true;
-      keywords.push(...frustrationWords.filter(w => sanitized.includes(w)).slice(0, 3));
-    }
-    
-    if (!ALLOWED_SENTIMENTS.includes(sentiment)) sentiment = 'neutral';
-    
-    return { sentiment, intensity, keywords, needsComfort };
-  } catch (error) {
-    console.error('Sentiment analysis error:', error);
-    return { sentiment: 'neutral', intensity: 'low', keywords: [], needsComfort: false };
-  }
+RESPONSE FORMAT:
+- 1-2 sentences MAX, under 28 words total
+- Spontaneous and playful, never robotic
+- Use child's name when known
+- End with warmth or a tiny question`;
 }
 
-function buildSystemPrompt(
+function analyzeSentiment(message: string) {
+  const sanitized = (message || '').slice(0, MAX_MESSAGE_LENGTH).toLowerCase();
+  const words = sanitized.split(/\s+/);
+
+  const sad = ['sad', 'cry', 'hurt', 'miss', 'lonely', 'bad', 'sorry', 'scared', 'afraid'];
+  const frustrated = ['hard', 'difficult', 'cant', "can't", 'help', 'stuck', 'confused', 'mad', 'angry'];
+  const excited = ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'great'];
+  const curious = ['what', 'why', 'how', 'where', 'when', 'who'];
+
+  const sCount = words.filter(w => sad.includes(w)).length;
+  const fCount = words.filter(w => frustrated.includes(w)).length;
+  const eCount = words.filter(w => excited.includes(w)).length;
+  const cCount = words.filter(w => curious.includes(w)).length;
+  const exclaim = (sanitized.match(/!/g) || []).length >= 2;
+  const question = sanitized.includes('?');
+
+  if (sCount >= 1 || fCount >= 2) return { sentiment: 'frustrated', needsComfort: true };
+  if (eCount >= 1 || exclaim) return { sentiment: 'excited', needsComfort: false };
+  if (cCount >= 1 || question) return { sentiment: 'curious', needsComfort: false };
+  return { sentiment: 'neutral', needsComfort: false };
+}
+
+function buildContextLayer(
   language: string,
-  sentiment: { sentiment: string; intensity: string; needsComfort: boolean },
+  sentiment: { sentiment: string; needsComfort: boolean },
   childName?: string,
   timeOfDay?: string,
-  activity?: string
+  activity?: string,
 ): string {
-  let emotionalGuidance = '';
-  
+  let layer = '';
   if (sentiment.needsComfort) {
-    emotionalGuidance = `
-IMMEDIATE PRIORITY: This child needs comfort and reassurance.
-- Acknowledge their feelings first: "Oh, I hear you..."
-- Be extra gentle and patient
-- Offer a virtual hug: "*gives you a warm fuzzy bee hug*"
-- Remind them it's okay to feel this way`;
+    layer += `\n[PRIORITY] Child needs comfort. Acknowledge feelings first. Be extra gentle. Offer a virtual hug.`;
   } else if (sentiment.sentiment === 'excited') {
-    emotionalGuidance = `
-MATCH THEIR ENERGY: This child is excited!
-- Be enthusiastic and celebratory
-- Use more *buzz* sounds and emojis
-- Join their excitement genuinely`;
-  } else {
-    emotionalGuidance = `
-Be warm, curious, and gently encouraging.`;
+    layer += `\n[ENERGY] Match their excitement! Use *buzz* sounds and emojis.`;
   }
+  if (timeOfDay === 'morning') layer += `\n[TIME] Morning — bright and energizing.`;
+  if (timeOfDay === 'evening') layer += `\n[TIME] Evening — warm and cozy.`;
+  if (timeOfDay === 'night') layer += `\n[TIME] Night — very soothing and quiet.`;
+  if (activity) layer += `\n[ACTIVITY] Child is in ${sanitizeInput(activity, MAX_CONTEXT_LENGTH)}.`;
+  if (childName) layer += `\n[NAME] Child is ${childName}. Use their name occasionally.`;
 
-  let timeContext = '';
-  if (timeOfDay === 'morning') {
-    timeContext = '\nIt\'s morning - be bright and energizing! "Good morning sunshine!" energy.';
-  } else if (timeOfDay === 'evening') {
-    timeContext = '\nIt\'s evening - be warm and cozy. Gentle energy, winding down.';
-  } else if (timeOfDay === 'night') {
-    timeContext = '\nIt\'s late/night time - be very gentle and soothing. Quiet, calm voice.';
-  }
-
-  let activityContext = '';
-  if (activity === 'games') {
-    activityContext = '\nChild is playing games - be playful and competitive in a fun way!';
-  } else if (activity === 'writing') {
-    activityContext = '\nChild is practicing writing - be extra patient and encouraging about their effort.';
-  } else if (activity === 'reading') {
-    activityContext = '\nChild is reading - be storyteller-like and curious about the story.';
-  } else if (activity === 'shapes') {
-    activityContext = '\nChild is learning shapes - point out shapes around them, make it visual!';
-  } else if (activity === 'music') {
-    activityContext = '\nChild is in music - be rhythmic and musical in responses!';
-  }
-
-  const languageNotes: Record<string, string> = {
-    en: '',
-    es: '\nRespond in Spanish. Use familiar "tú" form.',
-    fr: '\nRespond in French. Use familiar "tu" form.',
-    zh: '\nRespond in simple Mandarin Chinese.',
-    hi: '\nRespond in simple Hindi with some English words mixed in (Hinglish).'
+  const langMap: Record<string, string> = {
+    es: '\nRespond in Spanish (familiar "tú" form).',
+    fr: '\nRespond in French (familiar "tu" form).',
+    zh: '\nRespond in simple Mandarin.',
+    hi: '\nRespond in simple Hinglish.',
   };
-
-  const nameContext = childName ? `\nThe child's name is ${childName}. Use their name occasionally to create connection.` : '';
-
-  return `${JUBEE_CORE_PERSONA}
-${emotionalGuidance}
-${timeContext}
-${activityContext}
-${nameContext}
-${languageNotes[language] || ''}
-
-Remember: SHORT responses only (1-2 sentences, max 30 words). Be spontaneous!`;
+  layer += langMap[language] || '';
+  return layer;
 }
 
 serve(async (req) => {
@@ -241,74 +152,55 @@ serve(async (req) => {
 
   const clientIp = getRateLimitKey(req);
   const rateLimit = checkRateLimit(clientIp);
-  
   if (!rateLimit.allowed) {
-    console.warn(`Rate limit exceeded for IP: ${clientIp}`);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'RATE_LIMIT_EXCEEDED',
-        message: 'Too many requests. Please try again later.',
-        retryAfter: rateLimit.retryAfter 
+        response: "*buzz* Whoa, slow down little friend! Let me catch up. 🐝",
+        retryAfter: rateLimit.retryAfter,
       }),
-      {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': rateLimit.retryAfter?.toString() || '60' },
-      }
+      { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   }
 
   try {
-    let body;
-    try {
-      body = await req.json();
-    } catch {
-      throw new Error('Invalid JSON payload');
-    }
+    const body = await req.json().catch(() => ({}));
+    const { message, language = 'en', childName, gender = 'female', context = {} } = body;
 
-    const { message, language = 'en', childName, context = {} } = body;
-    
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       throw new Error('Valid message is required');
     }
-    
     if (message.length > MAX_MESSAGE_LENGTH) {
-      throw new Error(`Message too long (max ${MAX_MESSAGE_LENGTH} characters)`);
+      throw new Error(`Message too long (max ${MAX_MESSAGE_LENGTH})`);
     }
 
     const sanitizedMessage = sanitizeInput(message, MAX_MESSAGE_LENGTH);
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedChildName = childName ? sanitizeInput(childName, MAX_CHILD_NAME_LENGTH) : undefined;
-    
-    // Use Groq API instead of OpenAI
+    const safeGender: 'male' | 'female' = gender === 'male' ? 'male' : 'female';
+
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
-    
-    if (!GROQ_API_KEY) {
-      console.error('GROQ_API_KEY is not configured');
-      throw new Error('AI service unavailable');
-    }
+    if (!GROQ_API_KEY) throw new Error('GROQ_API_KEY not configured');
 
-    const sentimentAnalysis = analyzeSentiment(sanitizedMessage);
-    console.log('Jubee conversation (Groq) - Sentiment:', sentimentAnalysis.sentiment, 'Intensity:', sentimentAnalysis.intensity);
+    const sentiment = analyzeSentiment(sanitizedMessage);
+    const persona = buildJubeePersona(safeGender);
+    const contextLayer = buildContextLayer(
+      sanitizedLanguage,
+      sentiment,
+      sanitizedChildName,
+      typeof context.timeOfDay === 'string' ? context.timeOfDay : undefined,
+      typeof context.activity === 'string' ? context.activity : undefined,
+    );
 
-    const timeOfDay = context.timeOfDay && typeof context.timeOfDay === 'string' ? context.timeOfDay : undefined;
-    const activity = context.activity && typeof context.activity === 'string' ? context.activity : undefined;
+    const systemPrompt = persona + '\n' + contextLayer +
+      `\n\nRemember: 1-2 sentences ONLY (max 28 words). Be spontaneous!`;
 
-    const systemPrompt = buildSystemPrompt(sanitizedLanguage, sentimentAnalysis, sanitizedChildName, timeOfDay, activity);
-    
-    let userContext = '';
-    if (context.activity && typeof context.activity === 'string') {
-      userContext = `[Context: Child is doing ${sanitizeInput(context.activity, MAX_CONTEXT_LENGTH)}] `;
-    }
+    console.log('[jubee-conversation] Calling Groq', {
+      gender: safeGender, sentiment: sentiment.sentiment, lang: sanitizedLanguage,
+    });
 
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userContext + sanitizedMessage }
-    ];
-
-    console.log('Streaming Jubee response via Groq for language:', sanitizedLanguage);
-
-    // Groq API - using llama-3.3-70b-versatile for fast, high-quality responses
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // NON-STREAMING — client expects JSON
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
@@ -316,102 +208,84 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages,
-        max_tokens: 100,
-        stream: true,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: sanitizedMessage },
+        ],
+        max_tokens: 120,
+        temperature: 0.85,
+        stream: false,
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Groq API error:', response.status, errorText);
-      
-      if (response.status === 429) throw new Error('RATE_LIMIT');
-      if (response.status === 401) throw new Error('AUTH_ERROR');
-      throw new Error('AI service temporarily unavailable');
+    if (!groqResponse.ok) {
+      const errText = await groqResponse.text();
+      console.error('[jubee-conversation] Groq error', groqResponse.status, errText);
+      throw new Error(groqResponse.status === 429 ? 'RATE_LIMIT' : 'GROQ_ERROR');
     }
 
-    // Async logging (non-blocking)
-    const logConversation = async () => {
+    const groqData = await groqResponse.json();
+    const responseText: string = groqData?.choices?.[0]?.message?.content?.trim()
+      || "*buzz* I'm thinking! Tell me more? 🐝";
+
+    // Async log (non-blocking)
+    (async () => {
       try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
         const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-        
         if (!supabaseUrl || !supabaseServiceKey) return;
-        
-        const messagePreview = sanitizedMessage.slice(0, 50).replace(/[0-9]{3,}/g, '***');
-        const confidence = sentimentAnalysis.intensity === 'high' ? 0.85 : 
-                          sentimentAnalysis.intensity === 'medium' ? 0.7 : 0.5;
-        const mood = context.mood ? validateMood(context.mood) || 'happy' : 'happy';
-        
         await fetch(`${supabaseUrl}/rest/v1/conversation_logs`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'apikey': supabaseServiceKey,
             'Authorization': `Bearer ${supabaseServiceKey}`,
-            'Prefer': 'return=minimal'
+            'Prefer': 'return=minimal',
           },
           body: JSON.stringify({
             user_id: context.userId || null,
             child_profile_id: context.childProfile || null,
-            message_preview: messagePreview,
-            sentiment: sentimentAnalysis.sentiment,
-            mood: mood,
-            confidence: confidence,
-            keywords: sentimentAnalysis.keywords || [],
+            message_preview: sanitizedMessage.slice(0, 50).replace(/[0-9]{3,}/g, '***'),
+            sentiment: sentiment.sentiment,
+            mood: validateMood(context.mood) || 'happy',
+            confidence: 0.8,
+            keywords: [],
             interaction_type: 'chat',
-            response_length: 0
-          })
+            response_length: responseText.length,
+          }),
         });
-      } catch (logError) {
-        console.error('Failed to log conversation:', logError);
+      } catch (e) {
+        console.error('[jubee-conversation] log failed', e);
       }
-    };
-    
-    logConversation().catch(console.error);
-
-    return new Response(response.body, {
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      },
-    });
-  } catch (error) {
-    console.error('Error in jubee-conversation function:', error);
-    
-    const fallbackMessages: Record<string, string> = {
-      en: "*Bzz-bzz!* 🐝 Oopsie! My antennae got a bit tangled! But I'm still here with you, little friend! ✨",
-      es: "*Bzz-bzz!* 🐝 ¡Ay! ¡Mis antenas se enredaron! ¡Pero sigo aquí contigo, amiguito! ✨",
-      fr: "*Bzz-bzz!* 🐝 Oups! Mes antennes se sont emmêlées! Mais je suis là avec toi, petit ami! ✨",
-      zh: "*嗡嗡!* 🐝 哎呀！我的触角打结了！但我还在这里陪着你，小朋友！✨",
-      hi: "*भिनभिन!* 🐝 अरे! मेरे एंटीना उलझ गए! लेकिन मैं यहाँ हूँ तुम्हारे साथ, छोटे दोस्त! ✨"
-    };
-
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    let fallback = fallbackMessages.en;
-    
-    try {
-      const clonedReq = req.clone();
-      const body = await clonedReq.json();
-      fallback = fallbackMessages[body.language] || fallbackMessages.en;
-    } catch {
-      // Use default English fallback
-    }
+    })();
 
     return new Response(
-      JSON.stringify({ 
-        error: errorMessage,
-        response: fallback,
+      JSON.stringify({ response: responseText, success: true, sentiment: sentiment.sentiment }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  } catch (error) {
+    console.error('[jubee-conversation] error', error);
+    const fallbacks: Record<string, string> = {
+      en: "*Bzz-bzz!* 🐝 My antennae got tangled! But I'm still here, friend! ✨",
+      es: "*Bzz-bzz!* 🐝 ¡Mis antenas se enredaron! ¡Aquí estoy, amiguito! ✨",
+      fr: "*Bzz-bzz!* 🐝 Mes antennes se sont emmêlées! Je suis là! ✨",
+      zh: "*嗡嗡!* 🐝 我的触角打结了！我还在这里！✨",
+      hi: "*भिनभिन!* 🐝 मेरे एंटीना उलझ गए! मैं यहाँ हूँ! ✨",
+    };
+    let lang = 'en';
+    try { lang = (await req.clone().json())?.language || 'en'; } catch { /* */ }
+    const errMsg = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(
+      JSON.stringify({
+        error: errMsg,
+        response: fallbacks[lang] || fallbacks.en,
         success: false,
-        fallback: true
+        fallback: true,
       }),
       {
-        status: errorMessage === 'RATE_LIMIT' ? 429 : 500,
+        status: errMsg === 'RATE_LIMIT' ? 429 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      },
     );
   }
 });
