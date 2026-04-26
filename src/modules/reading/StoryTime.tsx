@@ -468,7 +468,9 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           }
         }}
       >
-        <div className="illustration text-9xl mb-8">{page.illustration}</div>
+        <div className="illustration mb-8 w-full">
+          <StoryIllustration storyTitle={selectedStory.title} pageIndex={currentPage} size="lg" />
+        </div>
         <p className="text-3xl text-card-foreground text-center leading-relaxed">{page.text}</p>
       </div>
 
