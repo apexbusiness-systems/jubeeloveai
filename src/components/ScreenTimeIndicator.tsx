@@ -3,7 +3,7 @@ import { useParentalStore } from '@/store/useParentalStore';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Clock, AlertTriangle, Plus } from 'lucide-react';
+import { Clock, AlertTriangle, Plus, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
 export function ScreenTimeIndicator() {
@@ -78,9 +78,19 @@ export function ScreenTimeIndicator() {
             variant="outline"
             size="sm"
             className="w-full mt-2"
+            aria-label="Request 15 more minutes of screen time"
           >
-            <Plus className="h-3 w-3 mr-1" />
-            {isRequesting ? 'Sending...' : 'Request 15 More Minutes'}
+            {isRequesting ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" aria-hidden="true" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Plus className="h-3 w-3 mr-1" aria-hidden="true" />
+                Request 15 More Minutes
+              </>
+            )}
           </Button>
         )}
       </div>
