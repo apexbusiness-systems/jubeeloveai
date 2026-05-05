@@ -12,8 +12,7 @@
 ## 2024-04-26 - Added Tooltips to Icon-Only Buttons
 **Learning:** Icon-only buttons (like Feedback, Voice Command, and Voice Selector options) need visual tooltips for sighted users in addition to `aria-label` for screen readers.
 **Action:** Use native HTML `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons.
-## YYYY-MM-DD - Missing Tooltips on Icon-Only Buttons in Music Player\n**Learning:** Icon-only buttons (like Play/Pause and Close) in the Music Player lacked visual tooltips for sighted users.\n**Action:** Added `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons in the Music Player.
 
-## YYYY-MM-DD - Missing Tooltips on Icon-Only Buttons in Schedule Configurator
-**Learning:** Icon-only buttons (like the Trash icon for removing a schedule) lack visual context for sighted users. The `aria-label` provides context for screen readers, but sighted users who hover with a mouse do not see it. Also, they should use `size="icon"` for correct styling.
-**Action:** Always provide `title` attributes on icon-only buttons to ensure standard browser tooltips appear on hover, and use the design system's `<Button size="icon">` to ensure correct `focus-visible` styling for keyboard users.
+## 2025-03-05 - Accessible Loading States for Async Actions
+**Learning:** Adding visual loading indicators (like `Loader2`) inside async action buttons, combined with explicitly descriptive `aria-labels` and `aria-hidden` attributes on icons, resolves dual accessibility issues—uncertainty about async operation state for visual users and lack of context for screen reader users. Simply changing button text to "Sending..." is insufficient, particularly when buttons are primarily icon-based or require immediate visual feedback.
+**Action:** When creating or modifying asynchronous action buttons, ensure they implement both a visual loading spinner (`Loader2` with `animate-spin`) and appropriate `aria-label`/`aria-hidden` attributes to provide comprehensive feedback across all user modalities.
