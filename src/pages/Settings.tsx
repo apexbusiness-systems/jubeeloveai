@@ -25,6 +25,7 @@ const setGender = useJubeeStore(state => state.setGender);
 const voice = useJubeeStore(state => state.voice);
 const setVoice = useJubeeStore(state => state.setVoice);
 const speak = useJubeeStore(state => state.speak);
+  // ⚡ Bolt: Select only the boolean we need to prevent unnecessary re-renders when children array mutates
   const hasChildren = useParentalStore(state => state.children.length > 0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
