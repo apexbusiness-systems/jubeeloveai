@@ -114,6 +114,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               key={option.id}
               onClick={() => setSelectedVoice(option.id)}
               className="relative p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 text-left"
+              aria-label={`Select ${option.name} voice`}
               style={{
                 background: selectedVoice === option.id
                   ? `linear-gradient(135deg, var(--gradient-warm))`
