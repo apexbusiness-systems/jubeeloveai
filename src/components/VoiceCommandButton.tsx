@@ -23,6 +23,7 @@ export function VoiceCommandButton() {
         isListening && "animate-pulse bg-primary"
       )}
       aria-label={isListening ? "Stop listening" : "Start voice command"}
+      title={isListening ? "Stop listening" : "Start voice command"}
     >
       {isProcessing ? (
         <Loader2 className="h-6 w-6 animate-spin" />

@@ -9,3 +9,11 @@
 ## 2024-04-22 - Missing Tooltips on Icon-Only Buttons
 **Learning:** Icon-only buttons (like the personalize '🎨' and voice '🔊' buttons) often lack visual context. While `aria-label` provides context for screen readers, sighted users who hover with a mouse do not see it.
 **Action:** Always provide `title` attributes on icon-only buttons to ensure standard browser tooltips appear on hover, and use the design system's `<Button size="icon">` to ensure correct `focus-visible` styling for keyboard users.
+## 2024-04-26 - Added Tooltips to Icon-Only Buttons
+**Learning:** Icon-only buttons (like Feedback, Voice Command, and Voice Selector options) need visual tooltips for sighted users in addition to `aria-label` for screen readers.
+**Action:** Use native HTML `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons.
+## YYYY-MM-DD - Missing Tooltips on Icon-Only Buttons in Music Player\n**Learning:** Icon-only buttons (like Play/Pause and Close) in the Music Player lacked visual tooltips for sighted users.\n**Action:** Added `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons in the Music Player.
+
+## YYYY-MM-DD - Missing Tooltips on Icon-Only Buttons in Schedule Configurator
+**Learning:** Icon-only buttons (like the Trash icon for removing a schedule) lack visual context for sighted users. The `aria-label` provides context for screen readers, but sighted users who hover with a mouse do not see it. Also, they should use `size="icon"` for correct styling.
+**Action:** Always provide `title` attributes on icon-only buttons to ensure standard browser tooltips appear on hover, and use the design system's `<Button size="icon">` to ensure correct `focus-visible` styling for keyboard users.
