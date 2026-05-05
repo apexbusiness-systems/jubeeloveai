@@ -202,6 +202,7 @@ export default function MusicPage() {
                 size="icon"
                 variant="default"
                 aria-label={isPlaying ? 'Pause' : 'Play'}
+                title={isPlaying ? 'Pause' : 'Play'}
                 className="flex-shrink-0 min-h-[44px] min-w-[44px]"
                 disabled={loadingId === currentSong.id}
               >
@@ -218,6 +219,7 @@ export default function MusicPage() {
                 size="icon"
                 variant="ghost"
                 aria-label="Close player"
+                title="Close player"
                 className="flex-shrink-0 min-h-[44px] min-w-[44px]"
               >
                 <X className="w-5 h-5" />

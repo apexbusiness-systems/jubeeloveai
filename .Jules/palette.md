@@ -12,3 +12,4 @@
 ## 2024-04-26 - Added Tooltips to Icon-Only Buttons
 **Learning:** Icon-only buttons (like Feedback, Voice Command, and Voice Selector options) need visual tooltips for sighted users in addition to `aria-label` for screen readers.
 **Action:** Use native HTML `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons.
+## YYYY-MM-DD - Missing Tooltips on Icon-Only Buttons in Music Player\n**Learning:** Icon-only buttons (like Play/Pause and Close) in the Music Player lacked visual tooltips for sighted users.\n**Action:** Added `title` attributes matching the `aria-label` values to provide standard browser tooltips on hover for icon-only buttons in the Music Player.
