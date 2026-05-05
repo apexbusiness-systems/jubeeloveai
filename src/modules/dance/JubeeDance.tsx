@@ -422,7 +422,7 @@ export default function JubeeDancePage() {
 
               {/* Game Header */}
               <div className="flex items-center justify-between mb-3">
-                <Button variant="ghost" size="icon" onClick={handleBackToMenu} className="rounded-xl" aria-label="Back to menu">
+                <Button variant="ghost" size="icon" onClick={handleBackToMenu} className="rounded-xl" aria-label="Back to menu" title="Back to menu">
                   <Home className="w-5 h-5" />
                 </Button>
                 
@@ -441,11 +441,11 @@ export default function JubeeDancePage() {
                 </div>
 
                 {context.state === 'playing' ? (
-                  <Button variant="ghost" size="icon" onClick={pause} className="rounded-xl" aria-label="Pause game">
+                  <Button variant="ghost" size="icon" onClick={pause} className="rounded-xl" aria-label="Pause game" title="Pause game">
                     <Pause className="w-5 h-5" />
                   </Button>
                 ) : context.state === 'paused' ? (
-                  <Button variant="ghost" size="icon" onClick={resume} className="rounded-xl" aria-label="Resume game">
+                  <Button variant="ghost" size="icon" onClick={resume} className="rounded-xl" aria-label="Resume game" title="Resume game">
                     <Play className="w-5 h-5" />
                   </Button>
                 ) : <div className="w-10" />}
@@ -552,6 +552,7 @@ export default function JubeeDancePage() {
                         onClick={resume}
                         className="w-24 h-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-2xl mx-auto mb-4 hover:scale-105 transition-transform"
                         aria-label="Resume"
+                        title="Resume"
                       >
                         <Play className="w-10 h-10 ml-1" />
                       </button>
