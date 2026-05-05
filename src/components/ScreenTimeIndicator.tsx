@@ -8,8 +8,9 @@ import { useState } from 'react';
 
 export function ScreenTimeIndicator() {
   const { status, requestMoreTime } = useScreenTimeEnforcement();
-  // ⚡ Bolt: Combined selectors to return only the specific child object. Prevents re-renders from other children updating.
-  const activeChild = useParentalStore(state => state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : undefined);
+  const activeChild = useParentalStore(state =>
+    state.children.find(c => c.id === state.activeChildId)
+  );
   const [isRequesting, setIsRequesting] = useState(false);
   
   if (!activeChild || !status.currentSession) {
