@@ -71,9 +71,14 @@ export default function ConversationAnalytics() {
         
         setAnalytics(typedData)
         
-        // Calculate totals
-        const total = typedData.reduce((sum, day) => sum + (day.total_conversations || 0), 0)
-        const avgConf = typedData.reduce((sum, day) => sum + (day.avg_confidence || 0), 0) / (typedData.length || 1)
+        // Calculate totals in a single pass O(n) instead of O(2n)
+        let total = 0;
+        let sumConf = 0;
+        for (let i = 0; i < typedData.length; i++) {
+          total += typedData[i].total_conversations || 0;
+          sumConf += typedData[i].avg_confidence || 0;
+        }
+        const avgConf = sumConf / (typedData.length || 1);
         
         setTotalInteractions(total)
         setAvgConfidence(avgConf)

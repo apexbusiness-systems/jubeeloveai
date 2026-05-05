@@ -14,8 +14,10 @@ export const NavigationHeader = memo(function NavigationHeader({
   onVoiceClick,
   onChildSelectorClick
 }: NavigationHeaderProps) {
-  const activeChildId = useParentalStore(state => state.activeChildId);
-  const children = useParentalStore(state => state.children);
+  const hasChildren = useParentalStore(state => state.children.length > 0);
+  const activeChildName = useParentalStore(
+    state => state.activeChildId ? state.children.find(c => c.id === state.activeChildId)?.name : null
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[9999] glass-effect border-b border-border/20">
@@ -29,16 +31,14 @@ export const NavigationHeader = memo(function NavigationHeader({
         <div className="flex items-center gap-2">
           <VoiceCommandButton />
           
-          {children.length > 0 && (
+          {hasChildren && (
             <Button
               variant="ghost"
               size="sm"
               onClick={onChildSelectorClick}
               className="text-foreground"
             >
-              {activeChildId 
-                ? children.find(c => c.id === activeChildId)?.name 
-                : 'Select Child'}
+              {activeChildName || 'Select Child'}
             </Button>
           )}
           

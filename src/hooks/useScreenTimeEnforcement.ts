@@ -16,8 +16,9 @@ export interface ScreenTimeStatus {
 }
 
 export function useScreenTimeEnforcement() {
-  const activeChildId = useParentalStore(state => state.activeChildId);
-const children = useParentalStore(state => state.children);
+  const activeChild = useParentalStore(state =>
+    state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
+  );
 const updateSessionTime = useParentalStore(state => state.updateSessionTime);
 const endSession = useParentalStore(state => state.endSession);
   
@@ -29,7 +30,6 @@ const endSession = useParentalStore(state => state.endSession);
     currentSession: null,
   });
 
-  const activeChild = children.find(c => c.id === activeChildId);
   const alertSentRef = useRef<Set<number>>(new Set());
 
   type AlertPayload = { remainingMinutes?: number; requestedMinutes?: number };
@@ -75,7 +75,7 @@ const endSession = useParentalStore(state => state.endSession);
 
   // Update status every 10 seconds instead of every second for better performance
   useEffect(() => {
-    if (!activeChild || !activeChildId) {
+    if (!activeChild || !activeChild.id) {
       setStatus({
         isWithinSchedule: true,
         remainingMinutes: 0,
@@ -139,7 +139,7 @@ const endSession = useParentalStore(state => state.endSession);
     const interval = setInterval(updateStatus, 10000); // Changed from 1000ms to 10000ms
 
     return () => clearInterval(interval);
-  }, [activeChild, activeChildId, checkSchedule, calculateRemaining, updateSessionTime, endSession, sendEmailAlert]);
+  }, [activeChild, checkSchedule, calculateRemaining, updateSessionTime, endSession, sendEmailAlert]);
 
   // Sync session to database
   const syncSessionToDatabase = useCallback(async () => {

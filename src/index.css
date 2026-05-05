@@ -852,6 +852,98 @@ code {
   50% { transform: scale(1.08); }
 }
 
+/* === Bespoke story illustration animations === */
+@keyframes jubee-wing {
+  from { transform: scaleY(1) rotate(0deg); }
+  to { transform: scaleY(0.4) rotate(-12deg); }
+}
+@keyframes pig-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+@keyframes wind-blow {
+  0% { transform: translateX(0) scale(1); opacity: 0.7; }
+  100% { transform: translateX(60px) scale(1.4); opacity: 0; }
+}
+@keyframes tumble {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  50% { transform: translate(-8px, 4px) rotate(15deg); }
+}
+@keyframes hare-hop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes hare-zoom {
+  0% { transform: translateX(-20px); }
+  100% { transform: translateX(20px); }
+}
+@keyframes tortoise-walk {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(110px); }
+}
+@keyframes zzz-float {
+  0% { transform: translateY(0); opacity: 0.9; }
+  100% { transform: translateY(-18px); opacity: 0; }
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+  100% { transform: translateY(220px) rotate(360deg); opacity: 0; }
+}
+@keyframes dragon-stomp {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-3px) rotate(1deg); }
+}
+@keyframes smoke-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0.7; }
+  100% { transform: translateY(-30px) scale(1.6); opacity: 0; }
+}
+@keyframes balloon-breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+@keyframes calm-breath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes heart-float {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-40px) scale(1.4); opacity: 0; }
+}
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@keyframes train-roll {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(2px) translateY(1px); }
+}
+@keyframes wiggle-toes {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+@keyframes tummy-breath {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.18); }
+}
+@keyframes rocket-launch {
+  0% { transform: translateY(20px); }
+  100% { transform: translateY(-30px); }
+}
+@keyframes flame {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(1.3); }
+}
+@keyframes space-float {
+  0%, 100% { transform: translate(0, 0) rotate(-2deg); }
+  50% { transform: translate(8px, -10px) rotate(3deg); }
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   *,

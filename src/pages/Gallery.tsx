@@ -186,17 +186,37 @@ export default function Gallery() {
   }, []);
 
   // Memoize filtered drawings
-  const filteredDrawings = useMemo(() => 
-    drawings.filter(d => filter === 'all' || d.type === filter),
-    [drawings, filter]
-  );
+  const filteredDrawings = useMemo(() => {
+    if (filter === 'all') return drawings;
 
-  // Memoize filter counts to avoid recalculation on every render
-  const filterCounts = useMemo(() => ({
-    all: drawings.length,
-    letter: drawings.filter(d => d.type === 'letter').length,
-    number: drawings.filter(d => d.type === 'number').length
-  }), [drawings]);
+    const filtered: SavedDrawing[] = [];
+    for (let i = 0; i < drawings.length; i++) {
+      if (drawings[i].type === filter) {
+        filtered.push(drawings[i]);
+      }
+    }
+    return filtered;
+  }, [drawings, filter]);
+
+  // Memoize filter counts to avoid recalculation on every render (O(n) instead of O(2n))
+  const filterCounts = useMemo(() => {
+    let letterCount = 0;
+    let numberCount = 0;
+
+    for (let i = 0; i < drawings.length; i++) {
+      if (drawings[i].type === 'letter') {
+        letterCount++;
+      } else if (drawings[i].type === 'number') {
+        numberCount++;
+      }
+    }
+
+    return {
+      all: drawings.length,
+      letter: letterCount,
+      number: numberCount
+    };
+  }, [drawings]);
 
   // Use optimized list for virtual scrolling with large galleries
   const { visibleItems, hasMore, loadMore } = useOptimizedList(filteredDrawings, {
