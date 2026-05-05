@@ -9,17 +9,15 @@ import { useState } from 'react';
 
 export function SessionMonitor() {
   const navigate = useNavigate();
-  const activeChildId = useParentalStore(state => state.activeChildId);
-  const children = useParentalStore(state => state.children);
+  const activeChild = useParentalStore(state =>
+    state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
+  );
   const updateSessionTime = useParentalStore(state => state.updateSessionTime);
   const endSession = useParentalStore(state => state.endSession);
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 
   useEffect(() => {
-    if (!activeChildId) return;
-
-    const activeChild = children.find((c) => c.id === activeChildId);
     if (!activeChild || !activeChild.sessionStartTime) return;
 
     // Check session time every 10 seconds
@@ -47,9 +45,7 @@ export function SessionMonitor() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [activeChildId, children, updateSessionTime, showWarningDialog]);
-
-  const activeChild = children.find((c) => c.id === activeChildId);
+  }, [activeChild, updateSessionTime, showWarningDialog]);
 
   if (!activeChild || !activeChild.sessionStartTime) return null;
 

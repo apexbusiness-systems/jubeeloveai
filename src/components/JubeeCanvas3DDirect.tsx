@@ -45,6 +45,11 @@ interface JubeeParts {
   rightAntenna: THREE.Mesh;
   leftBulb: THREE.Mesh;
   rightBulb: THREE.Mesh;
+  // Gender-specific accessories (optional)
+  bow?: THREE.Group;          // Girl: pink bow on head
+  bowtie?: THREE.Mesh;        // Boy: black bowtie under chin
+  leftLash?: THREE.Mesh;      // Girl: eyelash
+  rightLash?: THREE.Mesh;     // Girl: eyelash
 }
 
 function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
@@ -546,27 +551,33 @@ const setMood = useJubeeStore(state => state.setMood);
 }
 
 /**
- * Build the Jubee 3D model
+ * Build the Jubee 3D model with TRUE gender differentiation.
+ * Girl Jubee: warm pink-yellow body, eyelashes, big rosy cheeks, hot-pink head bow.
+ * Boy Jubee: deep golden body, sharper longer antennae, black bowtie, cyan accent bulbs.
  */
 function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female'): JubeeParts {
-  // Get colors based on gender - ULTRA bright, vibrant, lively bee colors
+  const isGirl = gender === 'female';
+
   const colors = {
-    body: gender === 'male' ? 0xFFD700 : 0xFFC300,  // Pure gold / bright amber yellow
-    stripe: 0x1A1A1A,  // Deep black for maximum contrast
-    accent: gender === 'male' ? 0x00FFFF : 0xFFAA00,  // Cyan / orange-yellow
+    body: isGirl ? 0xFFCC4D : 0xFFB400,         // girl: warm bright honey | boy: deeper amber gold
+    stripe: 0x1A1A1A,
+    accent: isGirl ? 0xFF4FA3 : 0x00D4FF,       // girl: hot pink | boy: electric cyan
     eye: 0xFFFFFF,
     pupil: 0x000000,
-    cheek: 0xFFB6C1,  // Light pink for cute cheeks
+    cheek: isGirl ? 0xFF7AAA : 0xFFB6C1,        // girl: vivid rose | boy: subtle pink
+    bow: 0xFF3E8C,                              // hot pink for girl bow
+    bowtie: 0x111111,                           // jet black for boy bowtie
+    lash: 0x1A1A1A,
   };
 
-  // Body (ellipsoid) - ENHANCED materials for vibrant visibility
+  // ── Body ────────────────────────────────────────────────────
   const bodyGeometry = new THREE.SphereGeometry(1, 48, 48);
   bodyGeometry.scale(1, 1.3, 0.9);
-  const bodyMaterial = new THREE.MeshPhongMaterial({ 
+  const bodyMaterial = new THREE.MeshPhongMaterial({
     color: colors.body,
     shininess: 150,
     emissive: colors.body,
-    emissiveIntensity: 0.5,  // Increased for visibility
+    emissiveIntensity: 0.5,
     specular: 0xFFFFAA,
     reflectivity: 0.8,
   });
@@ -574,83 +585,89 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female'): JubeePa
   body.name = 'body';
   group.add(body);
 
-  // Add cute cheeks for extra charm
-  const cheekGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+  // ── Cheeks (bigger and rosier for girl) ─────────────────────
+  const cheekRadius = isGirl ? 0.2 : 0.13;
+  const cheekGeometry = new THREE.SphereGeometry(cheekRadius, 16, 16);
   const cheekMaterial = new THREE.MeshPhongMaterial({
     color: colors.cheek,
     emissive: colors.cheek,
-    emissiveIntensity: 0.4,
+    emissiveIntensity: isGirl ? 0.55 : 0.35,
     transparent: true,
-    opacity: 0.8,
+    opacity: isGirl ? 0.95 : 0.75,
   });
   const leftCheek = new THREE.Mesh(cheekGeometry, cheekMaterial);
-  leftCheek.position.set(-0.5, 1.35, 0.6);
-  leftCheek.name = 'leftCheek';
+  leftCheek.position.set(-0.55, 1.3, 0.6);
   group.add(leftCheek);
-
   const rightCheek = new THREE.Mesh(cheekGeometry, cheekMaterial);
-  rightCheek.position.set(0.5, 1.35, 0.6);
-  rightCheek.name = 'rightCheek';
+  rightCheek.position.set(0.55, 1.3, 0.6);
   group.add(rightCheek);
 
-  // Stripes
+  // ── Stripes ─────────────────────────────────────────────────
   for (let i = 0; i < 3; i++) {
     const stripeGeometry = new THREE.TorusGeometry(0.95, 0.12, 16, 32);
     const stripeMaterial = new THREE.MeshPhongMaterial({ color: colors.stripe });
     const stripe = new THREE.Mesh(stripeGeometry, stripeMaterial);
     stripe.rotation.x = Math.PI / 2;
     stripe.position.y = -0.6 + i * 0.6;
-    stripe.name = `stripe-${i}`;
     group.add(stripe);
   }
 
-  // Head - ENHANCED for vibrant visibility
+  // ── Head ────────────────────────────────────────────────────
   const headGeometry = new THREE.SphereGeometry(0.8, 48, 48);
-  const headMaterial = new THREE.MeshPhongMaterial({ 
+  const headMaterial = new THREE.MeshPhongMaterial({
     color: colors.body,
     shininess: 150,
     emissive: colors.body,
-    emissiveIntensity: 0.45,  // Increased for visibility
+    emissiveIntensity: 0.45,
     specular: 0xFFFFAA,
   });
   const head = new THREE.Mesh(headGeometry, headMaterial);
   head.position.y = 1.5;
-  head.name = 'head';
   group.add(head);
 
-  // Eyes
+  // ── Eyes ────────────────────────────────────────────────────
   const eyeGeometry = new THREE.SphereGeometry(0.15, 16, 16);
   const eyeMaterial = new THREE.MeshPhongMaterial({ color: colors.eye });
-  
   const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
   leftEye.position.set(-0.25, 1.6, 0.7);
-  leftEye.name = 'leftEye';
   group.add(leftEye);
-
   const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
   rightEye.position.set(0.25, 1.6, 0.7);
-  rightEye.name = 'rightEye';
   group.add(rightEye);
 
-  // Pupils
+  // ── Pupils ──────────────────────────────────────────────────
   const pupilGeometry = new THREE.SphereGeometry(0.08, 16, 16);
   const pupilMaterial = new THREE.MeshBasicMaterial({ color: colors.pupil });
-  
   const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
   leftPupil.position.set(-0.25, 1.6, 0.8);
-  leftPupil.name = 'leftPupil';
   group.add(leftPupil);
-
   const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
   rightPupil.position.set(0.25, 1.6, 0.8);
-  rightPupil.name = 'rightPupil';
   group.add(rightPupil);
 
-  // Wings
+  // ── GIRL ONLY: Eyelashes (curved arc above each eye) ────────
+  let leftLash: THREE.Mesh | undefined;
+  let rightLash: THREE.Mesh | undefined;
+  if (isGirl) {
+    const lashGeo = new THREE.TorusGeometry(0.16, 0.018, 8, 16, Math.PI);
+    const lashMat = new THREE.MeshBasicMaterial({ color: colors.lash });
+    leftLash = new THREE.Mesh(lashGeo, lashMat);
+    leftLash.position.set(-0.25, 1.74, 0.78);
+    leftLash.rotation.z = Math.PI;
+    leftLash.rotation.y = -0.2;
+    group.add(leftLash);
+    rightLash = new THREE.Mesh(lashGeo, lashMat);
+    rightLash.position.set(0.25, 1.74, 0.78);
+    rightLash.rotation.z = Math.PI;
+    rightLash.rotation.y = 0.2;
+    group.add(rightLash);
+  }
+
+  // ── Wings ───────────────────────────────────────────────────
   const wingGeometry = new THREE.SphereGeometry(0.6, 16, 16);
   wingGeometry.scale(1.5, 0.8, 0.1);
-  const wingMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0xE0F7FF,  // Bright cyan-white for iridescent wings
+  const wingMaterial = new THREE.MeshPhongMaterial({
+    color: 0xE0F7FF,
     transparent: true,
     opacity: 0.7,
     side: THREE.DoubleSide,
@@ -658,48 +675,96 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female'): JubeePa
     emissive: 0xCCF5FF,
     emissiveIntensity: 0.2,
   });
-
   const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
   leftWing.position.set(-1, 0.5, 0);
   leftWing.rotation.y = Math.PI / 6;
-  leftWing.name = 'leftWing';
   group.add(leftWing);
-
   const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
   rightWing.position.set(1, 0.5, 0);
   rightWing.rotation.y = -Math.PI / 6;
-  rightWing.name = 'rightWing';
   group.add(rightWing);
 
-  // Antennae
-  const antennaGeometry = new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8);
+  // ── Antennae (boy: longer + thinner + sharper angle) ────────
+  const antennaLength = isGirl ? 0.55 : 0.75;
+  const antennaThickness = isGirl ? 0.035 : 0.028;
+  const antennaSpread = isGirl ? Math.PI / 8 : Math.PI / 6;
+  const antennaGeometry = new THREE.CylinderGeometry(antennaThickness, antennaThickness, antennaLength, 8);
   const antennaMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
-
   const leftAntenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
-  leftAntenna.position.set(-0.3, 2.1, 0);
-  leftAntenna.rotation.z = -Math.PI / 8;
-  leftAntenna.name = 'leftAntenna';
+  leftAntenna.position.set(-0.3, 2.0 + antennaLength * 0.25, 0);
+  leftAntenna.rotation.z = -antennaSpread;
   group.add(leftAntenna);
-
   const rightAntenna = new THREE.Mesh(antennaGeometry, antennaMaterial);
-  rightAntenna.position.set(0.3, 2.1, 0);
-  rightAntenna.rotation.z = Math.PI / 8;
-  rightAntenna.name = 'rightAntenna';
+  rightAntenna.position.set(0.3, 2.0 + antennaLength * 0.25, 0);
+  rightAntenna.rotation.z = antennaSpread;
   group.add(rightAntenna);
 
-  // Antenna bulbs
-  const bulbGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-  const bulbMaterial = new THREE.MeshPhongMaterial({ color: colors.accent });
-
+  // ── Antenna bulbs (pink for girl, cyan for boy) ─────────────
+  const bulbRadius = isGirl ? 0.12 : 0.09;
+  const bulbGeometry = new THREE.SphereGeometry(bulbRadius, 16, 16);
+  const bulbMaterial = new THREE.MeshPhongMaterial({
+    color: colors.accent,
+    emissive: colors.accent,
+    emissiveIntensity: 0.6,
+    shininess: 200,
+  });
   const leftBulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
-  leftBulb.position.set(-0.42, 2.5, 0);
-  leftBulb.name = 'leftBulb';
+  leftBulb.position.set(-0.42, 2.4 + antennaLength * 0.4, 0);
   group.add(leftBulb);
-
   const rightBulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
-  rightBulb.position.set(0.42, 2.5, 0);
-  rightBulb.name = 'rightBulb';
+  rightBulb.position.set(0.42, 2.4 + antennaLength * 0.4, 0);
   group.add(rightBulb);
+
+  // ── GIRL ONLY: Hot pink bow on top of head ──────────────────
+  let bow: THREE.Group | undefined;
+  if (isGirl) {
+    bow = new THREE.Group();
+    const bowMat = new THREE.MeshPhongMaterial({
+      color: colors.bow,
+      emissive: colors.bow,
+      emissiveIntensity: 0.4,
+      shininess: 180,
+    });
+    // Two loops
+    const loopGeo = new THREE.SphereGeometry(0.25, 16, 16);
+    loopGeo.scale(1.2, 0.8, 0.4);
+    const leftLoop = new THREE.Mesh(loopGeo, bowMat);
+    leftLoop.position.set(-0.22, 0, 0);
+    leftLoop.rotation.z = 0.3;
+    bow.add(leftLoop);
+    const rightLoop = new THREE.Mesh(loopGeo, bowMat);
+    rightLoop.position.set(0.22, 0, 0);
+    rightLoop.rotation.z = -0.3;
+    bow.add(rightLoop);
+    // Center knot
+    const knotGeo = new THREE.SphereGeometry(0.1, 16, 16);
+    const knot = new THREE.Mesh(knotGeo, bowMat);
+    bow.add(knot);
+    bow.position.set(0, 2.3, 0.1);
+    bow.scale.set(0.9, 0.9, 0.9);
+    group.add(bow);
+  }
+
+  // ── BOY ONLY: Black bowtie at neck ──────────────────────────
+  let bowtie: THREE.Mesh | undefined;
+  if (!isGirl) {
+    const tieGeo = new THREE.SphereGeometry(0.28, 16, 16);
+    tieGeo.scale(1.5, 0.6, 0.4);
+    const tieMat = new THREE.MeshPhongMaterial({
+      color: colors.bowtie,
+      shininess: 100,
+      emissive: colors.bowtie,
+      emissiveIntensity: 0.05,
+    });
+    bowtie = new THREE.Mesh(tieGeo, tieMat);
+    bowtie.position.set(0, 0.85, 0.85);
+    group.add(bowtie);
+    // Center knot
+    const knotGeo = new THREE.SphereGeometry(0.08, 12, 12);
+    const knot = new THREE.Mesh(knotGeo, tieMat);
+    knot.position.set(0, 0.85, 0.95);
+    group.add(knot);
+  }
 
   return {
     body,
@@ -713,6 +778,10 @@ function buildJubeeModel(group: THREE.Group, gender: 'male' | 'female'): JubeePa
     rightAntenna,
     leftBulb,
     rightBulb,
+    bow,
+    bowtie,
+    leftLash,
+    rightLash,
   };
 }
 

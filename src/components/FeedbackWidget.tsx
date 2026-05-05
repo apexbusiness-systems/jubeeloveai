@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,8 +61,10 @@ export function FeedbackWidget() {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
         size="lg"
+        aria-label="Open feedback widget"
+        aria-expanded={false}
       >
-        <MessageSquare className="w-5 h-5 mr-2" />
+        <MessageSquare className="w-5 h-5 mr-2" aria-hidden="true" />
         Feedback
       </Button>
     );
@@ -77,6 +79,7 @@ export function FeedbackWidget() {
           size="icon"
           onClick={() => setIsOpen(false)}
           aria-label="Close feedback widget"
+          title="Close feedback widget"
         >
           <X className="w-4 h-4" />
         </Button>
@@ -96,7 +99,14 @@ export function FeedbackWidget() {
             disabled={isSubmitting}
             className="flex-1"
           >
-            {isSubmitting ? 'Sending...' : 'Send'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                Sending...
+              </>
+            ) : (
+              'Send'
+            )}
           </Button>
           <Button
             variant="outline"

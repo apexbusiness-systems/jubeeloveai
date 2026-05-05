@@ -1,3 +1,7 @@
-## 2025-03-02 - O(n log n) sorting optimization on dynamic UI list categorization
-**Learning:** React `useMemo` blocks with arrays often contain multiple successive filters and sorts to display content in tabs. These multiple loops (like what `AchievementList` did with 5 `.filter()` passes + 5 `.sort()` passes dynamically) degrade quickly.
-**Action:** Replace multiple map/filter passes with a single `O(n)` category separation block that leverages an initial `O(n log n)` global sort, then iterate the items once. Doing this in `useMemo` avoids redundant iteration and computation per render. If returning functions, use `React.useCallback`.
+## 2024-05-18 - Zustand Array Selector Optimization
+**Learning:** In Zustand stores using Immer (like `useParentalStore`), updating *any* property of an object inside an array creates a new reference for the array itself. Components subscribing to the entire array (e.g., `const children = useParentalStore(state => state.children)`) will re-render unnecessarily even if the specific data they care about hasn't changed.
+**Action:** When a component only needs derived data from an array (like its length or a specific item), write a targeted selector (e.g., `state => state.children.length > 0` or `state => state.children.find(c => c.id === state.activeChildId)`) to prevent widespread re-renders across the app.
+
+## 2024-06-01 - Supabase Sync Loop Optimization
+**Learning:** When syncing arrays of items to Supabase and IndexedDB (e.g. `syncGameProgress`, `syncDrawings`), iterating with `for (const item of items) { await ... }` causes a severe performance bottleneck due to serial I/O blocking the main thread.
+**Action:** For bulk operations, group them into arrays using `Promise.allSettled()` to process parallel network requests, handle partial failures gracefully without throwing errors that halt the loop, and use IndexedDB's `putBulk` transaction to commit all successes in a single write operation. When payloads are large (like Base64 images), implement 'Smart Batching' to chunk them up dynamically before `Promise.allSettled`.

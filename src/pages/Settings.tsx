@@ -25,7 +25,8 @@ const setGender = useJubeeStore(state => state.setGender);
 const voice = useJubeeStore(state => state.voice);
 const setVoice = useJubeeStore(state => state.setVoice);
 const speak = useJubeeStore(state => state.speak);
-  const children = useParentalStore(state => state.children);
+  // ⚡ Bolt: Select only the boolean we need to prevent unnecessary re-renders when children array mutates
+  const hasChildren = useParentalStore(state => state.children.length > 0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
   const startOnboarding = useOnboardingStore(state => state.startOnboarding);
@@ -155,6 +156,7 @@ const speak = useJubeeStore(state => state.speak);
               variant={gender === 'female' ? 'default' : 'outline'}
               size="lg"
               className="flex-1"
+              aria-pressed={gender === 'female'}
             >
               {t('personalization.girl')} {t('personalization.female')}
             </Button>
@@ -163,6 +165,7 @@ const speak = useJubeeStore(state => state.speak);
               variant={gender === 'male' ? 'default' : 'outline'}
               size="lg"
               className="flex-1"
+              aria-pressed={gender === 'male'}
             >
               {t('personalization.boy')} {t('personalization.male')}
             </Button>
@@ -207,6 +210,7 @@ const speak = useJubeeStore(state => state.speak);
                       variant={voice === option.id ? 'default' : 'outline'}
                       size="sm"
                       className="flex-1"
+                      aria-pressed={voice === option.id}
                     >
                       {voice === option.id ? '✓ Selected' : 'Select'}
                     </Button>
@@ -239,6 +243,7 @@ const speak = useJubeeStore(state => state.speak);
                   onClick={() => handleThemeChange(name)}
                   variant={currentTheme === name ? 'default' : 'outline'}
                   className="h-24 flex-col gap-2"
+                  aria-pressed={currentTheme === name}
                 >
                   <Icon className="w-8 h-8" />
                   <span>{label}</span>
@@ -294,7 +299,7 @@ const speak = useJubeeStore(state => state.speak);
         </Card>
 
         {/* Parental Controls Link */}
-        {children.length > 0 && (
+        {hasChildren && (
           <Card className="border-4 border-primary/30">
             <CardHeader>
               <CardTitle className="text-primary flex items-center gap-2">

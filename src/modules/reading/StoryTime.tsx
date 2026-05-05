@@ -11,6 +11,7 @@ import { initializeStories } from '@/lib/initializeStories'
 import { audioManager } from '@/lib/audioManager'
 import { Slider } from '@/components/ui/slider'
 import { useSmartAudioPreloader } from '@/hooks/useSmartAudioPreloader'
+import StoryIllustration from '@/components/stories/StoryIllustration'
 
 // -----------------------------------------------------------------------------
 // 1. Strict Type Definitions
@@ -64,11 +65,13 @@ const StoryCard = memo(({ story, onSelect }: StoryCardProps) => (
     }}
   >
     {story.completed && (
-      <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+      <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold z-10">
         ✓ Completed
       </div>
     )}
-    <div className="text-8xl mb-4">{story.pages[0].illustration}</div>
+    <div className="mb-4">
+      <StoryIllustration storyTitle={story.title} pageIndex={0} size="sm" />
+    </div>
     <h2 className="text-3xl font-bold text-primary-foreground mb-2">{story.title}</h2>
     <p className="text-xl text-primary-foreground opacity-90">{story.pages.length} pages</p>
   </button>
@@ -465,7 +468,9 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           }
         }}
       >
-        <div className="illustration text-9xl mb-8">{page.illustration}</div>
+        <div className="illustration mb-8 w-full">
+          <StoryIllustration storyTitle={selectedStory.title} pageIndex={currentPage} size="lg" />
+        </div>
         <p className="text-3xl text-card-foreground text-center leading-relaxed">{page.text}</p>
       </div>
 
