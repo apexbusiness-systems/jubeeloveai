@@ -25,9 +25,6 @@ const setGender = useJubeeStore(state => state.setGender);
 const voice = useJubeeStore(state => state.voice);
 const setVoice = useJubeeStore(state => state.setVoice);
 const speak = useJubeeStore(state => state.speak);
-
-  // ⚡ Bolt Optimization: Using a derived boolean selector instead of fetching the entire array
-  // prevents Settings from re-rendering during active session time updates.
   const hasChildren = useParentalStore(state => state.children.length > 0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
