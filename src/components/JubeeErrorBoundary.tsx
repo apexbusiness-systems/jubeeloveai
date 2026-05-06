@@ -6,6 +6,7 @@
  */
 
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup';
 
@@ -173,21 +174,14 @@ export class JubeeErrorBoundary extends Component<Props, State> {
               : 'Recovery attempts exhausted. Please refresh the page.'}
           </p>
           {this.state.recoveryAttempts >= MAX_RECOVERY_ATTEMPTS && (
-            <button
+            <Button
               onClick={this.handleReset}
               aria-label="Try again to recover Jubee"
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#4caf50',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
+              className="mt-4"
+              variant="default"
             >
               Try Again
-            </button>
+            </Button>
           )}
         </div>
       )

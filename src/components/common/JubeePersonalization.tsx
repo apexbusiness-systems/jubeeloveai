@@ -81,7 +81,6 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
                 : '0 4px 10px hsl(var(--boy-primary) / 0.2)',
               opacity: selectedGender === 'male' ? 1 : 0.7
             }}
-            aria-label="Select boy gender"
           >
             <div className="text-8xl mb-4">👦</div>
             <h3 className="text-3xl font-bold text-white">
@@ -107,7 +106,6 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
                 : '0 4px 10px hsl(var(--girl-primary) / 0.2)',
               opacity: selectedGender === 'female' ? 1 : 0.7
             }}
-            aria-label="Select girl gender"
           >
             <div className="text-8xl mb-4">👧</div>
             <h3 className="text-3xl font-bold text-white">

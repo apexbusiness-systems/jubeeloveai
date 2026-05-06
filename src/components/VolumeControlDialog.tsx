@@ -37,6 +37,8 @@ const speak = useJubeeStore(state => state.speak);
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
+          aria-label="Open volume controls"
+          title="Open volume controls"
           variant="outline"
           size="lg"
           className="w-full"
@@ -75,6 +77,7 @@ const speak = useJubeeStore(state => state.speak);
             <Slider
               id="sound-effects"
               aria-label="Sound Effects Volume"
+              title="Adjust sound effects volume"
               value={[soundEffectsVolume]}
               onValueChange={handleSoundEffectsChange}
               max={1}
@@ -101,6 +104,7 @@ const speak = useJubeeStore(state => state.speak);
             <Slider
               id="voice"
               aria-label="Voice Volume"
+              title="Adjust voice volume"
               value={[voiceVolume]}
               onValueChange={handleVoiceChange}
               max={1}
@@ -108,6 +112,8 @@ const speak = useJubeeStore(state => state.speak);
               className="w-full"
             />
             <Button
+              aria-label="Test voice volume"
+              title="Test voice volume"
               onClick={handleTestVoice}
               variant="outline"
               size="sm"
