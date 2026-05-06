@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,7 +13,7 @@ interface ChildSelectorProps {
 
 export function ChildSelector({ open, onOpenChange }: ChildSelectorProps) {
   const navigate = useNavigate();
-  const children = useParentalStore(state => state.children);
+  const children = useParentalStore(useShallow(state => state.children));
 const startSession = useParentalStore(state => state.startSession);
 
   const handleSelectChild = (childId: string) => {

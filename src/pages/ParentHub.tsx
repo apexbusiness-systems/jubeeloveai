@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
@@ -9,8 +10,8 @@ import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lu
 export default function ParentHub() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const children = useParentalStore(state => state.children);
-const settings = useParentalStore(state => state.settings);
+  const children = useParentalStore(useShallow(state => state.children));
+const settings = useParentalStore(useShallow(state => state.settings));
 
   const handleSignOut = async () => {
     await signOut();
