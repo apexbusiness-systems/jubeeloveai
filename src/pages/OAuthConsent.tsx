@@ -107,12 +107,13 @@ export default function OAuthConsent() {
             <p className="text-center text-muted-foreground">{message}</p>
             
             {status === 'error' && (
-              <button
+              <Button
+                variant="link"
                 onClick={() => navigate('/auth')}
                 className="mt-4 text-primary hover:underline"
               >
                 Return to sign in
-              </button>
+              </Button>
             )}
           </CardContent>
         </Card>
