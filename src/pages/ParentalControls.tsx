@@ -12,13 +12,14 @@ import { SEO } from '@/components/SEO';
 import { ScheduleConfigurator } from '@/components/ScheduleConfigurator';
 import { toast } from '@/hooks/use-toast';
 import { Lock, UserPlus, Clock, Shield, Users, Settings as SettingsIcon } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import type { } from '@/store/useParentalStore';
 import { validatePIN, validateChildName } from '@/lib/inputValidation';
 
 export default function ParentalControls() {
   const navigate = useNavigate();
-  const children = useParentalStore(state => state.children);
-const settings = useParentalStore(state => state.settings);
+  const children = useParentalStore(useShallow(state => state.children));
+const settings = useParentalStore(useShallow(state => state.settings));
 const isParentMode = useParentalStore(state => state.isParentMode);
 const addChild = useParentalStore(state => state.addChild);
 const updateChild = useParentalStore(state => state.updateChild);
