@@ -22,6 +22,7 @@ export interface ParentalSettings {
   maxDailyTime: number;
   blockedActivities: string[];
   requirePinForSettings: boolean;
+  calmMode: boolean;
 }
 
 interface ParentalState {
@@ -51,6 +52,7 @@ const DEFAULT_SETTINGS: ParentalSettings = {
   maxDailyTime: 60,
   blockedActivities: [],
   requirePinForSettings: true,
+  calmMode: false,
 };
 
 export const useParentalStore = create<ParentalState>()(

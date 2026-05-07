@@ -13,6 +13,7 @@
  * @component
  */
 
+import { logger } from '@/lib/logger';
 import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJubeeStore } from '../../store/useJubeeStore';
@@ -220,7 +221,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
       const imageData = result.dataURL;
       
-      console.log(`[WritingCanvas] Drawing processed in ${result.processingTime?.toFixed(2)}ms`);
+      logger.dev(`[WritingCanvas] Drawing processed in ${result.processingTime?.toFixed(2)}ms`);
       
       // Save to IndexedDB via helper function
       await saveDrawing(currentCharacter, mode, imageData);

@@ -144,9 +144,9 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Vendor chunks
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+          'vendor-three': ['three'],
 
-          'vendor-animation': ['framer-motion', '@react-spring/three'],
+          'vendor-animation': ['framer-motion'],
           'vendor-query': ['@tanstack/react-query'],
           'vendor-supabase': ['@supabase/supabase-js'],
           // Feature chunks

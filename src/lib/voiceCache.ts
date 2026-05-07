@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Persistent Voice Cache for Jubee
  * 
@@ -265,7 +266,7 @@ class VoiceCacheService {
           evicted++;
           cursor.continue();
         } else {
-          console.log(`✓ Evicted ${evicted} voice cache entries`);
+          logger.dev(`✓ Evicted ${evicted} voice cache entries`);
           resolve();
         }
       };
@@ -331,7 +332,7 @@ class VoiceCacheService {
   async preloadCommonPhrases(
     fetchAudio: (text: string, mood: string) => Promise<Blob | null>
   ): Promise<void> {
-    console.log('🔊 Preloading common voice phrases for offline...');
+    logger.dev('🔊 Preloading common voice phrases for offline...');
     
     let loaded = 0;
     
@@ -356,14 +357,14 @@ class VoiceCacheService {
       } catch (error) {
         // If TTS is unavailable, stop all remaining preloads immediately
         if (error instanceof Error && error.message === 'TTS_UNAVAILABLE_ABORT') {
-          console.log('🔇 TTS unavailable, stopping preload early');
+          logger.dev('🔇 TTS unavailable, stopping preload early');
           break;
         }
         console.debug('Preload skip:', phrase.text.substring(0, 30));
       }
     }
 
-    console.log(`✓ Voice cache: ${loaded}/${COMMON_PHRASES.length} phrases ready for offline`);
+    logger.dev(`✓ Voice cache: ${loaded}/${COMMON_PHRASES.length} phrases ready for offline`);
   }
 
   /**
@@ -415,7 +416,7 @@ class VoiceCacheService {
         const request = store.clear();
 
         request.onsuccess = () => {
-          console.log('✓ Voice cache cleared');
+          logger.dev('✓ Voice cache cleared');
           resolve();
         };
         request.onerror = () => reject(new Error('Failed to clear voice cache'));

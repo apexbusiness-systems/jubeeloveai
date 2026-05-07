@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react';
 import { debounce } from '@/lib/utils';
 
@@ -32,7 +33,7 @@ export function useDataPersistence<T>(
     const debouncedSave = debounce(() => {
       try {
         localStorage.setItem(key, JSON.stringify(data));
-        console.log(`[Persistence] Saved ${key}`);
+        logger.dev(`[Persistence] Saved ${key}`);
       } catch (error) {
         console.error(`[Persistence] Failed to save ${key}:`, error);
       }

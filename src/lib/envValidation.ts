@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Environment variable validation on startup
  * Ensures all required configuration is present
@@ -68,10 +69,10 @@ export function validateEnv(): EnvConfig {
  */
 export function logEnvConfig(config: EnvConfig) {
   console.group('🔧 Environment Configuration');
-  console.log('Supabase URL:', config.supabaseUrl);
-  console.log('Supabase Project ID:', config.supabaseProjectId);
-  console.log('Sentry Enabled:', !!config.sentryDsn);
-  console.log('App Version:', config.appVersion);
-  console.log('Mode:', import.meta.env.MODE);
+  logger.dev('Supabase URL:', config.supabaseUrl);
+  logger.dev('Supabase Project ID:', config.supabaseProjectId);
+  logger.dev('Sentry Enabled:', !!config.sentryDsn);
+  logger.dev('App Version:', config.appVersion);
+  logger.dev('Mode:', import.meta.env.MODE);
   console.groupEnd();
 }

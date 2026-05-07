@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Web Worker Utility Functions
  * 
@@ -22,7 +23,7 @@ export function createWorker(workerPath: string): Worker | null {
 
   try {
     const worker = new Worker(workerPath, { type: 'module' })
-    console.log('[WorkerUtils] Worker created successfully:', workerPath)
+    logger.dev('[WorkerUtils] Worker created successfully:', workerPath)
     return worker
   } catch (error) {
     console.error('[WorkerUtils] Failed to create worker:', error)
@@ -37,7 +38,7 @@ export function terminateWorker(worker: Worker | null): void {
   if (worker) {
     try {
       worker.terminate()
-      console.log('[WorkerUtils] Worker terminated successfully')
+      logger.dev('[WorkerUtils] Worker terminated successfully')
     } catch (error) {
       console.error('[WorkerUtils] Error terminating worker:', error)
     }

@@ -167,7 +167,7 @@ export function logRegressionCheck(): void {
     
     results.filter(r => !r.passed).forEach(result => {
       const icon = result.severity === 'critical' ? '🔴' : result.severity === 'warning' ? '🟡' : 'ℹ️'
-      console.log(`${icon} [${result.severity.toUpperCase()}] ${result.issue}`)
+      logger.dev(`${icon} [${result.severity.toUpperCase()}] ${result.issue}`)
     })
     
     console.groupEnd()
@@ -177,7 +177,7 @@ export function logRegressionCheck(): void {
     if (criticalIssues.length > 0) {
       const fixed = autoFixRegressions()
       if (fixed) {
-        console.log('[Jubee Regression] 🔧 Auto-fix applied')
+        logger.dev('[Jubee Regression] 🔧 Auto-fix applied')
       }
     }
   } else {

@@ -5,6 +5,7 @@
  * graceful fallback with automatic recovery attempts.
  */
 
+import { logger } from '@/lib/logger';
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useJubeeStore } from '@/store/useJubeeStore';
@@ -73,7 +74,7 @@ export class JubeeErrorBoundary extends Component<Props, State> {
       recoveryAttempts: prev.recoveryAttempts + 1
     }))
 
-    console.log(`[Jubee Error Boundary] Recovery attempt ${this.state.recoveryAttempts + 1}`)
+    logger.dev(`[Jubee Error Boundary] Recovery attempt ${this.state.recoveryAttempts + 1}`)
 
     try {
       // Try to restore from backup
@@ -97,7 +98,7 @@ export class JubeeErrorBoundary extends Component<Props, State> {
             error: null,
             errorInfo: null
           })
-          console.log('[Jubee Error Boundary] Recovery successful, resetting error state')
+          logger.dev('[Jubee Error Boundary] Recovery successful, resetting error state')
         }, RECOVERY_DELAY)
       } else {
         // Fallback: reset to safe defaults

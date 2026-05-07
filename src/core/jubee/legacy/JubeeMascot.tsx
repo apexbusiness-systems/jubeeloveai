@@ -13,6 +13,7 @@
  * @component
  */
 
+import { logger } from '@/lib/logger';
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Text, Sparkles } from "@react-three/drei";
@@ -206,9 +207,9 @@ const cleanup = useJubeeStore(state => state.cleanup);
 
   // Mount/unmount logging
   useEffect(() => {
-    console.log("[Jubee] JubeeMascot mounted");
+    logger.dev("[Jubee] JubeeMascot mounted");
     return () => {
-      console.log("[Jubee] JubeeMascot unmounting");
+      logger.dev("[Jubee] JubeeMascot unmounting");
       cleanup();
     };
   }, [cleanup]);

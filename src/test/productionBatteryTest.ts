@@ -5,6 +5,7 @@
  * Tests all critical systems, performance metrics, and security configurations.
  */
 
+import { logger } from '@/lib/logger';
 import { runSystemHealthCheck, isSystemHealthy } from '@/lib/systemHealthCheck';
 import { runJubeeSystemCheck, areAllCriticalSystemsPassing } from '@/core/jubee/JubeeSystemCheck';
 import { validateJubeeSizing } from '@/core/jubee/JubeeSizingValidator';
@@ -32,48 +33,48 @@ interface BatteryTestReport {
  */
 export async function runProductionBatteryTest(): Promise<BatteryTestReport> {
   console.group('🔋 PRODUCTION BATTERY TEST');
-  console.log('Running comprehensive system validation...\n');
+  logger.dev('Running comprehensive system validation...\n');
   
   const results: BatteryTestResult[] = [];
   const timestamp = Date.now();
 
   // Test 1: System Health Check
-  console.log('📊 Test 1: System Health Check');
+  logger.dev('📊 Test 1: System Health Check');
   const healthResult = await testSystemHealth();
   results.push(healthResult);
 
   // Test 2: Jubee Critical Systems
-  console.log('\n🐝 Test 2: Jubee Critical Systems');
+  logger.dev('\n🐝 Test 2: Jubee Critical Systems');
   const jubeeResult = testJubeeSystems();
   results.push(jubeeResult);
 
   // Test 3: Jubee Sizing Validation
-  console.log('\n📏 Test 3: Jubee Sizing Validation');
+  logger.dev('\n📏 Test 3: Jubee Sizing Validation');
   const sizingResult = testJubeeSizing();
   results.push(sizingResult);
 
   // Test 4: Browser API Safety
-  console.log('\n🌐 Test 4: Browser API Safety');
+  logger.dev('\n🌐 Test 4: Browser API Safety');
   const browserResult = testBrowserAPISafety();
   results.push(browserResult);
 
   // Test 5: Error Handling
-  console.log('\n⚠️ Test 5: Error Handling');
+  logger.dev('\n⚠️ Test 5: Error Handling');
   const errorResult = testErrorHandling();
   results.push(errorResult);
 
   // Test 6: Performance Metrics
-  console.log('\n⚡ Test 6: Performance Metrics');
+  logger.dev('\n⚡ Test 6: Performance Metrics');
   const performanceResult = testPerformanceMetrics();
   results.push(performanceResult);
 
   // Test 7: Data Persistence
-  console.log('\n💾 Test 7: Data Persistence');
+  logger.dev('\n💾 Test 7: Data Persistence');
   const persistenceResult = testDataPersistence();
   results.push(persistenceResult);
 
   // Test 8: Security Configuration
-  console.log('\n🔒 Test 8: Security Configuration');
+  logger.dev('\n🔒 Test 8: Security Configuration');
   const securityResult = testSecurityConfiguration();
   results.push(securityResult);
 
@@ -544,30 +545,30 @@ function generateSummary(
  * Print battery test report
  */
 function printBatteryTestReport(report: BatteryTestReport): void {
-  console.log('\n' + '='.repeat(80));
-  console.log('📋 PRODUCTION BATTERY TEST REPORT');
-  console.log('='.repeat(80));
-  console.log(`\nTimestamp: ${new Date(report.timestamp).toISOString()}`);
-  console.log(`Overall Status: ${report.overallPassed ? '✅ PASSED' : '❌ FAILED'}`);
-  console.log(`Total Score: ${report.totalScore}/${report.maxScore} (${Math.round((report.totalScore / report.maxScore) * 100)}%)`);
-  console.log(`\nSummary: ${report.summary}\n`);
+  logger.dev('\n' + '='.repeat(80));
+  logger.dev('📋 PRODUCTION BATTERY TEST REPORT');
+  logger.dev('='.repeat(80));
+  logger.dev(`\nTimestamp: ${new Date(report.timestamp).toISOString()}`);
+  logger.dev(`Overall Status: ${report.overallPassed ? '✅ PASSED' : '❌ FAILED'}`);
+  logger.dev(`Total Score: ${report.totalScore}/${report.maxScore} (${Math.round((report.totalScore / report.maxScore) * 100)}%)`);
+  logger.dev(`\nSummary: ${report.summary}\n`);
 
-  console.log('Detailed Results:');
-  console.log('-'.repeat(80));
+  logger.dev('Detailed Results:');
+  logger.dev('-'.repeat(80));
 
   report.results.forEach((result, index) => {
     const icon = result.passed ? '✅' : result.critical ? '❌' : '⚠️';
     const criticalTag = result.critical ? ' [CRITICAL]' : '';
     
-    console.log(`\n${index + 1}. ${icon} ${result.category}${criticalTag}`);
-    console.log(`   Score: ${result.score}/${result.maxScore} (${Math.round((result.score / result.maxScore) * 100)}%)`);
+    logger.dev(`\n${index + 1}. ${icon} ${result.category}${criticalTag}`);
+    logger.dev(`   Score: ${result.score}/${result.maxScore} (${Math.round((result.score / result.maxScore) * 100)}%)`);
     
     result.details.forEach(detail => {
-      console.log(`   ${detail}`);
+      logger.dev(`   ${detail}`);
     });
   });
 
-  console.log('\n' + '='.repeat(80));
+  logger.dev('\n' + '='.repeat(80));
   
   if (!report.overallPassed) {
     console.error('\n⚠️ PRODUCTION READINESS: NOT READY');
@@ -576,8 +577,8 @@ function printBatteryTestReport(report: BatteryTestReport): void {
     console.warn('\n⚠️ PRODUCTION READINESS: READY WITH WARNINGS');
     console.warn('Consider addressing warnings before deployment.\n');
   } else {
-    console.log('\n✅ PRODUCTION READINESS: READY');
-    console.log('All systems are functioning within acceptable parameters.\n');
+    logger.dev('\n✅ PRODUCTION READINESS: READY');
+    logger.dev('All systems are functioning within acceptable parameters.\n');
   }
 }
 

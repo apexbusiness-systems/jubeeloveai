@@ -93,7 +93,7 @@ class SyncService {
    * syncService.startAutoSync(300000); // Sync every 5 minutes
    * ```
    */
-  startAutoSync(intervalMs: number = 60000) {
+  startAutoSync(intervalMs: number = 300000) {
     if (this.syncInterval) return
 
     this.syncInterval = setInterval(() => {
@@ -801,7 +801,7 @@ class SyncService {
    * @example
    * ```typescript
    * await syncService.pullFromSupabase();
-   * console.log('Local cache updated with server data');
+   * logger.dev('Local cache updated with server data');
    * ```
    */
   async pullFromSupabase(): Promise<void> {

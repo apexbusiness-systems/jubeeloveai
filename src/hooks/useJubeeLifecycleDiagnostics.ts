@@ -7,6 +7,7 @@
  * This hook is designed for Phase 1 Root Cause Investigation per systematic-debugging skill.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
 
@@ -124,8 +125,8 @@ const isDragging = useJubeeStore(state => state.isDragging);
       
       if (changes.length > 0) {
         console.group('[🔍 DIAGNOSTIC] State Change Detected')
-        console.log('Changes:', changes.join(', '))
-        console.log('Snapshot:', snapshot)
+        logger.dev('Changes:', changes.join(', '))
+        logger.dev('Snapshot:', snapshot)
         console.groupEnd()
       }
     }
@@ -141,7 +142,7 @@ const isDragging = useJubeeStore(state => state.isDragging);
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' || mutation.type === 'attributes') {
           const snapshot = captureSnapshot('DOM_MUTATION', containerRef)
-          console.log('[🔍 DIAGNOSTIC] DOM Mutation:', {
+          logger.dev('[🔍 DIAGNOSTIC] DOM Mutation:', {
             type: mutation.type,
             target: mutation.target,
             snapshot
@@ -167,7 +168,7 @@ const isDragging = useJubeeStore(state => state.isDragging);
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const snapshot = captureSnapshot('INTERSECTION_CHANGE', containerRef)
-        console.log('[🔍 DIAGNOSTIC] Intersection Change:', {
+        logger.dev('[🔍 DIAGNOSTIC] Intersection Change:', {
           isIntersecting: entry.isIntersecting,
           intersectionRatio: entry.intersectionRatio,
           boundingClientRect: entry.boundingClientRect,
@@ -221,7 +222,7 @@ const isDragging = useJubeeStore(state => state.isDragging);
       if (issues.length > 0) {
         console.group('[🔍 DIAGNOSTIC] Health Check - Issues Detected')
         issues.forEach(issue => console.error(issue))
-        console.log('Snapshot:', snapshot)
+        logger.dev('Snapshot:', snapshot)
         console.groupEnd()
       }
     }, 5000) // Check every 5 seconds
@@ -269,7 +270,7 @@ if (typeof window !== 'undefined') {
     printLatest: () => {
       const latest = lifecycleHistory[lifecycleHistory.length - 1]
       console.group('[🔍 DIAGNOSTIC] Latest Snapshot')
-      console.log(latest)
+      logger.dev(latest)
       console.groupEnd()
     }
   }

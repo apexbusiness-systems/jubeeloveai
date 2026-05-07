@@ -5,6 +5,7 @@
  * Access via /performance-monitor route (development only)
  */
 
+import { logger } from '@/lib/logger';
 import { useState, useEffect } from 'react';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +40,7 @@ export default function PerformanceMonitor() {
 
   const handleGenerateReport = () => {
     const report = generateReport();
-    console.log(report);
+    logger.dev(report);
     alert('Performance report generated! Check the console.');
   };
 
@@ -47,7 +48,7 @@ export default function PerformanceMonitor() {
     setIsRunningTest(true);
     try {
       console.clear();
-      console.log('🔋 Starting Production Battery Test...\n');
+      logger.dev('🔋 Starting Production Battery Test...\n');
       await runProductionBatteryTest();
       toast({
         title: "Battery Test Complete",
@@ -70,7 +71,7 @@ export default function PerformanceMonitor() {
       // Lazy load the verifier to avoid circular dependency
       const { parentJourneyVerifier } = await import('@/test/parentJourneyVerification');
       const report = await parentJourneyVerifier.runCompleteJourney();
-      console.log('\n' + parentJourneyVerifier.getDetailedReport());
+      logger.dev('\n' + parentJourneyVerifier.getDetailedReport());
       
       toast({
         title: report.overallPass ? "Journey Test Passed ✅" : "Journey Test Failed ❌",

@@ -5,6 +5,7 @@
  * when connection is restored.
  */
 
+import { logger } from '@/lib/logger';
 import { jubeeDB as _jubeeDB } from './indexedDB'
 
 export interface QueuedOperation {
@@ -76,7 +77,7 @@ class SyncQueue {
     this.sortQueue()
     this.saveQueue()
     
-    console.log(`[SyncQueue] Added operation to queue:`, queuedOp.storeName)
+    logger.dev(`[SyncQueue] Added operation to queue:`, queuedOp.storeName)
   }
 
   /**
@@ -128,7 +129,7 @@ class SyncQueue {
     processor: (operation: QueuedOperation) => Promise<void>
   ): Promise<{ processed: number; failed: number; remaining: number }> {
     if (this.isProcessing) {
-      console.log('[SyncQueue] Already processing')
+      logger.dev('[SyncQueue] Already processing')
       return { processed: 0, failed: 0, remaining: this.queue.length }
     }
 
@@ -169,7 +170,7 @@ class SyncQueue {
           // Success - remove from queue
           this.remove(operation.id)
           processed++
-          console.log(`[SyncQueue] Successfully processed ${operation.storeName}`)
+          logger.dev(`[SyncQueue] Successfully processed ${operation.storeName}`)
         } catch (error) {
           console.error(`[SyncQueue] Failed to process ${operation.storeName}:`, error)
           operation.error = error instanceof Error ? error.message : 'Unknown error'

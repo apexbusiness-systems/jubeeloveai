@@ -4,6 +4,7 @@
  * Includes persistent caching for TTS responses with offline support
  */
 
+import { logger } from '@/lib/logger';
 import { voiceCache } from './voiceCache';
 import { ttsCooldown } from './ttsCooldown';
 
@@ -45,7 +46,7 @@ class AudioManager {
       // Clear expired entries on startup
       const cleared = await voiceCache.clearExpired();
       if (cleared > 0) {
-        console.log(`✓ Cleared ${cleared} expired voice cache entries`);
+        logger.dev(`✓ Cleared ${cleared} expired voice cache entries`);
       }
 
       // Preload common phrases for offline use (in background)
@@ -69,7 +70,7 @@ class AudioManager {
     try {
       const isReady = await voiceCache.isOfflineReady();
       if (isReady) {
-        console.log('✓ Voice cache already has offline phrases');
+        logger.dev('✓ Voice cache already has offline phrases');
         return;
       }
 
@@ -97,7 +98,7 @@ class AudioManager {
             // If server returned JSON instead of audio, it's a fallback signal
             if (contentType.includes('application/json')) {
               ttsCooldown.markUnavailable();
-              console.log('TTS unavailable (fallback signal), aborting remaining preloads');
+              logger.dev('TTS unavailable (fallback signal), aborting remaining preloads');
               throw new Error('TTS_UNAVAILABLE_ABORT');
             }
             ttsCooldown.clear();
@@ -107,7 +108,7 @@ class AudioManager {
           // If TTS is unavailable (503), signal caller to abort remaining preloads
           if (response.status === 503) {
             ttsCooldown.markUnavailable();
-            console.log('TTS unavailable (503), aborting remaining preloads');
+            logger.dev('TTS unavailable (503), aborting remaining preloads');
             throw new Error('TTS_UNAVAILABLE_ABORT');
           }
         } catch (err) {
@@ -155,7 +156,7 @@ class AudioManager {
         source.start(0);
 
         this.isAudioUnlocked = true;
-        console.log('✓ Audio unlocked for PWA/mobile');
+        logger.dev('✓ Audio unlocked for PWA/mobile');
 
         // Remove listeners once unlocked
         document.removeEventListener('touchstart', unlockAudio);
@@ -247,7 +248,7 @@ class AudioManager {
     const cached = this.audioCache.get(key);
     
     if (cached && this.isCacheValid(cached)) {
-      console.log('✓ TTS memory cache hit:', text.substring(0, 50));
+      logger.dev('✓ TTS memory cache hit:', text.substring(0, 50));
       return cached.blob;
     }
     
@@ -272,7 +273,7 @@ class AudioManager {
       if (persisted) {
         // Add to memory cache for faster subsequent access
         this.cacheAudio(text, persisted, voice, mood);
-        console.log('✓ TTS IndexedDB cache hit:', text.substring(0, 50));
+        logger.dev('✓ TTS IndexedDB cache hit:', text.substring(0, 50));
         return persisted;
       }
     } catch {
@@ -293,7 +294,7 @@ class AudioManager {
     });
     
     this.manageCacheSize();
-    console.log('✓ TTS cached (memory):', text.substring(0, 50), `(${this.audioCache.size} cached)`);
+    logger.dev('✓ TTS cached (memory):', text.substring(0, 50), `(${this.audioCache.size} cached)`);
   }
 
   /**
@@ -306,7 +307,7 @@ class AudioManager {
     // Persist to IndexedDB for offline
     try {
       await voiceCache.set(text, blob, voice, mood);
-      console.log('✓ TTS cached (persistent):', text.substring(0, 50));
+      logger.dev('✓ TTS cached (persistent):', text.substring(0, 50));
     } catch (error) {
       console.warn('Persistent cache error:', error);
     }
@@ -363,7 +364,7 @@ class AudioManager {
           ttsCooldown.clear();
           const blob = await response.blob()
           this.cacheAudio(text, blob, voice, mood)
-          console.log('✓ Preloaded:', text.substring(0, 40))
+          logger.dev('✓ Preloaded:', text.substring(0, 40))
           return
         }
 
@@ -556,7 +557,7 @@ class AudioManager {
    */
   clearCache(): void {
     this.audioCache.clear();
-    console.log('Audio cache cleared');
+    logger.dev('Audio cache cleared');
   }
 
   /**

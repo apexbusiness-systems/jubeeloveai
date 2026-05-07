@@ -5,6 +5,7 @@
  * Prevents catastrophic failures by monitoring context health and providing fallbacks.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useCallback } from 'react'
 
 interface WebGLContextInfo {
@@ -97,7 +98,7 @@ export function useWebGLResilience(
 
   // Handle context restore event
   const handleContextRestored = useCallback((_event: Event) => {
-    console.log('[WebGL Resilience] Context restored event')
+    logger.dev('[WebGL Resilience] Context restored event')
     
     contextInfoRef.current.isValid = true
     contextInfoRef.current.recoveryAttempts = 0
@@ -115,7 +116,7 @@ export function useWebGLResilience(
 
     contextInfoRef.current.recoveryAttempts++
     
-    console.log('[WebGL Resilience] Attempting recovery', contextInfoRef.current.recoveryAttempts)
+    logger.dev('[WebGL Resilience] Attempting recovery', contextInfoRef.current.recoveryAttempts)
 
     if (!containerRef.current) return
 
@@ -131,7 +132,7 @@ export function useWebGLResilience(
           recoveryTimeoutRef.current = setTimeout(() => {
             try {
               ext.restoreContext()
-              console.log('[WebGL Resilience] Context restore triggered')
+              logger.dev('[WebGL Resilience] Context restore triggered')
             } catch (error) {
               console.error('[WebGL Resilience] Failed to restore context:', error)
             }
@@ -176,7 +177,7 @@ export function useWebGLResilience(
     canvas.addEventListener('webglcontextlost', handleContextLost)
     canvas.addEventListener('webglcontextrestored', handleContextRestored)
 
-    console.log('[WebGL Resilience] Event listeners attached')
+    logger.dev('[WebGL Resilience] Event listeners attached')
 
     return () => {
       canvas.removeEventListener('webglcontextlost', handleContextLost)
