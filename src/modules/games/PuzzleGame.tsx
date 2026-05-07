@@ -190,6 +190,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
             <button
               key={piece.id}
               onClick={() => handlePieceClick(piece.id)}
+              aria-label={`Puzzle piece ${images[piece.id]}, at position ${piece.position + 1}`}
               disabled={isComplete}
               className={`puzzle-piece aspect-square rounded-2xl flex items-center justify-center text-5xl md:text-6xl transform transition-all duration-300 border-4 ${
                 selectedPiece === piece.id ? 'border-game-accent scale-110' : 'border-game-accent/50'

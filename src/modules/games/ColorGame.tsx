@@ -228,6 +228,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               <button
                 key={color.name}
                 onClick={() => handleAnswer(color)}
+                aria-label={`Select color ${color.name}`}
                 className="option-button p-6 rounded-3xl transform hover:scale-110 transition-all duration-200 border-4 border-white shadow-lg"
                 style={{
                   backgroundColor: color.hex,
