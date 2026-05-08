@@ -5,6 +5,7 @@
  * Includes accessibility options, debug mode, and feature flags.
  */
 
+import { logger } from '@/lib/logger';
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -88,7 +89,7 @@ export const useJubeeConfiguration = create<JubeeConfiguration>()(
       setVerboseLogging: (enabled) => {
         set({ verboseLogging: enabled })
         if (enabled) {
-          console.log('[Jubee Config] Verbose logging enabled')
+          logger.dev('[Jubee Config] Verbose logging enabled')
         }
       },
       
@@ -101,7 +102,7 @@ export const useJubeeConfiguration = create<JubeeConfiguration>()(
         })),
       
       enableSafeMode: () => {
-        console.log('[Jubee Config] Safe mode activated')
+        logger.dev('[Jubee Config] Safe mode activated')
         set({
           safeMode: true,
           quality: 'low',
@@ -117,7 +118,7 @@ export const useJubeeConfiguration = create<JubeeConfiguration>()(
       },
       
       disableSafeMode: () => {
-        console.log('[Jubee Config] Safe mode deactivated')
+        logger.dev('[Jubee Config] Safe mode deactivated')
         set({
           safeMode: false,
           quality: 'auto',
@@ -126,7 +127,7 @@ export const useJubeeConfiguration = create<JubeeConfiguration>()(
       },
       
       reset: () => {
-        console.log('[Jubee Config] Configuration reset to defaults')
+        logger.dev('[Jubee Config] Configuration reset to defaults')
         set(DEFAULT_CONFIG)
       }
     }),

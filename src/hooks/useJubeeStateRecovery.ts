@@ -5,6 +5,7 @@
  * Enables rollback to known-good states when issues are detected.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useCallback } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { jubeeStateBackupService } from '@/lib/jubeeStateBackup'
@@ -70,14 +71,14 @@ export function useJubeeStateRecovery() {
       })
     }
 
-    console.log('[State Recovery] Checkpoint created:', checkpoint.timestamp)
+    logger.dev('[State Recovery] Checkpoint created:', checkpoint.timestamp)
   }, [])
 
   // Restore state from checkpoint
   const restoreCheckpoint = useCallback((checkpoint: StateCheckpoint) => {
     const { setContainerPosition, triggerAnimation } = useJubeeStore.getState()
     
-    console.log('[State Recovery] Restoring checkpoint from', new Date(checkpoint.timestamp).toISOString())
+    logger.dev('[State Recovery] Restoring checkpoint from', new Date(checkpoint.timestamp).toISOString())
     
     setContainerPosition(checkpoint.containerPosition)
     triggerAnimation(checkpoint.currentAnimation)
@@ -102,13 +103,13 @@ export function useJubeeStateRecovery() {
   const restoreLastHealthyState = useCallback(async (): Promise<boolean> => {
     // First try in-memory checkpoint
     if (lastHealthyStateRef.current) {
-      console.log('[State Recovery] Restoring from in-memory checkpoint')
+      logger.dev('[State Recovery] Restoring from in-memory checkpoint')
       restoreCheckpoint(lastHealthyStateRef.current)
       return true
     }
 
     // Fallback to IndexedDB backup
-    console.log('[State Recovery] No in-memory checkpoint, trying IndexedDB backup')
+    logger.dev('[State Recovery] No in-memory checkpoint, trying IndexedDB backup')
     const backupState = await jubeeStateBackupService.restoreFromBackup()
     
     if (backupState) {
@@ -126,7 +127,7 @@ export function useJubeeStateRecovery() {
         }
       }
       
-      console.log('[State Recovery] Restored from IndexedDB backup')
+      logger.dev('[State Recovery] Restored from IndexedDB backup')
       return true
     }
 
@@ -145,7 +146,7 @@ export function useJubeeStateRecovery() {
       right: Math.min(80, viewportWidth - 450 - 20)
     }
 
-    console.log('[State Recovery] Position-only recovery:', safePosition)
+    logger.dev('[State Recovery] Position-only recovery:', safePosition)
     setContainerPosition(safePosition)
     recoveryLevelRef.current = 1
   }, [])
@@ -161,7 +162,7 @@ export function useJubeeStateRecovery() {
       right: Math.min(80, viewportWidth - 450 - 20)
     }
 
-    console.log('[State Recovery] Full reset initiated')
+    logger.dev('[State Recovery] Full reset initiated')
     setContainerPosition(defaultPosition)
     triggerAnimation('idle')
     
@@ -182,7 +183,7 @@ export function useJubeeStateRecovery() {
   const autoRecover = useCallback((issueType: 'position' | 'render' | 'critical') => {
     if (!AUTO_RECOVERY_ENABLED) return
 
-    console.log('[State Recovery] Auto-recovery triggered for:', issueType)
+    logger.dev('[State Recovery] Auto-recovery triggered for:', issueType)
 
     switch (issueType) {
       case 'position':

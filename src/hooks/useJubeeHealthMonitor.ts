@@ -5,6 +5,7 @@
  * Tracks metrics, logs errors, and monitors performance for early issue detection.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
 
@@ -167,7 +168,7 @@ export function useJubeeHealthMonitor() {
 
     // Log status changes
     if (status !== healthStatus) {
-      console.log('[Jubee Health] Status changed:', { 
+      logger.dev('[Jubee Health] Status changed:', {
         from: healthStatus, 
         to: status, 
         score,
@@ -190,7 +191,7 @@ export function useJubeeHealthMonitor() {
 
       // Reset counters periodically to prevent unbounded growth
       if (metricsRef.current.renderCount > 10000) {
-        console.log('[Jubee Health] Resetting counters after', metricsRef.current.renderCount, 'renders')
+        logger.dev('[Jubee Health] Resetting counters after', metricsRef.current.renderCount, 'renders')
         metricsRef.current.errorCount = Math.min(metricsRef.current.errorCount, 10)
         metricsRef.current.warningCount = Math.min(metricsRef.current.warningCount, 10)
       }

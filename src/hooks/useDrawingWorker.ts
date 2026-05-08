@@ -5,6 +5,7 @@
  * Provides fallback to main thread if Worker API unavailable.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useCallback, useState } from 'react'
 import type { DrawingWorkerInput, DrawingWorkerOutput } from '@/workers/drawingWorker'
 
@@ -40,7 +41,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
           console.error('[DrawingWorker] Worker error:', error)
           options.onError?.(error)
         } else {
-          console.log(
+          logger.dev(
             `[DrawingWorker] Processed in ${event.data.processingTime?.toFixed(2)}ms`
           )
           options.onProcessed?.(event.data)
@@ -53,7 +54,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
         options.onError?.(new Error(error.message))
       }
 
-      console.log('[DrawingWorker] Worker initialized successfully')
+      logger.dev('[DrawingWorker] Worker initialized successfully')
     } catch (error) {
       console.error('[DrawingWorker] Failed to initialize worker:', error)
       setIsWorkerSupported(false)
@@ -63,7 +64,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
       if (workerRef.current) {
         workerRef.current.terminate()
         workerRef.current = null
-        console.log('[DrawingWorker] Worker terminated')
+        logger.dev('[DrawingWorker] Worker terminated')
       }
     }
   }, [options.onProcessed, options.onError])
@@ -86,7 +87,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
 
       // Fallback to main thread if worker unavailable
       if (!isWorkerSupported || !workerRef.current) {
-        console.log('[DrawingWorker] Using main thread fallback')
+        logger.dev('[DrawingWorker] Using main thread fallback')
         
         try {
           const startTime = performance.now()
@@ -153,7 +154,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
       setIsProcessing(true)
 
       if (!isWorkerSupported || !workerRef.current) {
-        console.log('[DrawingWorker] Using main thread fallback for compression')
+        logger.dev('[DrawingWorker] Using main thread fallback for compression')
         
         try {
           const startTime = performance.now()
@@ -214,7 +215,7 @@ export function useDrawingWorker(options: UseDrawingWorkerOptions = {}) {
     if (workerRef.current) {
       workerRef.current.terminate()
       workerRef.current = null
-      console.log('[DrawingWorker] Worker manually terminated')
+      logger.dev('[DrawingWorker] Worker manually terminated')
     }
   }, [])
 

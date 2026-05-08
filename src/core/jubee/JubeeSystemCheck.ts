@@ -5,6 +5,7 @@
  * Prevents regression by verifying critical integrations.
  */
 
+import { logger } from '@/lib/logger';
 import { validatePosition } from './JubeePositionValidator'
 import { validatePosition as validatePosManager, getSafeDefaultPosition as getSafeDefaultPosManager } from './JubeePositionManager'
 import { validateJubeeSizing } from './JubeeSizingValidator'
@@ -258,12 +259,12 @@ export function logSystemCheckResults(): void {
   const allPassed = results.every(r => r.passed)
   
   console.group('[Jubee System Check]')
-  console.log(`Overall Status: ${allPassed ? '✅ ALL SYSTEMS GO' : '❌ SYSTEMS FAILING'}`)
+  logger.dev(`Overall Status: ${allPassed ? '✅ ALL SYSTEMS GO' : '❌ SYSTEMS FAILING'}`)
   
   results.forEach(result => {
     const icon = result.passed ? '✅' : '❌'
     const level = result.critical ? 'CRITICAL' : 'WARNING'
-    console.log(`${icon} [${level}] ${result.system}: ${result.message}`)
+    logger.dev(`${icon} [${level}] ${result.system}: ${result.message}`)
   })
   
   console.groupEnd()

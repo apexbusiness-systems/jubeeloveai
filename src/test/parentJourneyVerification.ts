@@ -6,6 +6,7 @@
  * Includes screenshot capture at each step for visual evidence.
  */
 
+import { logger } from '@/lib/logger';
 import html2canvas from 'html2canvas';
 
 export type VerificationResult = {
@@ -74,7 +75,7 @@ class ParentJourneyVerifier {
       const dataUrl = canvas.toDataURL('image/jpeg', this.screenshotQuality);
       this.screenshots.push(dataUrl);
       
-      console.log(`📸 Screenshot captured for: ${stepName}`);
+      logger.dev(`📸 Screenshot captured for: ${stepName}`);
       return dataUrl;
     } catch (error) {
       console.warn(`Failed to capture screenshot for ${stepName}:`, error);
@@ -100,9 +101,9 @@ class ParentJourneyVerifier {
     this.results.push(result);
     
     const emoji = passed ? '✅' : '❌';
-    console.log(`${emoji} ${step}: ${evidence}`);
+    logger.dev(`${emoji} ${step}: ${evidence}`);
     if (error) console.error(`   Error: ${error}`);
-    if (screenshot) console.log(`   📸 Screenshot captured`);
+    if (screenshot) logger.dev(`   📸 Screenshot captured`);
   }
 
   /**
@@ -136,7 +137,7 @@ class ParentJourneyVerifier {
       document.body.removeChild(link);
     });
 
-    console.log(`✅ Downloaded ${this.screenshots.length} screenshots`);
+    logger.dev(`✅ Downloaded ${this.screenshots.length} screenshots`);
   }
 
   /**
@@ -175,7 +176,7 @@ class ParentJourneyVerifier {
       }
     });
 
-    console.log(`✅ Opened ${this.screenshots.length} screenshots in new tabs`);
+    logger.dev(`✅ Opened ${this.screenshots.length} screenshots in new tabs`);
   }
 
   private async wait(ms: number): Promise<void> {
@@ -234,8 +235,8 @@ class ParentJourneyVerifier {
     }
     
     console.group('🎯 Parent Journey Verification - Complete Flow');
-    console.log('Starting comprehensive parent user journey test...');
-    console.log(`Screenshot capture: ${this.captureScreenshots ? 'ENABLED' : 'DISABLED'}\n`);
+    logger.dev('Starting comprehensive parent user journey test...');
+    logger.dev(`Screenshot capture: ${this.captureScreenshots ? 'ENABLED' : 'DISABLED'}\n`);
 
     // STEP 1: Verify page load
     try {
@@ -487,19 +488,19 @@ class ParentJourneyVerifier {
       screenshots: this.screenshots,
     };
 
-    console.log('\n📊 Journey Verification Summary');
-    console.log('='.repeat(50));
-    console.log(`Total Steps: ${report.totalSteps}`);
-    console.log(`✅ Passed: ${report.passedSteps}`);
-    console.log(`❌ Failed: ${report.failedSteps}`);
-    console.log(`📸 Screenshots: ${this.screenshots.length}`);
-    console.log(`Duration: ${report.endTime - report.startTime}ms`);
-    console.log(`Overall Result: ${report.overallPass ? '✅ PASS' : '❌ FAIL'}`);
+    logger.dev('\n📊 Journey Verification Summary');
+    logger.dev('='.repeat(50));
+    logger.dev(`Total Steps: ${report.totalSteps}`);
+    logger.dev(`✅ Passed: ${report.passedSteps}`);
+    logger.dev(`❌ Failed: ${report.failedSteps}`);
+    logger.dev(`📸 Screenshots: ${this.screenshots.length}`);
+    logger.dev(`Duration: ${report.endTime - report.startTime}ms`);
+    logger.dev(`Overall Result: ${report.overallPass ? '✅ PASS' : '❌ FAIL'}`);
     
     if (this.screenshots.length > 0) {
-      console.log('\n📸 Screenshot Commands:');
-      console.log('  - View screenshots: window.parentJourneyVerifier.viewScreenshots()');
-      console.log('  - Download screenshots: window.parentJourneyVerifier.downloadScreenshots()');
+      logger.dev('\n📸 Screenshot Commands:');
+      logger.dev('  - View screenshots: window.parentJourneyVerifier.viewScreenshots()');
+      logger.dev('  - Download screenshots: window.parentJourneyVerifier.downloadScreenshots()');
     }
     
     console.groupEnd();
@@ -517,8 +518,8 @@ class ParentJourneyVerifier {
     }
     
     console.group('⚡ Parent Journey Verification - Quick Flow');
-    console.log('Testing impatient parent who skips onboarding...');
-    console.log(`Screenshot capture: ${this.captureScreenshots ? 'ENABLED' : 'DISABLED'}\n`);
+    logger.dev('Testing impatient parent who skips onboarding...');
+    logger.dev(`Screenshot capture: ${this.captureScreenshots ? 'ENABLED' : 'DISABLED'}\n`);
 
     try {
       window.location.href = '/stories';
@@ -573,15 +574,15 @@ class ParentJourneyVerifier {
       screenshots: this.screenshots,
     };
 
-    console.log('\n📊 Quick Journey Summary');
-    console.log(`Passed: ${report.passedSteps}/${report.totalSteps}`);
-    console.log(`📸 Screenshots: ${this.screenshots.length}`);
-    console.log(`Result: ${report.overallPass ? '✅ PASS' : '❌ FAIL'}`);
+    logger.dev('\n📊 Quick Journey Summary');
+    logger.dev(`Passed: ${report.passedSteps}/${report.totalSteps}`);
+    logger.dev(`📸 Screenshots: ${this.screenshots.length}`);
+    logger.dev(`Result: ${report.overallPass ? '✅ PASS' : '❌ FAIL'}`);
     
     if (this.screenshots.length > 0) {
-      console.log('\n📸 Screenshot Commands:');
-      console.log('  - View screenshots: window.parentJourneyVerifier.viewScreenshots()');
-      console.log('  - Download screenshots: window.parentJourneyVerifier.downloadScreenshots()');
+      logger.dev('\n📸 Screenshot Commands:');
+      logger.dev('  - View screenshots: window.parentJourneyVerifier.viewScreenshots()');
+      logger.dev('  - Download screenshots: window.parentJourneyVerifier.downloadScreenshots()');
     }
     
     console.groupEnd();
@@ -629,13 +630,13 @@ if (typeof window !== 'undefined') {
   
   window.verifyParentJourney = async (captureScreenshots = true) => {
     const report = await parentJourneyVerifier.runCompleteJourney({ captureScreenshots });
-    console.log('\n' + parentJourneyVerifier.getDetailedReport());
+    logger.dev('\n' + parentJourneyVerifier.getDetailedReport());
     return report;
   };
 
   window.verifyQuickJourney = async (captureScreenshots = true) => {
     const report = await parentJourneyVerifier.runQuickJourney({ captureScreenshots });
-    console.log('\n' + parentJourneyVerifier.getDetailedReport());
+    logger.dev('\n' + parentJourneyVerifier.getDetailedReport());
     return report;
   };
   

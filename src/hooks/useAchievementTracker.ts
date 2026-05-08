@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useCallback } from 'react'
 import { useGameStore } from '@/store/useGameStore'
 import { useAchievementStore } from '@/store/useAchievementStore'
@@ -30,7 +31,7 @@ const streakData = useAchievementStore(state => state.streakData);
         speak(`Amazing! You unlocked ${achievement.name}!`)
       })
 
-      console.log(`[AchievementTracker] Web Worker processed achievements in ${data.processingTime.toFixed(2)}ms`)
+      logger.dev(`[AchievementTracker] Web Worker processed achievements in ${data.processingTime.toFixed(2)}ms`)
     },
     onError: (error) => {
       console.error('[AchievementTracker] Worker error:', error)

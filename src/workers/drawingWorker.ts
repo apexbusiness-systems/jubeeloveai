@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Drawing Worker
  * 
@@ -186,4 +187,4 @@ function applyImageFilter(
   return new ImageData(data, width, height)
 }
 
-console.log('[DrawingWorker] Worker initialized')
+logger.dev('[DrawingWorker] Worker initialized')

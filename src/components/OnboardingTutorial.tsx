@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useOnboardingStore } from '@/store/useOnboardingStore'
@@ -67,7 +68,7 @@ const skipOnboarding = useOnboardingStore(state => state.skipOnboarding);
   // Auto-complete onboarding after first Jubee interaction
   useEffect(() => {
     if (isActive && interactionCount > 0) {
-      console.log('[Onboarding] Auto-completing after first Jubee interaction')
+      logger.dev('[Onboarding] Auto-completing after first Jubee interaction')
       setShowCelebration(true)
       
       // Trigger confetti

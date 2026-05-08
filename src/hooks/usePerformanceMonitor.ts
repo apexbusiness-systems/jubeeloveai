@@ -14,6 +14,7 @@
  * ```
  */
 
+import { logger } from '@/lib/logger';
 import React, { Profiler, ProfilerOnRenderCallback, ComponentType } from 'react';
 
 interface PerformanceMetrics {
@@ -79,7 +80,7 @@ class PerformanceMonitor {
           `\nRender count: ${renderCount}`
         );
       } else {
-        console.log(
+        logger.dev(
           `✓ ${id} rendered in ${actualDuration.toFixed(2)}ms (${phase})`,
           `\nAverage: ${metrics.averageDuration.toFixed(2)}ms`
         );

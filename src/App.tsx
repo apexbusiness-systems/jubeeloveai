@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { Suspense, useEffect, useState, lazy } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -148,14 +149,14 @@ const startOnboarding = useOnboardingStore(state => state.startOnboarding);
         
         // If breakpoint changed, revalidate position to prevent clipping
         if (currentBreakpoint !== previousBreakpoint) {
-          console.log('[Jubee Resize] Breakpoint changed:', previousBreakpoint, '->', currentBreakpoint);
+          logger.dev('[Jubee Resize] Breakpoint changed:', previousBreakpoint, '->', currentBreakpoint);
           
           // Access current position directly from store to avoid re-running effect on state change
           const currentPosition = useJubeeStore.getState().containerPosition;
           const validated = validatePosition(currentPosition);
 
           if (validated.bottom !== currentPosition.bottom || validated.right !== currentPosition.right) {
-            console.log('[Jubee Resize] Position adjusted for new breakpoint:', validated);
+            logger.dev('[Jubee Resize] Position adjusted for new breakpoint:', validated);
             useJubeeStore.getState().setContainerPosition(validated);
           }
           

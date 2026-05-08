@@ -238,7 +238,7 @@ class IndexedDBService {
    * ```typescript
    * const drawing = await jubeeDB.get('drawings', 'drawing-123');
    * if (drawing) {
-   *   console.log('Found drawing:', drawing.title);
+   *   logger.dev('Found drawing:', drawing.title);
    * }
    * ```
    */
@@ -275,7 +275,7 @@ class IndexedDBService {
    * @example
    * ```typescript
    * const allDrawings = await jubeeDB.getAll('drawings');
-   * console.log(`Found ${allDrawings.length} drawings`);
+   * logger.dev(`Found ${allDrawings.length} drawings`);
    * ```
    */
   async getAll<K extends keyof DBSchema>(
@@ -348,7 +348,7 @@ class IndexedDBService {
    * ```typescript
    * const unsyncedDrawings = await jubeeDB.getUnsynced('drawings');
    * if (unsyncedDrawings.length > 0) {
-   *   console.log(`${unsyncedDrawings.length} drawings need syncing`);
+   *   logger.dev(`${unsyncedDrawings.length} drawings need syncing`);
    * }
    * ```
    */

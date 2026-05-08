@@ -5,6 +5,7 @@
  * Provides fallback to main thread processing if Worker API unavailable.
  */
 
+import { logger } from '@/lib/logger';
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { Achievement } from '@/types/achievements'
 import type { AchievementWorkerInput, AchievementWorkerOutput } from '@/workers/achievementWorker'
@@ -44,7 +45,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         setIsProcessing(false)
         
         if (event.data.type === 'ACHIEVEMENTS_CHECKED') {
-          console.log(
+          logger.dev(
             `[AchievementWorker] Processed in ${event.data.processingTime.toFixed(2)}ms`,
             `Found ${event.data.newUnlocks.length} new unlocks`
           )
@@ -63,7 +64,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
         callbacksRef.current.onError?.(new Error(error.message))
       }
 
-      console.log('[AchievementWorker] Worker initialized successfully')
+      logger.dev('[AchievementWorker] Worker initialized successfully')
     } catch (error) {
       console.error('[AchievementWorker] Failed to initialize worker:', error)
       setIsWorkerSupported(false)
@@ -74,7 +75,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
       if (workerRef.current) {
         workerRef.current.terminate()
         workerRef.current = null
-        console.log('[AchievementWorker] Worker terminated')
+        logger.dev('[AchievementWorker] Worker terminated')
       }
     }
   }, []) // Empty deps - initialize only once
@@ -97,7 +98,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
 
       // Fallback to main thread processing if worker unavailable
       if (!isWorkerSupported || !workerRef.current) {
-        console.log('[AchievementWorker] Using main thread fallback')
+        logger.dev('[AchievementWorker] Using main thread fallback')
         
         try {
           const result = await processAchievementsMainThread(achievements, activityData)
@@ -141,7 +142,7 @@ export function useAchievementWorker(options: UseAchievementWorkerOptions = {}) 
     if (workerRef.current) {
       workerRef.current.terminate()
       workerRef.current = null
-      console.log('[AchievementWorker] Worker manually terminated')
+      logger.dev('[AchievementWorker] Worker manually terminated')
     }
   }, [])
 

@@ -229,6 +229,10 @@ serve(async (req) => {
       || "*buzz* I'm thinking! Tell me more? 🐝";
 
     // Async log (non-blocking)
+    // PRIVACY POLICY & CHILD SAFETY ENFORCEMENT:
+    // Only a preview of the message is logged (first 50 chars). Numbers are masked.
+    // Full conversation text and audio are NEVER stored permanently.
+    // Retention for conversation analytics is limited to aggregate sentiment/mood.
     (async () => {
       try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL');

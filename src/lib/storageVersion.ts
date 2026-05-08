@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 /**
  * Storage Versioning & Migration System
  * Handles data schema migrations when app structure changes
@@ -51,7 +52,7 @@ export function runMigrations(): void {
     return; // Already up to date
   }
   
-  console.log(`[Storage Migration] Upgrading from v${currentVersion} to v${CURRENT_VERSION}`);
+  logger.dev(`[Storage Migration] Upgrading from v${currentVersion} to v${CURRENT_VERSION}`);
   
   // Run migrations in order
   for (let version = currentVersion; version < CURRENT_VERSION; version++) {
@@ -79,7 +80,7 @@ export function runMigrations(): void {
           }
         });
         
-        console.log(`[Storage Migration] Completed migration from v${version} to v${version + 1}`);
+        logger.dev(`[Storage Migration] Completed migration from v${version} to v${version + 1}`);
       } catch (error) {
         console.error(`[Storage Migration] Failed at version ${version}:`, error);
       }
@@ -87,7 +88,7 @@ export function runMigrations(): void {
   }
   
   setStorageVersion(CURRENT_VERSION);
-  console.log('[Storage Migration] All migrations completed');
+  logger.dev('[Storage Migration] All migrations completed');
 }
 
 /**

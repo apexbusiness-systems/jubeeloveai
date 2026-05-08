@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect, useState } from 'react'
 import { syncService } from '@/lib/syncService'
 import { useToast } from '@/hooks/use-toast'
@@ -32,7 +33,7 @@ export function useOfflineSync() {
         // Process any queued operations first
         if (hasQueue) {
           const queueResult = await syncService.processQueue()
-          console.log('Queue processed:', queueResult)
+          logger.dev('Queue processed:', queueResult)
         }
         
         // Then perform regular sync

@@ -7,6 +7,7 @@
  * @module jubeeStateBackup
  */
 
+import { logger } from '@/lib/logger';
 import { jubeeDB } from './indexedDB'
 
 export interface JubeeStateBackup {
@@ -48,7 +49,7 @@ class JubeeStateBackupService {
     try {
       await jubeeDB.init()
       this.isInitialized = true
-      console.log('[Jubee Backup] Service initialized')
+      logger.dev('[Jubee Backup] Service initialized')
     } catch (error) {
       console.error('[Jubee Backup] Initialization failed:', error)
     }
@@ -115,7 +116,7 @@ class JubeeStateBackupService {
         console.warn('[Jubee Backup] localStorage backup failed:', error)
       }
 
-      console.log('[Jubee Backup] Backup created:', backup.id)
+      logger.dev('[Jubee Backup] Backup created:', backup.id)
       return true
     } catch (error) {
       console.error('[Jubee Backup] Backup creation failed:', error)
@@ -132,7 +133,7 @@ class JubeeStateBackupService {
       const localBackups = this.getLocalBackups()
       if (localBackups.length > 0) {
         const latest = localBackups[localBackups.length - 1]
-        console.log('[Jubee Backup] Retrieved latest backup from localStorage')
+        logger.dev('[Jubee Backup] Retrieved latest backup from localStorage')
         return latest
       }
 
@@ -154,7 +155,7 @@ class JubeeStateBackupService {
         .sort((a, b) => b.timestamp - a.timestamp)
 
       if (backups.length > 0) {
-        console.log('[Jubee Backup] Retrieved latest backup from IndexedDB')
+        logger.dev('[Jubee Backup] Retrieved latest backup from IndexedDB')
         return backups[0]
       }
 
@@ -186,7 +187,7 @@ class JubeeStateBackupService {
         return null
       }
 
-      console.log('[Jubee Backup] Restoring from backup:', backup.id)
+      logger.dev('[Jubee Backup] Restoring from backup:', backup.id)
       return backup.state
     } catch (error) {
       console.error('[Jubee Backup] Restore failed:', error)
@@ -224,7 +225,7 @@ class JubeeStateBackupService {
       this.createBackup(getState())
     }, BACKUP_INTERVAL)
 
-    console.log('[Jubee Backup] Auto-backup started')
+    logger.dev('[Jubee Backup] Auto-backup started')
   }
 
   /**
@@ -234,7 +235,7 @@ class JubeeStateBackupService {
     if (this.backupIntervalId) {
       clearInterval(this.backupIntervalId)
       this.backupIntervalId = null
-      console.log('[Jubee Backup] Auto-backup stopped')
+      logger.dev('[Jubee Backup] Auto-backup stopped')
     }
   }
 
@@ -247,7 +248,7 @@ class JubeeStateBackupService {
       if (backups.length > keepCount) {
         const toKeep = backups.slice(-keepCount)
         localStorage.setItem(BACKUP_KEY, JSON.stringify(toKeep))
-        console.log('[Jubee Backup] Cleared old backups, kept', toKeep.length)
+        logger.dev('[Jubee Backup] Cleared old backups, kept', toKeep.length)
       }
     } catch (error) {
       console.error('[Jubee Backup] Failed to clear old backups:', error)

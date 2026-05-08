@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { captureException } from "./sentry";
 /**
  * Comprehensive Error Handler with Retry Logic
@@ -54,7 +55,7 @@ class ErrorHandler {
             ? delayMs * Math.pow(2, attempt)
             : delayMs
 
-          console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`)
+          logger.dev(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`)
           
           if (onRetry) {
             onRetry(attempt + 1, lastError)
