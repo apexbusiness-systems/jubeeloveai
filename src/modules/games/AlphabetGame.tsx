@@ -33,7 +33,14 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       options = generateLetterOptions(letter)
     } else if (type === 'lowercase') {
       correctAnswer = letter.toLowerCase()
-      const wrongLetters = alphabet.filter(l => l !== letter).slice(0, 3).map(l => l.toLowerCase())
+
+      const wrongLetters: string[] = [];
+      for (let i = 0; i < alphabet.length && wrongLetters.length < 3; i++) {
+        if (alphabet[i] !== letter) {
+          wrongLetters.push(alphabet[i].toLowerCase());
+        }
+      }
+
       options = [correctAnswer, ...wrongLetters].sort(() => Math.random() - 0.5)
     } else {
       // Sound matching (starting sound)
@@ -69,10 +76,13 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       const letterWords = words[letter] || ['Word']
       correctAnswer = letterWords[0]
       
-      const wrongOptions = Object.entries(words)
-        .filter(([l]) => l !== letter)
-        .slice(0, 3)
-        .map(([, w]) => w[0])
+      const keys = Object.keys(words);
+      const wrongOptions: string[] = [];
+      for (let i = 0; i < keys.length && wrongOptions.length < 3; i++) {
+        if (keys[i] !== letter) {
+          wrongOptions.push(words[keys[i]][0]);
+        }
+      }
       
       options = [correctAnswer, ...wrongOptions].sort(() => Math.random() - 0.5)
     }
@@ -87,11 +97,12 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
   const generateLetterOptions = (correct: string): string[] => {
     const options = new Set([correct])
-    const available = alphabet.filter(l => l !== correct)
     
     while (options.size < 4) {
-      const random = available[Math.floor(Math.random() * available.length)]
-      options.add(random)
+      const random = alphabet[Math.floor(Math.random() * alphabet.length)]
+      if (random !== correct) {
+        options.add(random)
+      }
     }
     
     return Array.from(options).sort(() => Math.random() - 0.5)
