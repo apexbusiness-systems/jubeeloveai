@@ -76,6 +76,9 @@ const score = useGameStore(state => state.score);
                     <div 
                       key={index}
                       className="aspect-square bg-card rounded-2xl border-4 border-primary flex items-center justify-center text-5xl hover:scale-110 transition-transform shadow-lg"
+                      role="img"
+                      aria-label={`Owned sticker: ${sticker}`}
+                      title={`Owned sticker: ${sticker}`}
                     >
                       {sticker}
                     </div>
@@ -100,6 +103,8 @@ const score = useGameStore(state => state.score);
                       onClick={() => handleBuySticker(sticker)}
                       variant="outline"
                       disabled={owned}
+                      aria-label={owned ? `Sticker ${sticker} already owned` : `Buy sticker ${sticker} for ${stickerCost} points`}
+                      title={owned ? `Sticker ${sticker} already owned` : `Buy sticker ${sticker} for ${stickerCost} points`}
                       className={`aspect-square text-5xl p-0 ${
                         owned ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 border-primary border-2'
                       }`}
