@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client'
 import { premiumStories } from '@/data/storySeedData'
 
@@ -13,7 +14,7 @@ export async function initializeStories() {
 
     // If stories already exist, don't re-insert
     if (existingStories && existingStories.length > 0) {
-      console.log('Stories already initialized')
+      logger.dev('Stories already initialized')
       return { success: true, alreadyInitialized: true }
     }
 
@@ -33,7 +34,7 @@ export async function initializeStories() {
 
     if (error) throw error
 
-    console.log('Successfully initialized stories database')
+    logger.dev('Successfully initialized stories database')
     return { success: true, count: premiumStories.length }
   } catch (error) {
     console.error('Error initializing stories:', error)

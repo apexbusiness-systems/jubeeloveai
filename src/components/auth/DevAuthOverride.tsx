@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useParentalStore } from '@/store/useParentalStore';
@@ -14,7 +15,7 @@ const isPremium = useParentalStore(state => state.isPremium);
   useEffect(() => {
     if (user?.email && DEV_EMAILS.includes(user.email)) {
       if (!isPremium) {
-        console.log(`[DevAuth] 🔓 Authorizing Developer: ${user.email}`);
+        logger.dev(`[DevAuth] 🔓 Authorizing Developer: ${user.email}`);
         
         // 1. Force Unlock Premium
         setPremiumStatus(true);

@@ -85,7 +85,7 @@ if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
         // Check for updates every 15 minutes (reduced polling load)
         setInterval(() => {
           registration.update();
-        }, 900000);
+        }, 3600000);
       },
       (err) => {
         logger.error('ServiceWorker registration failed:', err);

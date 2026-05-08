@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useParentalStore } from '@/store/useParentalStore';
+
 
 interface Props {
   show: boolean
@@ -19,12 +21,14 @@ const celebrationEmojis = ['🎉', '⭐', '✨', '🌟', '💫', '🎊', '🐝',
 
 export function RewardAnimation({ show, message, emoji = '🎉', onComplete }: Props) {
   const [confetti, setConfetti] = useState<Confetti[]>([])
+  const isCalmMode = useParentalStore(state => state.settings?.calmMode ?? false);
 
   useEffect(() => {
     if (show) {
       // Generate confetti
       const newConfetti: Confetti[] = []
-      for (let i = 0; i < 50; i++) {
+      const particleCount = isCalmMode ? 10 : 50;
+      for (let i = 0; i < particleCount; i++) {
         newConfetti.push({
           id: i,
           left: Math.random() * 100,
