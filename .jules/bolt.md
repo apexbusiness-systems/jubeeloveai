@@ -5,3 +5,6 @@
 ## 2025-04-24 - O(n) array operations over `.reduce` for simple object mappings
 **Learning:** In very hot code paths (e.g. rendering large collections where useMemo recalculates, or iterating over arrays in rendering), using multiple `.filter()` calls to map data is slower than using standard `for` loops. The StickerBook component had 3 `.filter()` passes that we consolidated into a single pass loop.
 **Action:** Replace multiple `.filter()` passes with a single `for` loop mapping when iterating data that creates disjoint sets based on a category property. It yields a consistent and noticeable reduction in execution time for the calculation block.
+## 2025-05-15 - Consolidating Array chains
+**Learning:** Replaced O(3n) array operation chains (`.filter().slice().map()`) with O(n) single `for` loops in a game module that generates questions quickly. Although small array sizes mean it's a micro-optimization, it adheres to the strict performance guidelines in standard iteration paths.
+**Action:** Replace multiple chained array passes with a single loop mapping when generating disjoint sets.

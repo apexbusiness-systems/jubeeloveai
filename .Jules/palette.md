@@ -13,3 +13,6 @@
 ## 2024-04-24 - Make interactive Card elements accessible buttons
 **Learning:** Found an accessibility issue pattern where `Card` components from the design system are used as interactive elements with just an `onClick` handler, making them completely inaccessible to keyboard and screen reader users.
 **Action:** Next time I see a Card used for navigation or selection, ensure it has `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown` for Enter/Space), appropriate focus styling, and an `aria-label`.
+## 2024-05-08 - Added `aria-hidden="true"` to decorative icons in VolumeControlDialog
+**Learning:** Decorative icons in dialogs and buttons should be hidden from screen readers to prevent redundant reading.
+**Action:** Add `aria-hidden="true"` to decorative icons in VolumeControlDialog.
