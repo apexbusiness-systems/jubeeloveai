@@ -120,7 +120,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                       const strongest = store.getStrongestSkills(child.id, 2);
                       const needsReview = store.getNeedsReviewSkills(child.id, 2);
                       const practicedToday = store.getPracticedToday(child.id);
-
+                      
                       return (
                         <div key={child.id} className="border rounded-lg p-3 space-y-3 bg-card">
                           <div className="flex items-center gap-2 border-b pb-2">
@@ -129,7 +129,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                             </div>
                             <h3 className="font-medium text-sm">{child.name}'s Week</h3>
                           </div>
-
+                          
                           <div className="space-y-2 text-xs">
                             <div>
                               <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
@@ -141,7 +141,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                                 <p className="text-muted-foreground">Keep playing to see strengths!</p>
                               )}
                             </div>
-
+                            
                             <div>
                               <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
                               {needsReview.length > 0 ? (
@@ -152,16 +152,16 @@ const settings = useParentalStore(useShallow(state => state.settings));
                                 <p className="text-muted-foreground">All caught up!</p>
                               )}
                             </div>
-
+                            
                             <div>
                               <span className="font-medium text-blue-600 block mb-0.5">💡 Offline Suggestion</span>
                               <p className="text-muted-foreground">
-                                {needsReview.length > 0 && needsReview[0].skillId === 'counting'
+                                {needsReview.length > 0 && needsReview[0].skillId === 'counting' 
                                   ? "Try counting the stairs as you walk up together."
                                   : "Ask them to spot the color red in the room for 3 minutes."}
                               </p>
                             </div>
-
+                            
                             <div className="pt-2 border-t font-medium text-muted-foreground">
                               Practiced Today: {practicedToday.length} skill{practicedToday.length !== 1 && 's'}
                             </div>
@@ -173,7 +173,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                 </CardContent>
               </Card>
             </div>
-
+            
             <Card className="hover:shadow-lg transition-shadow cursor-pointer border-dashed" onClick={() => navigate('/analytics')}>
               <CardHeader>
                 <div className="flex items-center gap-4">

@@ -168,7 +168,7 @@ export function useJubeeHealthMonitor() {
 
     // Log status changes
     if (status !== healthStatus) {
-      logger.dev('[Jubee Health] Status changed:', {
+      logger.dev('[Jubee Health] Status changed:', { 
         from: healthStatus, 
         to: status, 
         score,
