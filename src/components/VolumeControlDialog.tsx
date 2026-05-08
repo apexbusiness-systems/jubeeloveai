@@ -43,14 +43,14 @@ const speak = useJubeeStore(state => state.speak);
           size="lg"
           className="w-full"
         >
-          <Volume2 className="w-5 h-5 mr-2" />
+          <Volume2 className="w-5 h-5 mr-2" aria-hidden="true" />
           Volume Controls
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-primary flex items-center gap-2">
-            <Volume2 className="w-6 h-6" />
+            <Volume2 className="w-6 h-6" aria-hidden="true" />
             Volume Controls
           </DialogTitle>
           <DialogDescription className="text-primary">
@@ -64,9 +64,9 @@ const speak = useJubeeStore(state => state.speak);
             <div className="flex items-center justify-between">
               <Label htmlFor="sound-effects" className="text-base font-semibold text-primary flex items-center gap-2">
                 {soundEffectsVolume === 0 ? (
-                  <VolumeX className="w-5 h-5" />
+                  <VolumeX className="w-5 h-5" aria-hidden="true" />
                 ) : (
-                  <Volume2 className="w-5 h-5" />
+                  <Volume2 className="w-5 h-5" aria-hidden="true" />
                 )}
                 Sound Effects
               </Label>
@@ -91,9 +91,9 @@ const speak = useJubeeStore(state => state.speak);
             <div className="flex items-center justify-between">
               <Label htmlFor="voice" className="text-base font-semibold text-primary flex items-center gap-2">
                 {voiceVolume === 0 ? (
-                  <VolumeX className="w-5 h-5" />
+                  <VolumeX className="w-5 h-5" aria-hidden="true" />
                 ) : (
-                  <Volume2 className="w-5 h-5" />
+                  <Volume2 className="w-5 h-5" aria-hidden="true" />
                 )}
                 Voice
               </Label>
