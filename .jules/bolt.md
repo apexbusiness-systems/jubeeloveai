@@ -1,10 +1,3 @@
-## 2025-03-02 - O(n log n) sorting optimization on dynamic UI list categorization
-**Learning:** React `useMemo` blocks with arrays often contain multiple successive filters and sorts to display content in tabs. These multiple loops (like what `AchievementList` did with 5 `.filter()` passes + 5 `.sort()` passes dynamically) degrade quickly.
-**Action:** Replace multiple map/filter passes with a single `O(n)` category separation block that leverages an initial `O(n log n)` global sort, then iterate the items once. Doing this in `useMemo` avoids redundant iteration and computation per render. If returning functions, use `React.useCallback`.
-
-## 2025-04-24 - O(n) array operations over `.reduce` for simple object mappings
-**Learning:** In very hot code paths (e.g. rendering large collections where useMemo recalculates, or iterating over arrays in rendering), using multiple `.filter()` calls to map data is slower than using standard `for` loops. The StickerBook component had 3 `.filter()` passes that we consolidated into a single pass loop.
-**Action:** Replace multiple `.filter()` passes with a single `for` loop mapping when iterating data that creates disjoint sets based on a category property. It yields a consistent and noticeable reduction in execution time for the calculation block.
-## 2025-05-15 - Consolidating Array chains
-**Learning:** Replaced O(3n) array operation chains (`.filter().slice().map()`) with O(n) single `for` loops in a game module that generates questions quickly. Although small array sizes mean it's a micro-optimization, it adheres to the strict performance guidelines in standard iteration paths.
-**Action:** Replace multiple chained array passes with a single loop mapping when generating disjoint sets.
+## 2024-05-10 - Zustand Selector Optimization with useShallow
+**Learning:** Consolidating multiple separate `useStore(state => state.property)` calls into a single `useStore(useShallow(state => ({ prop1: state.prop1, prop2: state.prop2 })))` reduces store subscriptions and hook execution overhead.
+**Action:** Use `useShallow` from `zustand/react/shallow` when extracting multiple top-level properties from the same Zustand store to improve performance and lower memory footprint.

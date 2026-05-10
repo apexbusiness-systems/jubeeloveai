@@ -1,6 +1,7 @@
 import { useEffect, useMemo, memo } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow';
 
 interface Props {
   onClose: () => void
@@ -106,11 +107,24 @@ const StickerCard = memo(({
 StickerCard.displayName = 'StickerCard'
 
 export function StickerBook({ onClose }: Props) {
-  const score = useGameStore(state => state.score);
-const unlockedStickers = useGameStore(state => state.stickers);
-const addSticker = useGameStore(state => state.addSticker);
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and memory allocations
+  const {
+    score,
+    unlockedStickers,
+    addSticker
+  } = useGameStore(useShallow(state => ({
+    score: state.score,
+    unlockedStickers: state.stickers,
+    addSticker: state.addSticker
+  })));
+  const {
+    speak,
+    triggerAnimation
+  } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
 
   // Memoize categorized stickers to avoid filtering on every render O(n) instead of O(3n)
   const categorizedStickers = useMemo(() => {
