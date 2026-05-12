@@ -1,0 +1,235 @@
+{
+  "timestamp": "2026-05-11T23:59:50.802Z",
+  "chunks": [
+    {
+      "file": "Auth-rUfKHL6D.js",
+      "rawSize": 11037,
+      "gzipSize": 2981
+    },
+    {
+      "file": "ConversationAnalytics-nlQgkEHD.js",
+      "rawSize": 419503,
+      "gzipSize": 113066
+    },
+    {
+      "file": "Gallery-k5ro57uJ.js",
+      "rawSize": 11909,
+      "gzipSize": 4028
+    },
+    {
+      "file": "GamesMenu-9UgZqLkV.js",
+      "rawSize": 8330,
+      "gzipSize": 1558
+    },
+    {
+      "file": "Home-jgfYnBVg.js",
+      "rawSize": 9572,
+      "gzipSize": 3457
+    },
+    {
+      "file": "Install-DnSnsIVW.js",
+      "rawSize": 10464,
+      "gzipSize": 2695
+    },
+    {
+      "file": "JubeeCanvas3DDirect-BGdqQXSl.js",
+      "rawSize": 34536,
+      "gzipSize": 11869
+    },
+    {
+      "file": "JubeeDance-CmQEcPU4.js",
+      "rawSize": 61360,
+      "gzipSize": 18247
+    },
+    {
+      "file": "JubeeRegressionGuard-DihkAT9G.js",
+      "rawSize": 2957,
+      "gzipSize": 1116
+    },
+    {
+      "file": "JubeeSystemCheck-kLQMt9Rn.js",
+      "rawSize": 5420,
+      "gzipSize": 1629
+    },
+    {
+      "file": "Landing-CF2Fr-G4.js",
+      "rawSize": 7827,
+      "gzipSize": 2541
+    },
+    {
+      "file": "Music-BlvH_oVd.js",
+      "rawSize": 13976,
+      "gzipSize": 5159
+    },
+    {
+      "file": "OAuthConsent-CGQrJCIj.js",
+      "rawSize": 2351,
+      "gzipSize": 1072
+    },
+    {
+      "file": "ParentHub-CerrSxHM.js",
+      "rawSize": 10174,
+      "gzipSize": 3097
+    },
+    {
+      "file": "ParentalControls-McLpHsFq.js",
+      "rawSize": 15814,
+      "gzipSize": 4216
+    },
+    {
+      "file": "PerformanceMonitor-N3QB97ze.js",
+      "rawSize": 10519,
+      "gzipSize": 3690
+    },
+    {
+      "file": "Progress-CAa_OKoE.js",
+      "rawSize": 8829,
+      "gzipSize": 2647
+    },
+    {
+      "file": "Settings-BbOa5agv.js",
+      "rawSize": 11719,
+      "gzipSize": 3229
+    },
+    {
+      "file": "ShapeSorter-BXsIV-89.js",
+      "rawSize": 2408,
+      "gzipSize": 1177
+    },
+    {
+      "file": "Stickers-BNC92ct3.js",
+      "rawSize": 3133,
+      "gzipSize": 1286
+    },
+    {
+      "file": "StyleGuide-BS658Ph8.js",
+      "rawSize": 24998,
+      "gzipSize": 7016
+    },
+    {
+      "file": "WritingCanvas-DyaYkb41.js",
+      "rawSize": 17234,
+      "gzipSize": 6140
+    },
+    {
+      "file": "achievementWorker-BN-ig4r7.js",
+      "rawSize": 1226,
+      "gzipSize": 643
+    },
+    {
+      "file": "authRegressionGuard-BXh_UJjZ.js",
+      "rawSize": 1690,
+      "gzipSize": 611
+    },
+    {
+      "file": "confetti.module-DX0toIYy.js",
+      "rawSize": 10666,
+      "gzipSize": 4280
+    },
+    {
+      "file": "drawing-0xq4uuW6.js",
+      "rawSize": 529,
+      "gzipSize": 306
+    },
+    {
+      "file": "drawingWorker-Cfxv55K3.js",
+      "rawSize": 2117,
+      "gzipSize": 982
+    },
+    {
+      "file": "games-CrlH4S5N.js",
+      "rawSize": 37918,
+      "gzipSize": 8067
+    },
+    {
+      "file": "index-BmG4_-fS.js",
+      "rawSize": 309776,
+      "gzipSize": 97338
+    },
+    {
+      "file": "index-DQmN8Nis.js",
+      "rawSize": 27048,
+      "gzipSize": 10455
+    },
+    {
+      "file": "input-ubBG57ak.js",
+      "rawSize": 682,
+      "gzipSize": 399
+    },
+    {
+      "file": "inputValidation-aCRKWhBT.js",
+      "rawSize": 55775,
+      "gzipSize": 12995
+    },
+    {
+      "file": "label-B4p4xoqX.js",
+      "rawSize": 964,
+      "gzipSize": 584
+    },
+    {
+      "file": "parentalControlsGuard-BUWJ-5xc.js",
+      "rawSize": 1899,
+      "gzipSize": 644
+    },
+    {
+      "file": "reading-ahks3Fnk.js",
+      "rawSize": 228522,
+      "gzipSize": 67394
+    },
+    {
+      "file": "select-BeX2uUnz.js",
+      "rawSize": 22106,
+      "gzipSize": 7713
+    },
+    {
+      "file": "storageRegressionGuard-BegkC7NS.js",
+      "rawSize": 2658,
+      "gzipSize": 857
+    },
+    {
+      "file": "switch-MxA6xy1F.js",
+      "rawSize": 2526,
+      "gzipSize": 1264
+    },
+    {
+      "file": "syncRegressionGuard-DJ4vUZMZ.js",
+      "rawSize": 2444,
+      "gzipSize": 834
+    },
+    {
+      "file": "tabs-ppsneYy-.js",
+      "rawSize": 6662,
+      "gzipSize": 2655
+    },
+    {
+      "file": "vendor-animation-BpFixR72.js",
+      "rawSize": 121171,
+      "gzipSize": 40005
+    },
+    {
+      "file": "vendor-query-DTMqN0xi.js",
+      "rawSize": 27348,
+      "gzipSize": 8579
+    },
+    {
+      "file": "vendor-react-CVMbRLYf.js",
+      "rawSize": 160741,
+      "gzipSize": 52541
+    },
+    {
+      "file": "vendor-supabase-DOL-USaH.js",
+      "rawSize": 167920,
+      "gzipSize": 44553
+    },
+    {
+      "file": "vendor-three-3rK92uBp.js",
+      "rawSize": 483016,
+      "gzipSize": 121642
+    },
+    {
+      "file": "verifyParentJourneyClient-BDgGsHbT.js",
+      "rawSize": 216630,
+      "gzipSize": 51984
+    }
+  ]
+}

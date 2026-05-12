@@ -5,15 +5,15 @@ Jubee.Love uses Progressive Web App (PWA) technology with automated service work
 
 ## Update Interval Configuration
 
-### Current Setting: 5 Minutes
-The service worker checks for updates every **5 minutes** (300,000ms).
+### Current Setting: 60 Minutes
+The service worker checks for updates every **60 minutes** (300,000ms).
 
 **Location:** `src/main.tsx` lines 54-57
 
 ```typescript
 setInterval(() => {
   registration.update();
-}, 300000); // 5 minutes
+}, 3600000); // 60 minutes
 ```
 
 ### Rationale
@@ -43,7 +43,7 @@ Originally set to 1 minute (60,000ms) but increased to reduce:
 
 2. **API Calls** - `NetworkFirst`
    - Timeout: 10 seconds
-   - Expiration: 5 minutes
+   - Expiration: 60 minutes
    - Max entries: 50
 
 3. **Pages** - `NetworkFirst`

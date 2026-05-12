@@ -1,0 +1,15 @@
+{
+  "mainThreshold": 1.05,
+  "lazyLimitRaw": 102400,
+  "lazyRouteLimitRaw": 204800,
+  "allowlistedChunks": [
+    { "prefix": "vendor-three", "reason": "Three.js core and dependencies" },
+    { "prefix": "ConversationAnalytics", "reason": "Large admin charting tool" },
+    { "prefix": "index-", "reason": "Main application chunk" },
+    { "prefix": "reading-", "reason": "Heavy media routes" },
+    { "prefix": "verifyParentJourneyClient-", "reason": "Dev/Debug tools" },
+    { "prefix": "vendor-supabase", "reason": "Supabase client" },
+    { "prefix": "vendor-react", "reason": "React framework" },
+    { "prefix": "vendor-animation", "reason": "Framer motion" }
+  ]
+}

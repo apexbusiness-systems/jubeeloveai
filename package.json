@@ -12,7 +12,9 @@
     "test": "vitest",
     "typecheck": "tsc --noEmit",
     "security:audit": "echo 'Running security audit...' && npm audit",
-    "armageddon": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "armageddon": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "budget:bundle": "node scripts/check-bundle-budgets.mjs",
+    "verify:perf": "npm run build && npm run budget:bundle"
   },
   "dependencies": {
     "@axe-core/playwright": "^4.11.0",

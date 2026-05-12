@@ -1,3 +1,4 @@
+import { initNativePerformanceMonitor } from './performance/nativePerformanceMonitor';
 import { logger } from '@/lib/logger';
 import { Suspense, useEffect, useState, lazy } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from 'react-router-dom';
@@ -371,6 +372,14 @@ const startOnboarding = useOnboardingStore(state => state.startOnboarding);
 }
 
 export default function App() {
+  useEffect(() => {
+    if ('requestIdleCallback' in window) {
+      (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => initNativePerformanceMonitor());
+    } else {
+      setTimeout(initNativePerformanceMonitor, 1000);
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
