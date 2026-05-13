@@ -16,6 +16,7 @@ import { useEffect, useRef, memo, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useJubeeGreeting } from '@/hooks/useJubeeGreeting';
 import { logger } from '@/lib/logger';
 import { 
@@ -65,15 +66,27 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   // Get current location for contextual greetings
   const location = useLocation();
   
-  const containerPosition = useJubeeStore(state => state.containerPosition);
-const isVisible = useJubeeStore(state => state.isVisible);
-const currentAnimation = useJubeeStore(state => state.currentAnimation);
-const gender = useJubeeStore(state => state.gender);
-const currentMood = useJubeeStore(state => state.currentMood);
-const setContainerPosition = useJubeeStore(state => state.setContainerPosition);
-const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
-const setMood = useJubeeStore(state => state.setMood);
+  const {
+    containerPosition,
+    isVisible,
+    currentAnimation,
+    gender,
+    currentMood,
+    setContainerPosition,
+    speak,
+    triggerAnimation,
+    setMood
+  } = useJubeeStore(useShallow(state => ({
+    containerPosition: state.containerPosition,
+    isVisible: state.isVisible,
+    currentAnimation: state.currentAnimation,
+    gender: state.gender,
+    currentMood: state.currentMood,
+    setContainerPosition: state.setContainerPosition,
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation,
+    setMood: state.setMood
+  })));
   
   // Contextual greeting system - uses current route for activity detection
   const { getGreeting } = useJubeeGreeting({ pathname: location.pathname });
