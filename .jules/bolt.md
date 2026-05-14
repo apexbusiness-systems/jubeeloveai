@@ -1,3 +1,3 @@
-## 2024-05-10 - Zustand Selector Optimization with useShallow
-**Learning:** Consolidating multiple separate `useStore(state => state.property)` calls into a single `useStore(useShallow(state => ({ prop1: state.prop1, prop2: state.prop2 })))` reduces store subscriptions and hook execution overhead.
-**Action:** Use `useShallow` from `zustand/react/shallow` when extracting multiple top-level properties from the same Zustand store to improve performance and lower memory footprint.
+## 2024-05-14 - React Router `useLocation` Context Leakage
+**Learning:** Components that subscribe to React Router's `useLocation()` hook directly within mapped list items (like navigation tabs) will force a re-render of *all* items on every route change, completely bypassing `React.memo()`. The context update breaks memoization for every instance, even those whose active state didn't change.
+**Action:** When creating lists of items whose state depends on the route (like nav bars or sidebars), pull `useLocation()` up to the parent component and pass the calculated primitive (`isActive: boolean`) down as a prop. This allows `React.memo()` on the child components to effectively block unnecessary re-renders for items whose state didn't actually change.

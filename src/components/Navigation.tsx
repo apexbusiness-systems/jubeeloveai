@@ -23,7 +23,13 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export const Navigation = memo(function Navigation() {
+  // ⚡ Bolt: Moved useLocation up to Navigation component to calculate isActive here.
+  // Previously, every TabButton called useLocation, causing ALL tabs to re-render on every route change.
+  // Now, only the specific tabs whose isActive state changes (old active tab -> inactive, new active tab -> active)
+  // will re-render, saving 9 unnecessary component renders per navigation.
+  const location = useLocation();
   const items = useMemo(() => NAV_ITEMS, []);
+
   return (
     <nav
       className="
@@ -46,19 +52,23 @@ export const Navigation = memo(function Navigation() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {items.map((item) => (
-          <TabButton key={item.path} {...item} />
+          <TabButton
+            key={item.path}
+            {...item}
+            isActive={location.pathname === item.path}
+          />
         ))}
       </div>
     </nav>
   );
 });
 
-type TabButtonProps = NavItem;
+type TabButtonProps = NavItem & { isActive: boolean };
 
-const TabButton = memo(function TabButton({ path, emoji, label, longPressPath }: TabButtonProps) {
+// ⚡ Bolt: TabButton is wrapped in React.memo. By passing the primitive `isActive` boolean
+// instead of letting it read from useLocation context, we guarantee it only re-renders when its specific props change.
+const TabButton = memo(function TabButton({ path, emoji, label, longPressPath, isActive }: TabButtonProps) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isActive = location.pathname === path;
   const [pressing, setPressing] = useState(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
