@@ -41,6 +41,10 @@ if (!envError) {
 
 // Register service worker for PWA (production only to avoid caching issues in dev)
 if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('vite:preloadError', (event) => {
+    event.preventDefault();
+    window.location.reload();
+  });
   window.addEventListener('load', () => {
     const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? 'dev';
     const VERSION_KEY = 'app_version';
@@ -82,7 +86,7 @@ if (!envError && import.meta.env.PROD && 'serviceWorker' in navigator) {
           }
         });
         
-        // Check for updates every 15 minutes (reduced polling load)
+        // Check for updates every 60 minutes (reduced polling load)
         setInterval(() => {
           registration.update();
         }, 3600000);

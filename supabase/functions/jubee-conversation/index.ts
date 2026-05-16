@@ -1,10 +1,26 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+function resolveAllowedOrigin(req: Request): string {
+  const origin = req.headers.get('origin') ?? '';
+  if (!origin) return 'null';
+  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+  if (allowed.includes(origin) || (!Deno.env.get('ALLOWED_ORIGINS') && isLocalhost)) {
+    return origin;
+  }
+  return 'null';
+}
+
+function getCorsHeaders(req: Request) {
+  return {
+    'Access-Control-Allow-Origin': resolveAllowedOrigin(req),
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+  };
+}
 
 // RATE LIMITING
 const RATE_LIMIT_WINDOW = 60000;
@@ -169,6 +185,7 @@ function buildContextLayer(
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -198,6 +215,18 @@ serve(async (req) => {
     }
 
     const sanitizedMessage = sanitizeInput(message, MAX_MESSAGE_LENGTH);
+    const safety = checkSafety(sanitizedMessage);
+    if (!safety.isSafe) {
+      return new Response(
+        JSON.stringify({
+          response: SAFE_FALLBACKS[safety.reason ?? 'default'],
+          success: true,
+          fallback: true,
+          risk_category: safety.reason ?? 'unsafe',
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
     const sanitizedLanguage = validateLanguage(language);
     const sanitizedChildName = childName ? sanitizeInput(childName, MAX_CHILD_NAME_LENGTH) : undefined;
     const safeGender: 'male' | 'female' = gender === 'male' ? 'male' : 'female';
@@ -272,7 +301,7 @@ serve(async (req) => {
           body: JSON.stringify({
             user_id: context.userId || null,
             child_profile_id: context.childProfile || null,
-            message_preview: sanitizedMessage.slice(0, 50).replace(/[0-9]{3,}/g, '***'),
+            message_preview: null,
             sentiment: sentiment.sentiment,
             mood: validateMood(context.mood) || 'happy',
             confidence: 0.8,
