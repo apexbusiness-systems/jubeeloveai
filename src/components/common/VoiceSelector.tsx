@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useJubeeStore, type JubeeVoice } from '@/store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/button'
 import { Volume2 } from 'lucide-react'
 
@@ -61,10 +62,17 @@ const voiceOptions: VoiceOption[] = [
 ]
 
 export function VoiceSelector({ onClose }: Props) {
-  const voice = useJubeeStore(state => state.voice);
-const setVoice = useJubeeStore(state => state.setVoice);
-const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const {
+    voice,
+    setVoice,
+    speak,
+    triggerAnimation
+  } = useJubeeStore(useShallow(state => ({
+    voice: state.voice,
+    setVoice: state.setVoice,
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const [selectedVoice, setSelectedVoice] = useState<JubeeVoice>(voice)
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null)
 

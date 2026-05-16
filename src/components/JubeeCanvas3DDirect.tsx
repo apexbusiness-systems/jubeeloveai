@@ -66,7 +66,6 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
   // Get current location for contextual greetings
   const location = useLocation();
   
-  // ⚡ Bolt Optimization: Grouped multiple store selectors using useShallow to reduce React subscriptions and prevent unnecessary re-renders.
   const {
     containerPosition,
     isVisible,

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { triggerConfetti } from '@/lib/confetti'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/button'
 import { useAudioEffects } from '@/hooks/useAudioEffects'
 
@@ -11,10 +12,17 @@ interface Props {
 }
 
 export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
-  const gender = useJubeeStore(state => state.gender);
-const setGender = useJubeeStore(state => state.setGender);
-const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const {
+    gender,
+    setGender,
+    speak,
+    triggerAnimation
+  } = useJubeeStore(useShallow(state => ({
+    gender: state.gender,
+    setGender: state.setGender,
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const [selectedGender, setSelectedGender] = useState<'male' | 'female'>(gender)
   const { playSuccessSound, playClearSound } = useAudioEffects()
 

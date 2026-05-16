@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useShallow } from 'zustand/react/shallow';
 import {
   Dialog,
   DialogContent,
@@ -14,11 +15,19 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 
 export function VolumeControlDialog() {
-  const soundEffectsVolume = useJubeeStore(state => state.soundEffectsVolume);
-const voiceVolume = useJubeeStore(state => state.voiceVolume);
-const setSoundEffectsVolume = useJubeeStore(state => state.setSoundEffectsVolume);
-const setVoiceVolume = useJubeeStore(state => state.setVoiceVolume);
-const speak = useJubeeStore(state => state.speak);
+  const {
+    soundEffectsVolume,
+    voiceVolume,
+    setSoundEffectsVolume,
+    setVoiceVolume,
+    speak
+  } = useJubeeStore(useShallow(state => ({
+    soundEffectsVolume: state.soundEffectsVolume,
+    voiceVolume: state.voiceVolume,
+    setSoundEffectsVolume: state.setSoundEffectsVolume,
+    setVoiceVolume: state.setVoiceVolume,
+    speak: state.speak
+  })));
   const [open, setOpen] = useState(false);
 
   const handleSoundEffectsChange = (value: number[]) => {
