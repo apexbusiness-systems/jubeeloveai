@@ -1,11 +1,9 @@
 // Text-to-Speech Edge Function v2 - graceful fallback when APIs exhausted
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOW_HEADERS = 'authorization, x-client-info, apikey, content-type';
 
 // QUOTA EXHAUSTION: Module-level cooldown when both providers fail
 let quotaExhaustedUntil = 0;
@@ -277,6 +275,7 @@ async function synthesizeWithOpenAI(
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, ALLOW_HEADERS);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
