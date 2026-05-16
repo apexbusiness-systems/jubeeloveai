@@ -12,11 +12,13 @@ export function resolveAllowedOrigin(origin: string | null, allowedOriginsEnv?: 
 }
 
 export function getCorsHeaders(req: Request, allowHeaders: string) {
+  const origin = resolveAllowedOrigin(req.headers.get('origin'), Deno.env.get('ALLOWED_ORIGINS'));
   return {
-    'Access-Control-Allow-Origin': resolveAllowedOrigin(
-      req.headers.get('origin'),
-      Deno.env.get('ALLOWED_ORIGINS'),
-    ),
+    // Vary by Origin so caches do not reuse CORS responses across sites.
+    Vary: 'Origin',
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Headers': allowHeaders,
+    // Keep methods explicit to avoid accidental method expansion.
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   };
 }
