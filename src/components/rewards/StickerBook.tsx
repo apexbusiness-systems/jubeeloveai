@@ -71,7 +71,7 @@ const StickerCard = memo(({
   category: string;
 }) => (
   <div
-    className="sticker-card p-6 rounded-2xl transform transition-all duration-300"
+    className="sticker-card p-6 rounded-2xl transform transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
     style={{
       background: isUnlocked
         ? getCategoryGradient(category)
@@ -83,7 +83,8 @@ const StickerCard = memo(({
       opacity: isUnlocked ? 1 : 0.5
     }}
     role="img"
-    aria-label={isUnlocked ? `Unlocked sticker: ${sticker.name}` : `Locked sticker: ${sticker.name}, requires ${sticker.unlockRequirement} points`}
+    tabIndex={0}
+    aria-label={isUnlocked ? `Unlocked sticker: ${sticker.name}, ${sticker.description}` : `Locked sticker: ${sticker.name}, requires ${sticker.unlockRequirement} points`}
   >
     <div className="text-6xl mb-3 text-center" aria-hidden="true">
       {isUnlocked ? sticker.emoji : '🔒'}
