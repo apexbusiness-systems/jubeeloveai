@@ -6,22 +6,14 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle2, Sparkles, Sun, Moon, Cloud } from 'lucide-react';
+import { Sun, Moon, Cloud } from 'lucide-react';
 import { useDailyQuestStore } from '@/store/useDailyQuestStore';
 import { useMasteryStore } from '@/store/useMasteryStore';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useParentalStore } from '@/store/useParentalStore';
 import { useJubeeStore } from '@/store/useJubeeStore';
-import { getDayPart, type QuestActivity } from '@/lib/dailyQuest/questPicker';
+import { getDayPart } from '@/lib/dailyQuest/questPicker';
 import { triggerConfetti } from '@/lib/confetti';
-
-const REASON_LABEL: Record<QuestActivity['reason'], string> = {
-  favorite: 'Yay!',
-  'warm-up': 'Yay!',
-  review: 'Wow!',
-  explore: 'New!',
-  'wind-down': 'Cozy',
-};
 
 export function DailyQuestCard() {
   const navigate = useNavigate();
