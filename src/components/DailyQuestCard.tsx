@@ -84,39 +84,45 @@ export function DailyQuestCard() {
   const allDone = completedCount >= total;
 
   return (
-    <Card className="border-0 bg-gradient-to-br from-primary/15 via-card/85 to-accent/15 shadow-xl backdrop-blur-md overflow-hidden">
-      <CardContent className="p-5 sm:p-6 lg:p-8">
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-muted-foreground font-semibold">
-              <PartIcon className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>{partLabel}</span>
-              <span aria-hidden="true">·</span>
-              <span>Jubee's Daily Quest</span>
+    <Card className="border-0 bg-gradient-to-br from-primary/20 via-card/85 to-accent/20 shadow-xl backdrop-blur-md overflow-hidden rounded-3xl">
+      <CardContent className="p-5 sm:p-7">
+        {/* Toddler-friendly header: huge emoji, tiny words */}
+        <div className="flex items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <span className="text-5xl sm:text-6xl drop-shadow-sm" aria-hidden="true">
+              {part === 'morning' ? '☀️' : part === 'evening' ? '🌙' : '⛅'}
+            </span>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground leading-none">
+                {partLabel}!
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground font-semibold flex items-center gap-1 mt-1">
+                <PartIcon className="w-4 h-4" aria-hidden="true" />
+                Let's play with Jubee!
+              </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Today's 3-step adventure
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-              Hand-picked just for you. Finish all three to make Jubee buzz with joy!
-            </p>
           </div>
+          {/* Big star counter — visual, no math required */}
           <div
-            className="shrink-0 rounded-full bg-primary/10 border border-primary/30 px-3 py-2 text-center"
-            aria-label={`${completedCount} of ${total} steps complete`}
+            className="shrink-0 flex items-center gap-1 rounded-full bg-primary/15 border-2 border-primary/30 px-3 py-2"
+            aria-label={`${completedCount} of ${total} stars earned`}
           >
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Progress</div>
-            <div className="text-lg font-bold text-primary">{completedCount}/{total}</div>
+            {current.steps.map((_, i) => (
+              <span key={i} className="text-2xl sm:text-3xl" aria-hidden="true">
+                {i < completedCount ? '⭐' : '☆'}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar — kept for a11y but visually chunky */}
         <div
-          className="h-2 w-full rounded-full bg-muted overflow-hidden mb-5"
+          className="h-3 w-full rounded-full bg-muted overflow-hidden mb-5"
           role="progressbar"
           aria-valuenow={completedCount}
           aria-valuemin={0}
           aria-valuemax={total}
+          aria-label="Today's progress"
         >
           <div
             className="h-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-500 ease-out"
@@ -124,41 +130,56 @@ export function DailyQuestCard() {
           />
         </div>
 
-        <ol className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4" role="list">
+        {/* Three GIANT picture buttons — emoji-led, minimal text */}
+        <ol className="grid grid-cols-3 gap-2 sm:gap-4" role="list">
           {current.steps.map((step, idx) => {
             const done = current.completed.includes(step.path);
+            const stepNumberEmoji = ['1️⃣', '2️⃣', '3️⃣'][idx] ?? '⭐';
             return (
               <li key={step.path}>
                 <button
                   onClick={() => { triggerAnimation('excited'); navigate(step.path); }}
                   className={`
-                    group relative w-full h-full rounded-2xl border text-left
-                    px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300
+                    group relative w-full min-h-[140px] sm:min-h-[170px] rounded-3xl border-4
+                    flex flex-col items-center justify-center gap-1 sm:gap-2
+                    px-2 py-3 sm:px-3 sm:py-4 transition-all duration-300
                     focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                    active:scale-95
                     ${done
-                      ? 'bg-primary/10 border-primary/40 opacity-80'
-                      : 'bg-card/90 border-border/60 hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/40'}
+                      ? 'bg-primary/15 border-primary/50'
+                      : 'bg-card border-border/60 hover:-translate-y-1 hover:shadow-xl hover:border-primary/60'}
                   `}
-                  aria-label={`Step ${idx + 1}: ${step.title}. ${done ? 'Completed.' : 'Start now.'}`}
+                  aria-label={`Step ${idx + 1}: ${step.title}. ${done ? 'All done!' : 'Tap to play.'}`}
                   aria-current={!done && idx === completedCount ? 'step' : undefined}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] uppercase tracking-[0.1em] text-muted-foreground font-semibold">
-                      Step {idx + 1} · {REASON_LABEL[step.reason]}
+                  {/* Big step number badge */}
+                  <span className="text-2xl sm:text-3xl" aria-hidden="true">{stepNumberEmoji}</span>
+                  {/* HUGE activity emoji — primary visual */}
+                  <span
+                    className={`text-5xl sm:text-7xl drop-shadow-md transition-transform ${done ? 'opacity-60' : 'group-hover:scale-110 group-active:scale-95'}`}
+                    aria-hidden="true"
+                  >
+                    {step.icon}
+                  </span>
+                  {/* One short word, big and bold */}
+                  <p className={`text-sm sm:text-lg font-extrabold leading-tight text-center ${done ? 'text-muted-foreground' : 'text-foreground'}`}>
+                    {step.title}
+                  </p>
+                  {/* Done overlay — big star */}
+                  {done && (
+                    <span
+                      className="absolute top-1 right-1 text-3xl sm:text-4xl drop-shadow-md animate-in zoom-in"
+                      aria-hidden="true"
+                    >
+                      ⭐
                     </span>
-                    {done
-                      ? <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
-                      : <Sparkles className="w-4 h-4 text-accent opacity-70 group-hover:opacity-100" aria-hidden="true" />}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl sm:text-4xl drop-shadow-sm" aria-hidden="true">{step.icon}</span>
-                    <div className="space-y-0.5 min-w-0">
-                      <p className={`text-base sm:text-lg font-bold leading-tight ${done ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                        {step.title}
-                      </p>
-                      <p className="text-xs sm:text-sm text-foreground/70 truncate">{step.description}</p>
-                    </div>
-                  </div>
+                  )}
+                  {!done && (
+                    <span className="sr-only">
+                      <Sparkles className="w-4 h-4" aria-hidden="true" />
+                    </span>
+                  )}
+                  {!done && <CheckCircle2 className="hidden" aria-hidden="true" />}
                 </button>
               </li>
             );
@@ -167,12 +188,13 @@ export function DailyQuestCard() {
 
         {allDone && (
           <div
-            className="mt-5 rounded-xl bg-primary/15 border border-primary/30 px-4 py-3 text-center"
+            className="mt-5 rounded-2xl bg-gradient-to-r from-primary/20 to-accent/20 border-2 border-primary/40 px-4 py-4 text-center"
             role="status"
             aria-live="polite"
           >
-            <p className="text-sm sm:text-base font-semibold text-primary">
-              🎉 Quest complete! Jubee is so proud of you. Come back tomorrow for a new adventure!
+            <p className="text-2xl sm:text-3xl mb-1" aria-hidden="true">🎉🐝🎉</p>
+            <p className="text-base sm:text-lg font-extrabold text-primary">
+              You did it! Jubee loves you!
             </p>
           </div>
         )}
