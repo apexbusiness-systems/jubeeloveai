@@ -15,7 +15,7 @@
  */
 
 import type { MasteryRecord } from '@/store/useMasteryStore';
-import { Skills, SkillCategory, type SkillCategoryId, type SkillId } from '@/lib/mastery/taxonomy';
+import { Skills, type SkillCategoryId, type SkillId } from '@/lib/mastery/taxonomy';
 
 export interface QuestActivity {
   path: string;
