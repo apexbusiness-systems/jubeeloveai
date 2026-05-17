@@ -152,7 +152,7 @@ export function pickDailyQuest(input: PickQuestInput): QuestActivity[] {
     .slice()
     .sort((a, b) => a.score - b.score)
     .map(r => catalogBySkill.get(r.skillId))
-    .find((e): e is CatalogEntry => Boolean(e) && !usedPaths.has(e.path));
+    .find((e): e is CatalogEntry => !!e && !usedPaths.has(e.path));
   if (!tryAdd(reviewEntry, 'review')) {
     const explore = shuffle(ACTIVITY_CATALOG, rand).find(e => !usedPaths.has(e.path));
     tryAdd(explore, 'explore');
@@ -163,7 +163,7 @@ export function pickDailyQuest(input: PickQuestInput): QuestActivity[] {
   const energeticPaths = ['/dance', '/games'];
   const preferred = part === 'evening' ? calmingPaths : part === 'afternoon' ? energeticPaths : ['/reading', '/write', '/shapes'];
   const closerEntry =
-    preferred.map(p => ACTIVITY_CATALOG.find(e => e.path === p)).find((e): e is CatalogEntry => Boolean(e) && !usedPaths.has(e.path))
+    preferred.map(p => ACTIVITY_CATALOG.find(e => e.path === p)).find((e): e is CatalogEntry => !!e && !usedPaths.has(e.path))
     ?? shuffle(ACTIVITY_CATALOG, rand).find(e => !usedPaths.has(e.path));
   tryAdd(closerEntry, part === 'evening' ? 'wind-down' : 'explore');
 
