@@ -166,12 +166,6 @@ export function DailyQuestCard() {
                       ⭐
                     </span>
                   )}
-                  {!done && (
-                    <span className="sr-only">
-                      <Sparkles className="w-4 h-4" aria-hidden="true" />
-                    </span>
-                  )}
-                  {!done && <CheckCircle2 className="hidden" aria-hidden="true" />}
                 </button>
               </li>
             );
