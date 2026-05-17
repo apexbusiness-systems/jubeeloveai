@@ -73,14 +73,16 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
           Is Jubee a boy or a girl?
         </p>
 
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-2 gap-6 mb-6" role="radiogroup" aria-label="Select Jubee's gender">
           <button
+            role="radio"
+            aria-checked={selectedGender === 'male'}
             onClick={() => {
               playSuccessSound()
               setSelectedGender('male')
             }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
-            aria-label="Select boy gender"
+            aria-label="Boy"
             style={{
               background: 'var(--gradient-boy)',
               border: selectedGender === 'male' ? '4px solid hsl(var(--boy-border))' : '4px solid hsl(var(--boy-primary) / 0.5)',
@@ -100,12 +102,14 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
           </button>
 
           <button
+            role="radio"
+            aria-checked={selectedGender === 'female'}
             onClick={() => {
               playSuccessSound()
               setSelectedGender('female')
             }}
             className="gender-option p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
-            aria-label="Select girl gender"
+            aria-label="Girl"
             style={{
               background: 'var(--gradient-girl)',
               border: selectedGender === 'female' ? '4px solid hsl(var(--girl-border))' : '4px solid hsl(var(--girl-primary) / 0.5)',
