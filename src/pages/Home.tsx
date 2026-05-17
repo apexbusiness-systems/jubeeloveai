@@ -7,6 +7,7 @@ import { useJubeeStore } from '@/store/useJubeeStore';
 import { Download, Wand2, Clock3 } from 'lucide-react';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useGameStore } from '@/store/useGameStore';
+import { DailyQuestCard } from '@/components/DailyQuestCard';
 
 interface ActivityMeta {
   title: string;
@@ -141,15 +142,19 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
         </header>
 
         <section className="mb-8 sm:mb-10">
+          <DailyQuestCard />
+        </section>
+
+        <section className="mb-8 sm:mb-10">
           <Card className="border-0 bg-gradient-to-br from-background/80 via-card/80 to-accent/10 shadow-xl backdrop-blur-md">
             <CardContent className="p-5 sm:p-6 lg:p-8 space-y-5">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-2">
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                    Start with what feels right <span className="text-primary">right now</span>
+                    Or jump straight into <span className="text-primary">a favorite</span>
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-                    Jubee remembers where you love to play. Continue instantly or try a fresh activity hand-picked for this moment.
+                    Jubee remembers where you love to play. Continue instantly.
                   </p>
                 </div>
                 <div className="flex gap-3">
