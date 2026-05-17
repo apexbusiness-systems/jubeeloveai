@@ -16,11 +16,11 @@ import { getDayPart, type QuestActivity } from '@/lib/dailyQuest/questPicker';
 import { triggerConfetti } from '@/lib/confetti';
 
 const REASON_LABEL: Record<QuestActivity['reason'], string> = {
-  favorite: 'Warm-up',
-  'warm-up': 'Warm-up',
-  review: 'Boost',
-  explore: 'Discover',
-  'wind-down': 'Wind-down',
+  favorite: 'Yay!',
+  'warm-up': 'Yay!',
+  review: 'Wow!',
+  explore: 'New!',
+  'wind-down': 'Cozy',
 };
 
 export function DailyQuestCard() {
