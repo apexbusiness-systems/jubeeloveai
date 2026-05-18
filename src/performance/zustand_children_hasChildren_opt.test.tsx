@@ -1,5 +1,5 @@
 import { render, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useParentalStore } from '../store/useParentalStore';
 import { useRef } from 'react';
 
@@ -13,7 +13,7 @@ function UnoptimizedApp() {
 
   const hasChildren = children.length > 0;
 
-  return <div data-testid="renders">{renders.current}</div>;
+  return <div data-testid="renders">{renders.current}-{hasChildren ? 'y' : 'n'}-{activeChildId}</div>;
 }
 
 function OptimizedApp() {
@@ -23,7 +23,7 @@ function OptimizedApp() {
   const hasChildren = useParentalStore(state => state.children.length > 0);
   const activeChildId = useParentalStore(state => state.activeChildId);
 
-  return <div data-testid="renders">{renders.current}</div>;
+  return <div data-testid="renders">{renders.current}-{hasChildren ? 'y' : 'n'}-{activeChildId}</div>;
 }
 
 describe('Zustand children.length optimization', () => {

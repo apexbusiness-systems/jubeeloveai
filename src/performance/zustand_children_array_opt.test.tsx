@@ -1,5 +1,5 @@
 import { render, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useParentalStore } from '../store/useParentalStore';
 import { useRef } from 'react';
 
@@ -25,7 +25,6 @@ function UnoptimizedApp() {
 // 2. If you only need active child: useParentalStore(state => state.children.find(c => c.id === state.activeChildId))
 // Using useShallow is an alternative if returning arrays/objects
 
-import { useShallow } from 'zustand/react/shallow';
 
 function OptimizedApp() {
   const renders = useRef(0);

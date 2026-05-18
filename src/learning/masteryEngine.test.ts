@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scoreSkillPriority, getNextBestActivity, explainRecommendationForParent, type SkillState } from './masteryEngine';
+import { scoreSkillPriority, getNextBestActivity, type SkillState } from './masteryEngine';
 
 describe('masteryEngine', () => {
     it('scores overdue weak skill higher than mastered fresh skill', () => {

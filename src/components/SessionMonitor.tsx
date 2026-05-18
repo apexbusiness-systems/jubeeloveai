@@ -37,7 +37,7 @@ export function SessionMonitor() {
       
       if (timeLeft <= 300 && timeLeft > 290 && !showWarningDialog) {
         setShowWarningDialog(true);
-        if (!settings?.calmMode) toast({
+        toast({
           title: "⏰ 5 Minutes Left!",
           description: `${activeChild.name} has 5 minutes of screen time remaining today.`,
         });
