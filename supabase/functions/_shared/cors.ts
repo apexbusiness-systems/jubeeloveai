@@ -12,7 +12,7 @@ export function resolveAllowedOrigin(origin: string | null, allowedOriginsEnv?: 
 }
 
 export function getCorsHeaders(req: Request, allowHeaders: string) {
-  const origin = resolveAllowedOrigin(req.headers.get('origin'), Deno.env.get('ALLOWED_ORIGINS'));
+  const origin = resolveAllowedOrigin(req.headers.get('origin'), (globalThis as { Deno?: { env: { get(k: string): string | undefined } } }).Deno?.env.get('ALLOWED_ORIGINS'));
   return {
     // Vary by Origin so caches do not reuse CORS responses across sites.
     Vary: 'Origin',
