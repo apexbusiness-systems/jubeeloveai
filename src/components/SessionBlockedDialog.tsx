@@ -29,9 +29,9 @@ export function SessionBlockedDialog({
         <AlertDialogHeader>
           <div className="flex justify-center mb-4">
             {reason === 'time-limit' ? (
-              <Clock className="h-16 w-16 text-primary" />
+              <Clock className="h-16 w-16 text-primary" aria-hidden="true" />
             ) : (
-              <Lock className="h-16 w-16 text-primary" />
+              <Lock className="h-16 w-16 text-primary" aria-hidden="true" />
             )}
           </div>
           <AlertDialogTitle className="text-center text-2xl">
