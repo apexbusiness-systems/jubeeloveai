@@ -1,5 +1,6 @@
 import { useScreenTimeEnforcement } from '@/hooks/useScreenTimeEnforcement';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -8,9 +9,13 @@ import { useState } from 'react';
 
 export function ScreenTimeIndicator() {
   const { status, requestMoreTime } = useScreenTimeEnforcement();
-  const activeChild = useParentalStore(state =>
+
+  // ⚡ Bolt: Memoize child object selector with useShallow to prevent unnecessary
+  // re-renders when unrelated children state is updated
+  const activeChild = useParentalStore(useShallow(state =>
     state.children.find(c => c.id === state.activeChildId)
-  );
+  ));
+
   const [isRequesting, setIsRequesting] = useState(false);
   
   if (!activeChild || !status.currentSession) {
