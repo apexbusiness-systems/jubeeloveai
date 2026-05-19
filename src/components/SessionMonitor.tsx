@@ -60,7 +60,7 @@ export function SessionMonitor() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">
-              <Clock className="w-16 h-16 text-destructive" />
+              <Clock className="w-16 h-16 text-destructive" aria-hidden="true" />
             </div>
             <DialogTitle className="text-3xl text-center">Time's Up!</DialogTitle>
             <DialogDescription className="text-lg text-center">
@@ -94,7 +94,7 @@ export function SessionMonitor() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">
-              <AlertTriangle className="w-12 h-12 text-amber-500" />
+              <AlertTriangle className="w-12 h-12 text-amber-500" aria-hidden="true" />
             </div>
             <DialogTitle className="text-2xl text-center">Time Warning</DialogTitle>
             <DialogDescription className="text-lg text-center">
