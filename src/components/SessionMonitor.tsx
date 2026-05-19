@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,9 +10,13 @@ import { useState } from 'react';
 
 export function SessionMonitor() {
   const navigate = useNavigate();
-  const activeChild = useParentalStore(state =>
+
+  // ⚡ Bolt: Memoize child object selector with useShallow to prevent unnecessary
+  // re-renders when unrelated children update their session time
+  const activeChild = useParentalStore(useShallow(state =>
     state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
-  );
+  ));
+
   const updateSessionTime = useParentalStore(state => state.updateSessionTime);
   const endSession = useParentalStore(state => state.endSession);
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
