@@ -20,3 +20,9 @@
 ## 2024-05-14 - Make visual collection cards keyboard accessible
 **Learning:** Visual collection items like Sticker Cards that only have a visual UI and an `aria-label` but no interactive behavior (like `onClick`) are completely skipped by keyboard navigation. Users navigating via keyboard cannot read the `aria-label` description.
 **Action:** Add `tabIndex={0}` and `focus-visible` styling to visual collection items so they receive focus during keyboard navigation, allowing screen readers to announce their `aria-label`. Include all necessary context in the `aria-label` (e.g. sticker description, not just name).
+## 2024-05-19 - Added aria-hidden to decorative icons
+**Learning:** Decorative icons next to text or large centerpiece icons shouldn't be read out by screen readers since they provide no extra context.
+**Action:** Next time I see a decorative icon, add `aria-hidden="true"` to it.
+## 2024-05-19 - WCAG 2.5.3 Label in Name violation
+**Learning:** Adding `aria-label` to a button that already has visible text inside can cause a WCAG 2.5.3 (Label in Name) violation if the aria-label doesn't contain the visible text, breaking voice controls.
+**Action:** Only add `aria-label` to icon-only buttons or ensure the label includes the visible text.
