@@ -27,7 +27,9 @@ describe('secureStorage', () => {
     const stored = localStorage.getItem('secure:testKey');
     expect(stored).toBeTruthy();
     expect(stored).not.toContain('message');
-    expect(stored).not.toContain('42');
+    // Note: '42' might randomly appear in the base64 encoded ciphertext,
+    // so we just verify the exact JSON representation doesn't appear
+    expect(stored).not.toContain('"num":42');
 
     // It should decrypt back to the original object
     const retrieved = await secureGetItem('testKey', null);
