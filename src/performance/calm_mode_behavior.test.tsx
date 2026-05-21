@@ -3,6 +3,15 @@ import { render, act } from '@testing-library/react';
 import { useParentalStore } from '@/store/useParentalStore';
 import { RewardAnimation } from '@/components/rewards/RewardAnimation';
 
+import { vi } from 'vitest';
+
+// Mock secureStorage to avoid localstorage not defined error
+vi.mock('@/lib/secureStorage', () => ({
+  secureGetItem: vi.fn(),
+  secureSetItem: vi.fn(),
+  secureRemoveItem: vi.fn()
+}));
+
 describe('Calm Mode Behavior', () => {
   beforeEach(() => {
     useParentalStore.setState({ 

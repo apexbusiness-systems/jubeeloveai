@@ -120,6 +120,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Easy difficulty"
           >
             <div className="text-6xl mb-4">🌟</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Easy</h2>
@@ -133,6 +134,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
             }}
+            aria-label="Medium difficulty"
           >
             <div className="text-6xl mb-4">⭐</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Medium</h2>
@@ -146,6 +148,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Hard difficulty"
           >
             <div className="text-6xl mb-4">🏆</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Hard</h2>
@@ -244,6 +247,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
             background: 'var(--gradient-warm)',
             boxShadow: 'var(--shadow-game)'
           }}
+          aria-label="Back to Menu"
         >
           ← Back to Menu
         </button>
