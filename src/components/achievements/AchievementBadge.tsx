@@ -48,8 +48,15 @@ export function AchievementBadge({ achievement, size = 'md' }: Props) {
 
   return (
     <Card
+      role="article"
+      tabIndex={0}
+      aria-label={`${achievement.name}. ${achievement.description}. ${
+        achievement.earned
+          ? `Earned on ${new Date(achievement.earnedAt!).toLocaleDateString()}.`
+          : `${Math.round(achievement.progress)}% complete.`
+      }`}
       className={cn(
-        'relative overflow-hidden transition-all duration-300',
+        'relative overflow-hidden transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
         sizeClasses[size].card,
         achievement.earned
           ? `${getCategoryColor(achievement.category)} border-2 hover:shadow-lg hover:scale-105`

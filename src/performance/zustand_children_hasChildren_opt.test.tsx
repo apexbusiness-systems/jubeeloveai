@@ -36,7 +36,7 @@ describe('Zustand children.length optimization', () => {
 
   it('measures unoptimized behavior', () => {
     const { getByTestId, unmount } = render(<UnoptimizedApp />);
-    expect(getByTestId('renders').textContent).toBe('1');
+    expect(getByTestId('renders').textContent).toBe('1-y-child-1');
 
     act(() => {
       useParentalStore.setState(state => {
@@ -45,13 +45,13 @@ describe('Zustand children.length optimization', () => {
       });
     });
 
-    expect(getByTestId('renders').textContent).toBe('2');
+    expect(getByTestId('renders').textContent).toBe('2-y-child-1');
     unmount();
   });
 
   it('measures optimized behavior', () => {
     const { getByTestId, unmount } = render(<OptimizedApp />);
-    expect(getByTestId('renders').textContent).toBe('1');
+    expect(getByTestId('renders').textContent).toBe('1-y-child-1');
 
     act(() => {
       useParentalStore.setState(state => {
@@ -60,7 +60,7 @@ describe('Zustand children.length optimization', () => {
       });
     });
 
-    expect(getByTestId('renders').textContent).toBe('1');
+    expect(getByTestId('renders').textContent).toBe('1-y-child-1');
     unmount();
   });
 });
