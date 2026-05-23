@@ -26,11 +26,11 @@ export function VoiceCommandButton() {
       title={isListening ? "Stop listening" : "Start voice command"}
     >
       {isProcessing ? (
-        <Loader2 className="h-6 w-6 animate-spin" />
+        <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
       ) : isListening ? (
-        <MicOff className="h-6 w-6" />
+        <MicOff className="h-6 w-6" aria-hidden="true" />
       ) : (
-        <Mic className="h-6 w-6" />
+        <Mic className="h-6 w-6" aria-hidden="true" />
       )}
     </Button>
   )

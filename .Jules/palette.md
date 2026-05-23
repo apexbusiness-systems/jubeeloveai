@@ -20,3 +20,6 @@
 ## 2024-05-14 - Make visual collection cards keyboard accessible
 **Learning:** Visual collection items like Sticker Cards that only have a visual UI and an `aria-label` but no interactive behavior (like `onClick`) are completely skipped by keyboard navigation. Users navigating via keyboard cannot read the `aria-label` description.
 **Action:** Add `tabIndex={0}` and `focus-visible` styling to visual collection items so they receive focus during keyboard navigation, allowing screen readers to announce their `aria-label`. Include all necessary context in the `aria-label` (e.g. sticker description, not just name).
+## 2024-05-23 - Hide decorative icons in VoiceCommandButton
+**Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
+**Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
