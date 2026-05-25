@@ -1,7 +1,6 @@
-## 2024-05-14 - React Router `useLocation` Context Leakage
-**Learning:** Components that subscribe to React Router's `useLocation()` hook directly within mapped list items (like navigation tabs) will force a re-render of *all* items on every route change, completely bypassing `React.memo()`. The context update breaks memoization for every instance, even those whose active state didn't change.
-**Action:** When creating lists of items whose state depends on the route (like nav bars or sidebars), pull `useLocation()` up to the parent component and pass the calculated primitive (`isActive: boolean`) down as a prop. This allows `React.memo()` on the child components to effectively block unnecessary re-renders for items whose state didn't actually change.
-
-## 2024-10-25 - Zustand Immer Array Find Leak
-**Learning:** Selecting from an array in a Zustand store using `.find()` inside the selector (e.g., `state => state.children.find(c => c.id === activeId)`) causes unnecessary re-renders whenever *any* item in that array is updated. This occurs because Immer returns a new array reference when any element is modified, which means the array traversal yields a newly referenced object. Since Zustand uses strict equality `===`, it detects a state change and triggers a re-render.
-**Action:** Wrap object selectors with `useShallow` from `zustand/react/shallow` to perform a shallow comparison of the selected object. If the returned object has the exact same properties as before, `useShallow` prevents the unnecessary re-render.
+## 2024-05-25 - Zustand store subscription optimization
+**Learning:** In React components that access multiple values from a single Zustand store, using individual atomic selectors (e.g. `const A = useStore(state => state.A); const B = useStore(state => state.B);`) creates independent `useSyncExternalStore` listener subscriptions for each hook. In scenarios with numerous store properties accessed in one component, this creates overhead.
+**Action:** Use `useShallow` from `zustand/react/shallow` to group multiple selectors into a single object-returning selector. This reduces the number of store subscriptions and slightly lowers component overhead, while still preventing unnecessary re-renders when other unselected store properties change. For example:
+```typescript
+const { A, B } = useStore(useShallow(state => ({ A: state.A, B: state.B })));
+```

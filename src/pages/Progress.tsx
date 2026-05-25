@@ -7,13 +7,25 @@ import { Trophy, Star, Award, Target } from 'lucide-react';
 import { AchievementList } from '@/components/achievements/AchievementList';
 import { StreakDisplay } from '@/components/achievements/StreakDisplay';
 import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function ProgressPage() {
-  const score = useGameStore(state => state.score);
-const stickers = useGameStore(state => state.stickers);
-const completedActivities = useGameStore(state => state.completedActivities);
-  const achievements = useAchievementStore(state => state.achievements);
-const initializeAchievements = useAchievementStore(state => state.initializeAchievements);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { score, stickers, completedActivities } = useGameStore(
+    useShallow(state => ({
+      score: state.score,
+      stickers: state.stickers,
+      completedActivities: state.completedActivities
+    }))
+  );
+
+  const { achievements, initializeAchievements } = useAchievementStore(
+    useShallow(state => ({
+      achievements: state.achievements,
+      initializeAchievements: state.initializeAchievements
+    }))
+  );
 
   useEffect(() => {
     initializeAchievements();
