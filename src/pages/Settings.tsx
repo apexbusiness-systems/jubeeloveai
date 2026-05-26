@@ -14,17 +14,22 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { useNavigate } from 'react-router-dom';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { VolumeControlDialog } from '@/components/VolumeControlDialog';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentTheme = useGameStore(state => state.currentTheme);
-const updateTheme = useGameStore(state => state.updateTheme);
-  const gender = useJubeeStore(state => state.gender);
-const setGender = useJubeeStore(state => state.setGender);
-const voice = useJubeeStore(state => state.voice);
-const setVoice = useJubeeStore(state => state.setVoice);
-const speak = useJubeeStore(state => state.speak);
+  const { currentTheme, updateTheme } = useGameStore(useShallow(state => ({
+    currentTheme: state.currentTheme,
+    updateTheme: state.updateTheme
+  })));
+  const { gender, setGender, voice, setVoice, speak } = useJubeeStore(useShallow(state => ({
+    gender: state.gender,
+    setGender: state.setGender,
+    voice: state.voice,
+    setVoice: state.setVoice,
+    speak: state.speak
+  })));
   // ⚡ Bolt: Select only the boolean we need to prevent unnecessary re-renders when children array mutates
   const hasChildren = useParentalStore(state => state.children.length > 0);
   const [soundEnabled, setSoundEnabled] = useState(true);
