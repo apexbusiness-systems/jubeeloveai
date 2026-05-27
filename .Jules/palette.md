@@ -26,3 +26,7 @@
 ## 2024-05-19 - WCAG 2.5.3 Label in Name violation
 **Learning:** Adding `aria-label` to a button that already has visible text inside can cause a WCAG 2.5.3 (Label in Name) violation if the aria-label doesn't contain the visible text, breaking voice controls.
 **Action:** Only add `aria-label` to icon-only buttons or ensure the label includes the visible text.
+
+## 2024-05-27 - Child Selector Button Accessibility
+**Learning:** Found a dynamic button in `NavigationHeader` that changes its text based on state ("Select Child" or child's name) but lacked an `aria-label` and `title` to provide clear context to screen readers and mouse users. Added dynamic `aria-label` and `title` that explain the button's action and current state.
+**Action:** When buttons have dynamic text content (like a selected user name), always add a descriptive `aria-label` that clarifies the action ("Switch child profile") alongside the current state.
