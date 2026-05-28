@@ -14,17 +14,22 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { useNavigate } from 'react-router-dom';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { VolumeControlDialog } from '@/components/VolumeControlDialog';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentTheme = useGameStore(state => state.currentTheme);
-const updateTheme = useGameStore(state => state.updateTheme);
-  const gender = useJubeeStore(state => state.gender);
-const setGender = useJubeeStore(state => state.setGender);
-const voice = useJubeeStore(state => state.voice);
-const setVoice = useJubeeStore(state => state.setVoice);
-const speak = useJubeeStore(state => state.speak);
+  const { currentTheme, updateTheme } = useGameStore(useShallow(state => ({
+    currentTheme: state.currentTheme,
+    updateTheme: state.updateTheme
+  })));
+  const { gender, setGender, voice, setVoice, speak } = useJubeeStore(useShallow(state => ({
+    gender: state.gender,
+    setGender: state.setGender,
+    voice: state.voice,
+    setVoice: state.setVoice,
+    speak: state.speak
+  })));
   // ⚡ Bolt: Select only the boolean we need to prevent unnecessary re-renders when children array mutates
   const hasChildren = useParentalStore(state => state.children.length > 0);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -125,7 +130,7 @@ const speak = useJubeeStore(state => state.speak);
         <Card className="border-4 border-primary/30">
           <CardHeader>
             <CardTitle className="text-primary flex items-center gap-2">
-              <GraduationCap className="w-5 h-5" />
+              <GraduationCap className="w-5 h-5" aria-hidden="true" />
               Tutorial
             </CardTitle>
             <CardDescription className="text-primary">
@@ -139,7 +144,7 @@ const speak = useJubeeStore(state => state.speak);
               size="lg"
               className="w-full"
             >
-              <GraduationCap className="w-4 h-4 mr-2" />
+              <GraduationCap className="w-4 h-4 mr-2" aria-hidden="true" />
               Restart Tutorial
             </Button>
           </CardContent>
@@ -176,7 +181,7 @@ const speak = useJubeeStore(state => state.speak);
         <Card className="border-4 border-primary/30">
           <CardHeader>
             <CardTitle className="text-primary flex items-center gap-2">
-              <Volume2 className="w-6 h-6" />
+              <Volume2 className="w-6 h-6" aria-hidden="true" />
               Jubee's Voice
             </CardTitle>
             <CardDescription className="text-primary">
@@ -221,7 +226,7 @@ const speak = useJubeeStore(state => state.speak);
                       disabled={testingVoice === option.id}
                       aria-label={`Test voice ${option.name}`}
                     >
-                      <Play className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
+                      <Play className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -245,7 +250,7 @@ const speak = useJubeeStore(state => state.speak);
                   className="h-24 flex-col gap-2"
                   aria-pressed={currentTheme === name}
                 >
-                  <Icon className="w-8 h-8" />
+                  <Icon className="w-8 h-8" aria-hidden="true" />
                   <span>{label}</span>
                 </Button>
               ))}
@@ -256,7 +261,7 @@ const speak = useJubeeStore(state => state.speak);
         <Card className="border-4 border-primary/30">
           <CardHeader>
             <CardTitle className="text-primary flex items-center gap-2">
-              <Volume2 className="w-6 h-6" />
+              <Volume2 className="w-6 h-6" aria-hidden="true" />
               Volume Controls
             </CardTitle>
             <CardDescription className="text-primary">
@@ -276,9 +281,9 @@ const speak = useJubeeStore(state => state.speak);
           <CardContent className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {soundEnabled ? (
-                <Volume2 className="w-6 h-6 text-primary" />
+                <Volume2 className="w-6 h-6 text-primary" aria-hidden="true" />
               ) : (
-                <VolumeX className="w-6 h-6 text-primary" />
+                <VolumeX className="w-6 h-6 text-primary" aria-hidden="true" />
               )}
               <Label htmlFor="sound-toggle" className="text-lg text-primary">
                 {soundEnabled ? t('settings.soundEffects') : t('settings.soundEffects')}
@@ -303,7 +308,7 @@ const speak = useJubeeStore(state => state.speak);
           <Card className="border-4 border-primary/30">
             <CardHeader>
               <CardTitle className="text-primary flex items-center gap-2">
-                <Shield className="w-6 h-6" />
+                <Shield className="w-6 h-6" aria-hidden="true" />
                 {t('settings.parentalControls')}
               </CardTitle>
               <CardDescription className="text-primary">{t('settings.manageProfiles')}</CardDescription>
@@ -325,7 +330,7 @@ const speak = useJubeeStore(state => state.speak);
         <Card className="border-4 border-primary/30">
           <CardHeader>
             <CardTitle className="text-primary flex items-center gap-2">
-              <Palette className="w-6 h-6" />
+              <Palette className="w-6 h-6" aria-hidden="true" />
               Style Guide
             </CardTitle>
             <CardDescription className="text-primary">UI components documentation and design system</CardDescription>
@@ -346,7 +351,7 @@ const speak = useJubeeStore(state => state.speak);
         <Card className="border-4 border-primary/30">
           <CardHeader>
             <CardTitle className="text-primary flex items-center gap-2">
-              <Download className="w-6 h-6" />
+              <Download className="w-6 h-6" aria-hidden="true" />
               {t('settings.install')}
             </CardTitle>
             <CardDescription className="text-primary">{t('settings.installDesc')}</CardDescription>

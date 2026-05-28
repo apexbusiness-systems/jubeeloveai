@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -16,10 +17,12 @@ export interface ScreenTimeStatus {
 }
 
 export function useScreenTimeEnforcement() {
-  const activeChild = useParentalStore(state =>
+  // ⚡ Bolt: Use useShallow to prevent hook re-execution and effect triggers
+  // when unrelated children update their state in the store
+  const activeChild = useParentalStore(useShallow(state =>
     state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
-  );
-const updateSessionTime = useParentalStore(state => state.updateSessionTime);
+  ));
+  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
 const endSession = useParentalStore(state => state.endSession);
   
   const [status, setStatus] = useState<ScreenTimeStatus>({
