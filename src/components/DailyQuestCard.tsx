@@ -18,6 +18,7 @@ import { useMasteryStore } from '@/store/useMasteryStore';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useParentalStore } from '@/store/useParentalStore';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useShallow } from 'zustand/react/shallow';
 import { getDayPart } from '@/lib/dailyQuest/questPicker';
 import { triggerConfetti } from '@/lib/confetti';
 import { triggerHaptic } from '@/lib/hapticFeedback';
@@ -114,18 +115,35 @@ function ProgressRing({
 
 export function DailyQuestCard() {
   const navigate = useNavigate();
-  const activeChildId = useParentalStore(s => s.activeChildId) ?? 'default-child';
-  const masteryRecords = useMasteryStore(s => s.records[activeChildId]);
-  const favoritePaths = useActivityStore(s => s.favoritePages);
-  const pagesVisited = useActivityStore(s => s.pagesVisited);
-  const triggerAnimation = useJubeeStore(s => s.triggerAnimation);
-  const calmMode = useParentalStore(s => s.settings.calmMode);
-  const updateSettings = useParentalStore(s => s.updateSettings);
 
-  const ensureQuest = useDailyQuestStore(s => s.ensureQuest);
-  const markStepComplete = useDailyQuestStore(s => s.markStepComplete);
-  const markCelebrated = useDailyQuestStore(s => s.markCelebrated);
-  const current = useDailyQuestStore(s => s.current);
+  const { activeChildIdRaw, calmMode, updateSettings } = useParentalStore(
+    useShallow(s => ({
+      activeChildIdRaw: s.activeChildId,
+      calmMode: s.settings.calmMode,
+      updateSettings: s.updateSettings
+    }))
+  );
+  const activeChildId = activeChildIdRaw ?? 'default-child';
+
+  const masteryRecords = useMasteryStore(s => s.records[activeChildId]);
+
+  const { favoritePaths, pagesVisited } = useActivityStore(
+    useShallow(s => ({
+      favoritePaths: s.favoritePages,
+      pagesVisited: s.pagesVisited
+    }))
+  );
+
+  const triggerAnimation = useJubeeStore(s => s.triggerAnimation);
+
+  const { ensureQuest, markStepComplete, markCelebrated, current } = useDailyQuestStore(
+    useShallow(s => ({
+      ensureQuest: s.ensureQuest,
+      markStepComplete: s.markStepComplete,
+      markCelebrated: s.markCelebrated,
+      current: s.current
+    }))
+  );
 
   const [dismissedCelebration, setDismissedCelebration] = useState(false);
   // Synced caption text spoken so far. Empty = caption hidden.
