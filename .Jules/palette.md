@@ -30,3 +30,7 @@
 ## 2024-05-27 - Child Selector Button Accessibility
 **Learning:** Found a dynamic button in `NavigationHeader` that changes its text based on state ("Select Child" or child's name) but lacked an `aria-label` and `title` to provide clear context to screen readers and mouse users. Added dynamic `aria-label` and `title` that explain the button's action and current state.
 **Action:** When buttons have dynamic text content (like a selected user name), always add a descriptive `aria-label` that clarifies the action ("Switch child profile") alongside the current state.
+
+## 2024-05-29 - Missing Focus Indicators on Interactive Elements
+**Learning:** Custom interactive elements (like game cards or story buttons) that use `<button>` or `<div>` with `onClick` often lack visual feedback for keyboard navigation, making them inaccessible to keyboard users.
+**Action:** Always add `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` (or appropriate ring sizing) to custom interactive elements to ensure they have clear focus states.
