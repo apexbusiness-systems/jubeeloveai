@@ -1,5 +1,6 @@
 import { SEO } from '@/components/SEO';
 import { useGameStore } from '@/store/useGameStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Gift } from 'lucide-react';
@@ -8,9 +9,13 @@ import { toast } from '@/hooks/use-toast';
 const availableStickers = ['⭐', '🌟', '✨', '🎯', '🏆', '🎖️', '🥇', '👏', '🎉', '🎊', '🌈', '🦋', '🌺', '🌻', '🎨', '📚', '✏️', '📝'];
 
 export default function StickersPage() {
-  const stickers = useGameStore(state => state.stickers);
-const addSticker = useGameStore(state => state.addSticker);
-const score = useGameStore(state => state.score);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { stickers, addSticker, score } = useGameStore(useShallow(state => ({
+    stickers: state.stickers,
+    addSticker: state.addSticker,
+    score: state.score,
+  })));
   const stickerCost = 50;
 
   const handleBuySticker = (sticker: string) => {
