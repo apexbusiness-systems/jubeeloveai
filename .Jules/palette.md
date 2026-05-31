@@ -34,3 +34,6 @@
 ## 2024-05-29 - Missing Focus Indicators on Interactive Elements
 **Learning:** Custom interactive elements (like game cards or story buttons) that use `<button>` or `<div>` with `onClick` often lack visual feedback for keyboard navigation, making them inaccessible to keyboard users.
 **Action:** Always add `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` (or appropriate ring sizing) to custom interactive elements to ensure they have clear focus states.
+## 2024-05-18 - [VoiceCommandButton Tooltip Upgrade]
+**Learning:** The native HTML `title` attribute is often insufficient for proper accessibility and UX on icon-only buttons. It lacks keyboard focus visibility and cannot be styled. Replacing it with a Radix UI/Shadcn Tooltip improves both discoverability and accessibility.
+**Action:** Replaced `title` on VoiceCommandButton with `Tooltip` and `TooltipContent` wrapped in a `TooltipProvider`. Will look for similar opportunities on other prominent icon-only buttons.
