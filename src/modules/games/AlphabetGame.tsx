@@ -193,7 +193,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <button
             onClick={startLearnMode}
-            className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
@@ -206,7 +206,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={startQuizMode}
-            className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
@@ -248,7 +248,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
             <button
               onClick={handlePrevious}
               disabled={currentIndex === 0}
-              className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+              className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
                 background: 'var(--gradient-game)',
                 boxShadow: 'var(--shadow-game)'
@@ -258,7 +258,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
             </button>
             <button
               onClick={handleNext}
-              className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+              className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
                 background: 'var(--gradient-game)',
                 boxShadow: 'var(--shadow-game)'
@@ -270,7 +270,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => setMode(null)}
-            className="mx-auto block px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="mx-auto block px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
@@ -323,7 +323,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               <button
                 key={idx}
                 onClick={() => handleAnswer(option)}
-                className="option-button p-8 rounded-3xl text-4xl font-bold transform hover:scale-105 transition-all duration-200 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+                className="option-button p-8 rounded-3xl text-4xl font-bold transform hover:scale-105 transition-all duration-200 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
                 style={{
                   background: 'var(--gradient-game)',
                   boxShadow: 'var(--shadow-game)'
@@ -339,7 +339,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       <div className="controls text-center mt-12">
         <button
           onClick={() => setMode(null)}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-warm)',
             boxShadow: 'var(--shadow-game)'

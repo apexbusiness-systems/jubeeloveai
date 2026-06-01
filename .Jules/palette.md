@@ -30,3 +30,11 @@
 ## 2024-05-27 - Child Selector Button Accessibility
 **Learning:** Found a dynamic button in `NavigationHeader` that changes its text based on state ("Select Child" or child's name) but lacked an `aria-label` and `title` to provide clear context to screen readers and mouse users. Added dynamic `aria-label` and `title` that explain the button's action and current state.
 **Action:** When buttons have dynamic text content (like a selected user name), always add a descriptive `aria-label` that clarifies the action ("Switch child profile") alongside the current state.
+
+## 2024-05-29 - Missing Focus Indicators on Interactive Elements
+**Learning:** Custom interactive elements (like game cards or story buttons) that use `<button>` or `<div>` with `onClick` often lack visual feedback for keyboard navigation, making them inaccessible to keyboard users.
+**Action:** Always add `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` (or appropriate ring sizing) to custom interactive elements to ensure they have clear focus states.
+
+## 2025-05-30 - Added Keyboard Focus States
+**Learning:** Some custom interactive elements (like the 'TabButton' component in the bottom navigation and the manual 'dismiss' button for the install banner) lacked explicit focus rings. By default, Tailwind CSS combined with custom components doesn't always provide sufficient focus indicators for keyboard users.
+**Action:** Always verify keyboard focus states (`focus-visible`) for any custom button or interactive element that isn't a standard HTML `<button>` or lacks default browser styles. Use `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2` for consistent, accessible focus indicators.
