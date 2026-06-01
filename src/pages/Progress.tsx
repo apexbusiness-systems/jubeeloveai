@@ -116,7 +116,11 @@ export default function ProgressPage() {
                 {stickers.map((sticker, index) => (
                   <div 
                     key={index}
-                    className="aspect-square bg-card rounded-2xl border-4 border-primary/20 flex items-center justify-center text-4xl hover:scale-110 transition-transform"
+                    role="img"
+                    tabIndex={0}
+                    aria-label={`Owned sticker: ${sticker}`}
+                    title={`Owned sticker: ${sticker}`}
+                    className="aspect-square bg-card rounded-2xl border-4 border-primary/20 flex items-center justify-center text-4xl hover:scale-110 transition-transform focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
                   >
                     {sticker}
                   </div>

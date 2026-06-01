@@ -80,8 +80,9 @@ export default function StickersPage() {
                   {stickers.map((sticker, index) => (
                     <div 
                       key={index}
-                      className="aspect-square bg-card rounded-2xl border-4 border-primary flex items-center justify-center text-5xl hover:scale-110 transition-transform shadow-lg"
+                      className="aspect-square bg-card rounded-2xl border-4 border-primary flex items-center justify-center text-5xl hover:scale-110 transition-transform shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
                       role="img"
+                      tabIndex={0}
                       aria-label={`Owned sticker: ${sticker}`}
                       title={`Owned sticker: ${sticker}`}
                     >
