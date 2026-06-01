@@ -1,3 +1,25 @@
+
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem(key: string) {
+      return store[key] || null;
+    },
+    setItem(key: string, value: string) {
+      store[key] = value.toString();
+    },
+    removeItem(key: string) {
+      delete store[key];
+    },
+    clear() {
+      store = {};
+    }
+  };
+})();
+Object.defineProperty(global, "localStorage", {
+  value: mockLocalStorage,
+});
+
 import { render, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useParentalStore } from '../store/useParentalStore';

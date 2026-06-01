@@ -55,7 +55,7 @@ const StoryCard = memo(({ story, onSelect }: StoryCardProps) => (
   <button
     data-testid="story-card"
     onClick={() => onSelect(story)}
-    className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95 relative"
+    className="story-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 cursor-pointer border-4 border-game-accent active:scale-95 relative focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
     aria-label={`Read ${story.title}`}
     style={{
       background: 'var(--gradient-warm)',
@@ -92,7 +92,7 @@ const AudioControls = memo(({
       <div className="flex items-center gap-6 w-full max-w-md">
         <button
           onClick={onPauseResume}
-          className="p-4 rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-2 border-game-accent"
+          className="p-4 rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-2 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-game)',
             boxShadow: 'var(--shadow-accent)',
@@ -488,7 +488,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 0}
-            className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            className="px-8 py-4 text-2xl font-bold rounded-full disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Previous page"
             style={{
               background: currentPage === 0 ? 'var(--gradient-neutral)' : 'var(--gradient-warm)',
@@ -502,7 +502,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={handleReadAloud}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Read page aloud"
             style={{
               background: 'var(--gradient-game)',
@@ -516,7 +516,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={handleNextPage}
-            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px]"
+            className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 active:scale-95 transition-all text-primary-foreground border-3 border-game-accent min-h-[60px] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label={currentPage === selectedStory.pages.length - 1 ? 'Finish story' : 'Next page'}
             style={{
               background: 'var(--gradient-cool)',

@@ -155,6 +155,24 @@ export default function GamesMenu() {
           </button>
 
           <button
+            onClick={() => handleGameClick('/games/feelings', 'Feelings Explorer')}
+            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/feelings', 'Feelings Explorer'))}
+            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+            style={{
+              background: 'var(--gradient-warm)',
+              boxShadow: 'var(--shadow-accent)'
+            }}
+            role="listitem"
+            aria-label="Play Feelings Explorer - Learn about emotions with Feely"
+          >
+            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">💛</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Feelings Explorer</h2>
+            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Learn about feelings!</p>
+          </button>
+
+          <button
             onClick={() => handleGameClick('/dance', 'JubeeDance')}
             onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/dance', 'JubeeDance'))}
             className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]

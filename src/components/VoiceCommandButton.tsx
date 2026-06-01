@@ -1,5 +1,6 @@
 import { Mic, MicOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useVoiceCommands } from '@/hooks/useVoiceCommands'
 import { cn } from '@/lib/utils'
 import { triggerHaptic } from '@/lib/hapticFeedback'
@@ -11,6 +12,8 @@ export function VoiceCommandButton() {
     triggerHaptic('medium')
     toggleListening()
   }
+
+  const label = isListening ? "Stop listening" : "Start voice command"
 
   return (
     <Button

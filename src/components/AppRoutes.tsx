@@ -36,6 +36,7 @@ const OAuthConsent = lazy(() => import('../pages/OAuthConsent'));
 const GamesMenu = lazy(() => import('../pages/GamesMenu'));
 const Landing = lazy(() => import('../pages/Landing'));
 const JubeeDance = lazy(() => import('../modules/dance/JubeeDance'));
+const FeelingsGame = lazy(() => import('../modules/feelings/FeelingsGame'));
 
 export function AppRoutes() {
   return (
@@ -59,6 +60,7 @@ export function AppRoutes() {
       <Route path="/games/alphabet" element={<Suspense fallback={<GameSkeleton />}><AlphabetGame /></Suspense>} />
       <Route path="/games/colors" element={<Suspense fallback={<GameSkeleton />}><ColorGame /></Suspense>} />
       <Route path="/games/puzzle" element={<Suspense fallback={<GameSkeleton />}><PuzzleGame /></Suspense>} />
+      <Route path="/games/feelings" element={<Suspense fallback={<GameSkeleton />}><FeelingsGame /></Suspense>} />
       <Route path="/progress" element={<Suspense fallback={<ProgressSkeleton />}><ProgressPage /></Suspense>} />
       <Route path="/stickers" element={<Suspense fallback={<GameSkeleton />}><StickersPage /></Suspense>} />
       <Route path="/music" element={<Suspense fallback={<GameSkeleton />}><MusicPage /></Suspense>} />
