@@ -23,7 +23,7 @@ export function OfflineIndicator() {
     >
       {!isOnline ? (
         <>
-          <WifiOff className="h-4 w-4" />
+          <WifiOff className="h-4 w-4" aria-hidden="true" />
           <span className="text-sm font-medium">Offline</span>
           {queueSize > 0 && (
             <span className="text-xs opacity-90">({queueSize} pending)</span>
@@ -31,14 +31,14 @@ export function OfflineIndicator() {
         </>
       ) : conflictCount > 0 ? (
         <>
-          <AlertCircle className="h-4 w-4 animate-pulse" />
+          <AlertCircle className="h-4 w-4 animate-pulse" aria-hidden="true" />
           <span className="text-sm font-medium">
             {conflictCount} conflict{conflictCount !== 1 ? 's' : ''}
           </span>
         </>
       ) : isSyncing ? (
         <>
-          <RefreshCw className="h-4 w-4 animate-spin" />
+          <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
           <span className="text-sm font-medium">Syncing...</span>
           {queueSize > 0 && (
             <span className="text-xs opacity-90">({queueSize} in queue)</span>
@@ -46,7 +46,7 @@ export function OfflineIndicator() {
         </>
       ) : queueSize > 0 ? (
         <>
-          <Clock className="h-4 w-4" />
+          <Clock className="h-4 w-4" aria-hidden="true" />
           <span className="text-sm font-medium">{queueSize} pending</span>
         </>
       ) : null}
@@ -58,7 +58,7 @@ export function OfflineIndicator() {
           onClick={manualSync}
           className="h-6 px-2 text-xs"
         >
-          <Wifi className="h-3 w-3 mr-1" />
+          <Wifi className="h-3 w-3 mr-1" aria-hidden="true" />
           Sync Now
         </Button>
       )}

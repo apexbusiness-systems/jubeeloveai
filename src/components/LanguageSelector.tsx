@@ -25,7 +25,10 @@ export function LanguageSelector() {
       </CardHeader>
       <CardContent>
         <Select value={i18n.language} onValueChange={handleLanguageChange}>
-          <SelectTrigger className="w-full bg-gradient-to-r from-yellow-400 to-orange-400 border-2 border-yellow-500 text-foreground font-semibold hover:from-yellow-500 hover:to-orange-500 transition-all">
+          <SelectTrigger
+            className="w-full bg-gradient-to-r from-yellow-400 to-orange-400 border-2 border-yellow-500 text-foreground font-semibold hover:from-yellow-500 hover:to-orange-500 transition-all"
+            aria-label={t('settings.selectLanguage')}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-400">

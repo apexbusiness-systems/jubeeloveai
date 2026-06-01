@@ -18,15 +18,27 @@ import { validatePIN, validateChildName } from '@/lib/inputValidation';
 
 export default function ParentalControls() {
   const navigate = useNavigate();
-  const children = useParentalStore(useShallow(state => state.children));
-const settings = useParentalStore(useShallow(state => state.settings));
-const isParentMode = useParentalStore(state => state.isParentMode);
-const addChild = useParentalStore(state => state.addChild);
-const updateChild = useParentalStore(state => state.updateChild);
-const deleteChild = useParentalStore(state => state.deleteChild);
-const updateSettings = useParentalStore(state => state.updateSettings);
-const setParentMode = useParentalStore(state => state.setParentMode);
-const verifyPin = useParentalStore(state => state.verifyPin);
+  const {
+    children,
+    settings,
+    isParentMode,
+    addChild,
+    updateChild,
+    deleteChild,
+    updateSettings,
+    setParentMode,
+    verifyPin
+  } = useParentalStore(useShallow(state => ({
+    children: state.children,
+    settings: state.settings,
+    isParentMode: state.isParentMode,
+    addChild: state.addChild,
+    updateChild: state.updateChild,
+    deleteChild: state.deleteChild,
+    updateSettings: state.updateSettings,
+    setParentMode: state.setParentMode,
+    verifyPin: state.verifyPin
+  })));
 
   const [pinInput, setPinInput] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(!settings.isLocked || isParentMode);
