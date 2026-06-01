@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useShallow } from 'zustand/react/shallow'
 
 interface Card {
   id: number
@@ -32,7 +33,7 @@ const MemoryCard = memo(({
     aria-label={`Card ${index + 1}, ${card.isMatched ? 'matched showing ' + card.emoji : card.isFlipped ? 'flipped showing ' + card.emoji : 'unflipped'}`}
     onClick={() => onClick(card.id)}
     disabled={isDisabled || card.isMatched || card.isFlipped}
-    className="card aspect-square rounded-2xl flex items-center justify-center text-6xl transform transition-all duration-300 hover:scale-105 border-4 border-game-accent"
+    className="card aspect-square rounded-2xl flex items-center justify-center text-6xl transform transition-all duration-300 hover:scale-105 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
     style={{
       background: card.isFlipped || card.isMatched
         ? 'var(--gradient-warm)'
@@ -53,8 +54,10 @@ export default function MemoryGame() {
   const [flippedCards, setFlippedCards] = useState<number[]>([])
   const [moves, setMoves] = useState(0)
   const [matches, setMatches] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = useCallback((level: 'easy' | 'medium' | 'hard') => {
@@ -162,7 +165,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <button
             onClick={() => initializeGame('easy')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
@@ -176,7 +179,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => initializeGame('medium')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
@@ -190,7 +193,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => initializeGame('hard')}
-            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+            className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-game)'
@@ -246,7 +249,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       <div className="controls text-center">
         <button
           onClick={() => setDifficulty(null)}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-warm)',
             boxShadow: 'var(--shadow-game)'

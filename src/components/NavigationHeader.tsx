@@ -37,6 +37,8 @@ export const NavigationHeader = memo(function NavigationHeader({
               size="sm"
               onClick={onChildSelectorClick}
               className="text-foreground"
+              aria-label={activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}
+              title={activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}
             >
               {activeChildName || 'Select Child'}
             </Button>

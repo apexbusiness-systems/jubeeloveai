@@ -1,73 +1,151 @@
-# Welcome to your Lovable project
+# Jubee.Love
 
-## Project info
+Jubee.Love is an interactive educational web application for toddlers (ages 3–5), built around Jubee — an animated 3D bee mascot that guides children through games, stories, music, and daily learning quests. The app is designed as a Progressive Web App (PWA) with offline-first architecture, ensuring a seamless experience on mobile and tablet devices.
 
-**URL**: https://lovable.dev/projects/f4993bf4-f610-41cd-910c-25212967813d
+---
 
-## How can I edit this code?
+## Table of Contents
 
-There are several ways of editing your application.
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [Development](#development)
+- [Testing](#testing)
+- [Build & Deployment](#build--deployment)
+- [Architecture Highlights](#architecture-highlights)
+- [License](#license)
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f4993bf4-f610-41cd-910c-25212967813d) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- [Node.js](https://nodejs.org/) v18+ (recommended: install via [nvm](https://github.com/nvm-sh/nvm))
+- [Bun](https://bun.sh/) or npm
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd <PROJECT_NAME>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+bun install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Start the development server
+bun run dev
 ```
 
-**Edit a file directly in GitHub**
+The development server runs at `http://localhost:5173` by default.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+src/
+  components/          # Shared UI components (shadcn/ui, custom)
+  core/jubee/          # Jubee mascot engine (rendering, positioning, lifecycle)
+  data/                # Static content libraries (stories, music, reading words)
+  hooks/               # React hooks (auth, persistence, audio, tracking)
+  i18n/                # Internationalization (EN, ES, FR, HI, ZH)
+  integrations/        # Supabase client, OmniLink adapter
+  lib/                 # Utilities, storage, sync, error handling
+  modules/             # Feature modules (games, dance, stories, shapes, writing)
+  pages/               # Route-level page components
+  store/               # Zustand state stores (settings, progress, achievements)
+  types/               # TypeScript type definitions
+  workers/             # Web workers (achievements, drawing)
+supabase/
+  functions/           # Edge functions (TTS, STT, screen-time alerts, SFX)
+  migrations/          # Database schema migrations
+e2e/                   # Playwright end-to-end tests
+```
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Technology Stack
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18, Vite 5 |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v3 |
+| Components | shadcn/ui, Radix UI |
+| State | Zustand |
+| 3D / Animation | Three.js (direct rendering), CSS transitions |
+| Backend | Supabase (PostgreSQL, Auth, Edge Functions) |
+| Sync | IndexedDB (offline-first) + Supabase sync |
+| Testing | Vitest (unit), Playwright (E2E) |
+| Monitoring | Sentry, custom performance budgets |
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/f4993bf4-f610-41cd-910c-25212967813d) and click on Share -> Publish.
+## Development
 
-## Can I connect a custom domain to my Lovable project?
+### Available Scripts
 
-Yes, you can!
+```sh
+bun run dev              # Start dev server
+bun run build            # Production build
+bun run preview          # Preview production build locally
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+bun run typecheck        # TypeScript strict check
+bun run lint             # ESLint with auto-fix
+bun run test             # Unit tests (Vitest)
+bun run test:ci          # Coverage reporting
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Environment Variables
+
+Copy `.env.example` to `.env` and fill in your Supabase project credentials:
+
+```env
+VITE_SUPABASE_URL=your_project_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
+
+---
+
+## Testing
+
+```sh
+# Unit & integration tests
+bun run test
+
+# E2E tests (requires dev server running)
+npx playwright test
+
+# Full quality gate (typecheck + lint + test + build)
+bun run typecheck && bun run lint && bun run test && bun run build
+```
+
+---
+
+## Build & Deployment
+
+```sh
+# Production bundle
+bun run build
+
+# Output is written to `dist/`, ready for static hosting or CDN deployment.
+```
+
+---
+
+## Architecture Highlights
+
+- **Offline-First**: IndexedDB with debounced auto-save; Supabase syncs in the background.
+- **Jubee Mascot Engine**: Direct Three.js rendering with adaptive quality profiles, visibility guards, and spatial freedom.
+- **Parental Controls**: Hidden `/parent` route (3-second long-press on settings), screen-time limits, and schedule enforcement.
+- **Accessibility**: Large touch targets, synced read-aloud captions, calm mode for sensitive children, WCAG-aligned color contrast.
+- **Security**: Row-Level Security (RLS), input sanitization, secure token storage, and zero client-side secrets.
+- **Internationalization**: UI and TTS support for English, Spanish, French, Mandarin, and Hindi.
+
+---
+
+## License
+
+© Jubee.Love. All rights reserved.

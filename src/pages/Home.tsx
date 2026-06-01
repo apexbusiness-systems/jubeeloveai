@@ -8,6 +8,7 @@ import { Download, Wand2, Clock3 } from 'lucide-react';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useGameStore } from '@/store/useGameStore';
 import { DailyQuestCard } from '@/components/DailyQuestCard';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ActivityMeta {
   title: string;
@@ -19,9 +20,13 @@ interface ActivityMeta {
 export default function HomePage() {
   const navigate = useNavigate();
   const [showInstallBanner, setShowInstallBanner] = useState(false);
-  const favoritePages = useActivityStore(state => state.favoritePages);
-const totalTimeSpent = useActivityStore(state => state.totalTimeSpent);
-const lastActivityTime = useActivityStore(state => state.lastActivityTime);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { favoritePages, totalTimeSpent, lastActivityTime } = useActivityStore(useShallow(state => ({
+    favoritePages: state.favoritePages,
+    totalTimeSpent: state.totalTimeSpent,
+    lastActivityTime: state.lastActivityTime,
+  })));
   const currentTheme = useGameStore(state => state.currentTheme);
 
   const activityCatalog = useMemo<Record<string, ActivityMeta>>(
@@ -121,7 +126,7 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
                     onClick={dismissBanner}
                     variant="ghost"
                     size="sm"
-                    className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                    className="flex-shrink-0 min-h-[44px] min-w-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     aria-label="Dismiss install banner"
                   >
                     ✕

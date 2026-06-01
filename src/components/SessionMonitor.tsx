@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,9 +10,13 @@ import { useState } from 'react';
 
 export function SessionMonitor() {
   const navigate = useNavigate();
-  const activeChild = useParentalStore(state =>
+
+  // ⚡ Bolt: Memoize child object selector with useShallow to prevent unnecessary
+  // re-renders when unrelated children update their session time
+  const activeChild = useParentalStore(useShallow(state =>
     state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
-  );
+  ));
+
   const updateSessionTime = useParentalStore(state => state.updateSessionTime);
   const endSession = useParentalStore(state => state.endSession);
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
@@ -60,7 +65,7 @@ export function SessionMonitor() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">
-              <Clock className="w-16 h-16 text-destructive" />
+              <Clock className="w-16 h-16 text-destructive" aria-hidden="true" />
             </div>
             <DialogTitle className="text-3xl text-center">Time's Up!</DialogTitle>
             <DialogDescription className="text-lg text-center">
@@ -94,7 +99,7 @@ export function SessionMonitor() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="flex justify-center mb-4">
-              <AlertTriangle className="w-12 h-12 text-amber-500" />
+              <AlertTriangle className="w-12 h-12 text-amber-500" aria-hidden="true" />
             </div>
             <DialogTitle className="text-2xl text-center">Time Warning</DialogTitle>
             <DialogDescription className="text-lg text-center">
