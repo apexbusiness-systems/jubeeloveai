@@ -115,16 +115,21 @@ function ProgressRing({
 
 export function DailyQuestCard() {
   const navigate = useNavigate();
-  const { activeChildId, calmMode, updateSettings } = useParentalStore(useShallow(s => ({
-    activeChildId: s.activeChildId ?? 'default-child',
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions and memory allocations
+  const { activeChildIdRaw, calmMode, updateSettings } = useParentalStore(useShallow(s => ({
+    activeChildIdRaw: s.activeChildId,
     calmMode: s.settings.calmMode,
     updateSettings: s.updateSettings
   })));
+  const activeChildId = activeChildIdRaw ?? 'default-child';
+
   const masteryRecords = useMasteryStore(s => s.records[activeChildId]);
+
   const { favoritePaths, pagesVisited } = useActivityStore(useShallow(s => ({
     favoritePaths: s.favoritePages,
     pagesVisited: s.pagesVisited
   })));
+
   const triggerAnimation = useJubeeStore(s => s.triggerAnimation);
 
   const { ensureQuest, markStepComplete, markCelebrated, current } = useDailyQuestStore(useShallow(s => ({
