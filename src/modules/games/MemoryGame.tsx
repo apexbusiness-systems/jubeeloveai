@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useShallow } from 'zustand/react/shallow'
 
 interface Card {
   id: number
@@ -53,8 +54,10 @@ export default function MemoryGame() {
   const [flippedCards, setFlippedCards] = useState<number[]>([])
   const [moves, setMoves] = useState(0)
   const [matches, setMatches] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = useCallback((level: 'easy' | 'medium' | 'hard') => {

@@ -115,35 +115,24 @@ function ProgressRing({
 
 export function DailyQuestCard() {
   const navigate = useNavigate();
-
-  const { activeChildIdRaw, calmMode, updateSettings } = useParentalStore(
-    useShallow(s => ({
-      activeChildIdRaw: s.activeChildId,
-      calmMode: s.settings.calmMode,
-      updateSettings: s.updateSettings
-    }))
-  );
-  const activeChildId = activeChildIdRaw ?? 'default-child';
-
+  const { activeChildId, calmMode, updateSettings } = useParentalStore(useShallow(s => ({
+    activeChildId: s.activeChildId ?? 'default-child',
+    calmMode: s.settings.calmMode,
+    updateSettings: s.updateSettings
+  })));
   const masteryRecords = useMasteryStore(s => s.records[activeChildId]);
-
-  const { favoritePaths, pagesVisited } = useActivityStore(
-    useShallow(s => ({
-      favoritePaths: s.favoritePages,
-      pagesVisited: s.pagesVisited
-    }))
-  );
-
+  const { favoritePaths, pagesVisited } = useActivityStore(useShallow(s => ({
+    favoritePaths: s.favoritePages,
+    pagesVisited: s.pagesVisited
+  })));
   const triggerAnimation = useJubeeStore(s => s.triggerAnimation);
 
-  const { ensureQuest, markStepComplete, markCelebrated, current } = useDailyQuestStore(
-    useShallow(s => ({
-      ensureQuest: s.ensureQuest,
-      markStepComplete: s.markStepComplete,
-      markCelebrated: s.markCelebrated,
-      current: s.current
-    }))
-  );
+  const { ensureQuest, markStepComplete, markCelebrated, current } = useDailyQuestStore(useShallow(s => ({
+    ensureQuest: s.ensureQuest,
+    markStepComplete: s.markStepComplete,
+    markCelebrated: s.markCelebrated,
+    current: s.current
+  })));
 
   const [dismissedCelebration, setDismissedCelebration] = useState(false);
   // Synced caption text spoken so far. Empty = caption hidden.
