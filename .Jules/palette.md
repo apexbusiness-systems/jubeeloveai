@@ -23,3 +23,6 @@
 ## 2024-05-22 - Make Achievement Cards keyboard accessible
 **Learning:** Found an accessibility issue where `AchievementBadge` components inside `Progress` page were rendered as visual-only elements without interactive behavior or keyboard accessibility. Screen reader and keyboard users couldn't access the achievement details.
 **Action:** Always add `tabIndex={0}`, `role="article"`, a descriptive `aria-label` covering all visually presented data, and focus-visible styling to informational cards like achievements.
+## 2024-06-02 - Listitem role overrides button semantics
+**Learning:** Found accessibility issue pattern where `role="listitem"` was used on `<button>` elements. This completely overrides the native button semantics, meaning screen reader users wouldn't know the element is clickable. Also found redundant `onKeyDown` handlers for Enter/Space on native buttons, which handle these natively.
+**Action:** When items in a list are interactive, use a native `<ul>` and `<li>` structure, and place the `<button>` inside the `<li>`. Remove `role="listitem"` from buttons. Do not add `onKeyDown` for Space/Enter to native `<button>` elements.
