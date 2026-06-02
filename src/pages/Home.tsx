@@ -199,9 +199,8 @@ export default function HomePage() {
           </Card>
         </section>
         
-        <div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto"
-          role="list"
+        <ul
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto list-none p-0"
           aria-label="Available learning activities"
         >
           <GameCard
@@ -258,7 +257,7 @@ export default function HomePage() {
             path="/reading"
             description="Learn to read with Jubee's pronunciation help"
           />
-        </div>
+        </ul>
       </div>
     </>
   );
@@ -349,39 +348,32 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
     navigate(path);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
-    }
-  };
-
   return (
-    <button
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      className="
-        game-card group
-        focus:outline-none 
-        focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-        min-h-[160px] sm:min-h-[180px]
-        transition-all duration-300
-      "
-      aria-label={`Start ${title} - ${description}`}
-      role="listitem"
-    >
-      <div 
-        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-110 group-focus-visible:scale-110 text-primary flex items-center justify-center" 
-        aria-hidden="true"
+    <li>
+      <button
+        onClick={handleClick}
+        className="
+          game-card group w-full h-full
+          focus:outline-none
+          focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+          min-h-[160px] sm:min-h-[180px]
+          transition-all duration-300
+        "
+        aria-label={`Start ${title} - ${description}`}
       >
-        {typeof icon === 'string' ? <span className="text-5xl sm:text-6xl">{icon}</span> : icon}
-      </div>
-      <span className="text-xl sm:text-2xl md:text-3xl mt-3 sm:mt-4 font-bold text-primary leading-tight">
-        {title}
-      </span>
-      <p className="text-xs sm:text-sm text-foreground/80 mt-2 px-2 sm:px-4 leading-relaxed">
-        {description}
-      </p>
-    </button>
+        <div
+          className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-110 group-focus-visible:scale-110 text-primary flex items-center justify-center mx-auto"
+          aria-hidden="true"
+        >
+          {typeof icon === 'string' ? <span className="text-5xl sm:text-6xl">{icon}</span> : icon}
+        </div>
+        <span className="text-xl sm:text-2xl md:text-3xl mt-3 sm:mt-4 font-bold text-primary leading-tight block text-center">
+          {title}
+        </span>
+        <p className="text-xs sm:text-sm text-foreground/80 mt-2 px-2 sm:px-4 leading-relaxed text-center">
+          {description}
+        </p>
+      </button>
+    </li>
   );
 }

@@ -8,6 +8,7 @@ import { useSpring } from 'framer-motion';
 import { useGameStore } from './store/useGameStore';
 import { useJubeeStore } from './store/useJubeeStore';
 import { useParentalStore } from './store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { SEO } from './components/SEO';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -80,11 +81,15 @@ function AppShell() {
   const [showStickerBook, setShowStickerBook] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
   const [shouldRenderMascot, setShouldRenderMascot] = useState(false);
-  const currentTheme = useGameStore(state => state.currentTheme);
-const updateTheme = useGameStore(state => state.updateTheme);
-const score = useGameStore(state => state.score);
-  const hasCompletedOnboarding = useOnboardingStore(state => state.hasCompletedOnboarding);
-const startOnboarding = useOnboardingStore(state => state.startOnboarding);
+  const { currentTheme, updateTheme, score } = useGameStore(useShallow(state => ({
+    currentTheme: state.currentTheme,
+    updateTheme: state.updateTheme,
+    score: state.score
+  })));
+  const { hasCompletedOnboarding, startOnboarding } = useOnboardingStore(useShallow(state => ({
+    hasCompletedOnboarding: state.hasCompletedOnboarding,
+    startOnboarding: state.startOnboarding
+  })));
   const { isSaving, lastSaved } = useSyncStatus();
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,8 +120,10 @@ const startOnboarding = useOnboardingStore(state => state.startOnboarding);
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
   const containerPosition = useJubeeStore(state => state.containerPosition);
-  const hasChildren = useParentalStore(state => state.children.length > 0);
-  const activeChildId = useParentalStore(state => state.activeChildId);
+  const { hasChildren, activeChildId } = useParentalStore(useShallow(state => ({
+    hasChildren: state.children.length > 0,
+    activeChildId: state.activeChildId
+  })));
 
   // Spring physics for container positioning
   const springBottom = useSpring(containerPosition.bottom, {
