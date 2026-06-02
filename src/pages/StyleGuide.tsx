@@ -93,8 +93,8 @@ const StyleGuide = () => {
                       <Button size="sm">Small</Button>
                       <Button size="default">Default</Button>
                       <Button size="lg">Large</Button>
-                      <Button size="icon">
-                        <CheckCircle2 className="h-4 w-4" />
+                      <Button size="icon" aria-label="Confirm" title="Confirm">
+                        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </VariantShowcase>
 
