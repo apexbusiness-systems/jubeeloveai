@@ -20,7 +20,7 @@
 ## 2024-05-14 - Make visual collection cards keyboard accessible
 **Learning:** Visual collection items like Sticker Cards that only have a visual UI and an `aria-label` but no interactive behavior (like `onClick`) are completely skipped by keyboard navigation. Users navigating via keyboard cannot read the `aria-label` description.
 **Action:** Add `tabIndex={0}` and `focus-visible` styling to visual collection items so they receive focus during keyboard navigation, allowing screen readers to announce their `aria-label`. Include all necessary context in the `aria-label` (e.g. sticker description, not just name).
-
-## 2024-05-16 - Accessible Style Guide Examples
-**Learning:** Found an accessibility issue pattern where `Button` components acting as examples in `StyleGuide.tsx` lacked accessible attributes like `aria-label` and `title` for icon buttons, violating accessibility best practices even in documentation examples.
-**Action:** Always ensure that UI components presented in a StyleGuide follow all accessibility best practices (including `aria-label`, `title`, and `aria-hidden` on icons), as developers will likely copy these examples when building new features.
+## 2024-05-22 - Make Achievement Cards keyboard accessible
+**Learning:** Found an accessibility issue where `AchievementBadge` components inside `Progress` page were rendered as visual-only elements without interactive behavior or keyboard accessibility. Screen reader and keyboard users couldn't access the achievement details.
+**Action:** Always add `tabIndex={0}`, `role="article"`, a descriptive `aria-label` covering all visually presented data, and focus-visible styling to informational cards like achievements.
+## 2024-06-01 - Make sticker display elements keyboard accessible\n**Learning:** Decorative or collectible items (like stickers) displayed in grids often lack keyboard accessibility. Even if they don't have interactive behavior like a click action, users navigating via keyboard should be able to tab to them to read their `aria-label` and see their `title` tooltip. Found instances in `src/pages/Progress.tsx` and `src/pages/Stickers.tsx`.\n**Action:** Add `role="img"`, `tabIndex={0}`, `aria-label`, and `title` attributes, along with `focus-visible` classes, to visual collection items so they receive focus and announce properly during keyboard navigation.
