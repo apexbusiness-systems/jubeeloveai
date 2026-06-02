@@ -14,13 +14,6 @@ export default function GamesMenu() {
     navigate(path);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent, callback: () => void) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      callback();
-    }
-  };
-
   return (
     <>
       <SEO 
@@ -41,142 +34,158 @@ export default function GamesMenu() {
           </p>
         </header>
 
-        <div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto"
-          role="list"
+        <ul
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto list-none p-0"
           aria-label="Available games"
         >
-          <button
-            onClick={() => handleGameClick('/games/memory', 'Memory Match')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/memory', 'Memory Match'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-warm)',
-              boxShadow: 'var(--shadow-game)'
-            }}
-            role="listitem"
-            aria-label="Play Memory Match game - Find matching pairs"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🧠</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Memory Match</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Find matching pairs!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/memory', 'Memory Match')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-warm)',
+                boxShadow: 'var(--shadow-game)'
+              }}
+              aria-label="Play Memory Match game - Find matching pairs"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🧠</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Memory Match</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Find matching pairs!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/games/pattern', 'Pattern Game')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/pattern', 'Pattern Game'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-cool)',
-              boxShadow: 'var(--shadow-accent)'
-            }}
-            role="listitem"
-            aria-label="Play Pattern Game - Repeat the pattern"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🎯</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Pattern Game</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Repeat the pattern!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/pattern', 'Pattern Game')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-cool)',
+                boxShadow: 'var(--shadow-accent)'
+              }}
+              aria-label="Play Pattern Game - Repeat the pattern"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🎯</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Pattern Game</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Repeat the pattern!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/games/numbers', 'Number Adventure')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/numbers', 'Number Adventure'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-game)',
-              boxShadow: 'var(--shadow-game)'
-            }}
-            role="listitem"
-            aria-label="Play Number Adventure - Learn counting and math"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🔢</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Number Adventure</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Learn counting & math!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/numbers', 'Number Adventure')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-game)',
+                boxShadow: 'var(--shadow-game)'
+              }}
+              aria-label="Play Number Adventure - Learn counting and math"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🔢</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Number Adventure</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Learn counting & math!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/games/alphabet', 'Alphabet Adventure')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/alphabet', 'Alphabet Adventure'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-warm)',
-              boxShadow: 'var(--shadow-game)'
-            }}
-            role="listitem"
-            aria-label="Play Alphabet Adventure - Master your ABCs"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🔤</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Alphabet Adventure</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Master your ABCs!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/alphabet', 'Alphabet Adventure')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-warm)',
+                boxShadow: 'var(--shadow-game)'
+              }}
+              aria-label="Play Alphabet Adventure - Master your ABCs"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🔤</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Alphabet Adventure</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Master your ABCs!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/games/colors', 'Color Splash')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/colors', 'Color Splash'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-cool)',
-              boxShadow: 'var(--shadow-accent)'
-            }}
-            role="listitem"
-            aria-label="Play Color Splash - Match beautiful colors"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🌈</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Color Splash</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Match beautiful colors!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/colors', 'Color Splash')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-cool)',
+                boxShadow: 'var(--shadow-accent)'
+              }}
+              aria-label="Play Color Splash - Match beautiful colors"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🌈</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Color Splash</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Match beautiful colors!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/games/puzzle', 'Puzzle Master')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/games/puzzle', 'Puzzle Master'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-game)',
-              boxShadow: 'var(--shadow-game)'
-            }}
-            role="listitem"
-            aria-label="Play Puzzle Master - Solve picture puzzles"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🧩</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Puzzle Master</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Solve picture puzzles!</p>
-          </button>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/puzzle', 'Puzzle Master')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-game)',
+                boxShadow: 'var(--shadow-game)'
+              }}
+              aria-label="Play Puzzle Master - Solve picture puzzles"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">🧩</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Puzzle Master</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Solve picture puzzles!</p>
+            </button>
+          </li>
 
-          <button
-            onClick={() => handleGameClick('/dance', 'JubeeDance')}
-            onKeyDown={(e) => handleKeyDown(e, () => handleGameClick('/dance', 'JubeeDance'))}
-            className={`game-option p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
-              focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-              ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
-            style={{
-              background: 'var(--gradient-game)',
-              boxShadow: 'var(--shadow-accent)'
-            }}
-            role="listitem"
-            aria-label="Play JubeeDance - Dance with Jubee to fun songs!"
-          >
-            <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">💃</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">JubeeDance</h2>
-            <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Dance with Jubee! 🕺</p>
-          </button>
-        </div>
+          <li>
+            <button
+              onClick={() => handleGameClick('/games/feelings', 'Feelings Explorer')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-warm)',
+                boxShadow: 'var(--shadow-accent)'
+              }}
+              aria-label="Play Feelings Explorer - Learn about emotions with Feely"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">💛</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">Feelings Explorer</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Learn about feelings!</p>
+            </button>
+          </li>
+
+          <li>
+            <button
+              onClick={() => handleGameClick('/dance', 'JubeeDance')}
+              className={`game-option w-full h-full p-6 sm:p-8 rounded-2xl sm:rounded-3xl border-3 sm:border-4 border-game-accent min-h-[160px] sm:min-h-[200px]
+                focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-all duration-300'}`}
+              style={{
+                background: 'var(--gradient-game)',
+                boxShadow: 'var(--shadow-accent)'
+              }}
+              aria-label="Play JubeeDance - Dance with Jubee to fun songs!"
+            >
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4" aria-hidden="true">💃</div>
+              <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-1 sm:mb-2">JubeeDance</h2>
+              <p className="text-sm sm:text-base md:text-lg text-primary-foreground opacity-90">Dance with Jubee! 🕺</p>
+            </button>
+          </li>
+        </ul>
 
         <nav className="text-center mt-8 sm:mt-12" aria-label="Navigation">
           <button
             onClick={() => navigate('/')}
-            onKeyDown={(e) => handleKeyDown(e, () => navigate('/'))}
             className={`px-6 sm:px-8 py-3 sm:py-4 text-lg sm:text-xl md:text-2xl font-bold rounded-full border-3 border-border text-game-neutral
               min-h-[44px] min-w-[120px]
               focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2

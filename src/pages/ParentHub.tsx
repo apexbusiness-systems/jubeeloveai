@@ -79,7 +79,14 @@ const settings = useParentalStore(useShallow(state => state.settings));
 
           {/* Main Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/parent/controls')}>
+            <Card
+              className="hover:shadow-lg transition-shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={() => navigate('/parent/controls')}
+              role="button"
+              tabIndex={0}
+              aria-label="Open Parental Controls"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { navigate('/parent/controls'); e.preventDefault(); } }}
+            >
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary/10 rounded-lg">
@@ -174,7 +181,14 @@ const settings = useParentalStore(useShallow(state => state.settings));
               </Card>
             </div>
             
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer border-dashed" onClick={() => navigate('/analytics')}>
+            <Card
+              className="hover:shadow-lg transition-shadow cursor-pointer border-dashed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={() => navigate('/analytics')}
+              role="button"
+              tabIndex={0}
+              aria-label="View Chat Logs Analytics"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { navigate('/analytics'); e.preventDefault(); } }}
+            >
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-muted rounded-lg">

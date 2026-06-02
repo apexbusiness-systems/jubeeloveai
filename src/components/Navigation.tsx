@@ -112,7 +112,7 @@ const TabButton = memo(function TabButton({ path, emoji, label, longPressPath, i
         flex flex-col items-center justify-center
         min-w-[64px] min-h-[60px] px-3 py-1.5 rounded-2xl
         transition-all duration-200
-        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
         relative
         ${isActive
           ? 'bg-primary/15 scale-105 shadow-md'

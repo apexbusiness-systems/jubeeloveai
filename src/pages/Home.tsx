@@ -7,6 +7,8 @@ import { useJubeeStore } from '@/store/useJubeeStore';
 import { Download, Wand2, Clock3 } from 'lucide-react';
 import { useActivityStore } from '@/store/useActivityStore';
 import { useGameStore } from '@/store/useGameStore';
+import { DailyQuestCard } from '@/components/DailyQuestCard';
+import { useShallow } from 'zustand/react/shallow';
 
 interface ActivityMeta {
   title: string;
@@ -18,9 +20,13 @@ interface ActivityMeta {
 export default function HomePage() {
   const navigate = useNavigate();
   const [showInstallBanner, setShowInstallBanner] = useState(false);
-  const favoritePages = useActivityStore(state => state.favoritePages);
-const totalTimeSpent = useActivityStore(state => state.totalTimeSpent);
-const lastActivityTime = useActivityStore(state => state.lastActivityTime);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { favoritePages, totalTimeSpent, lastActivityTime } = useActivityStore(useShallow(state => ({
+    favoritePages: state.favoritePages,
+    totalTimeSpent: state.totalTimeSpent,
+    lastActivityTime: state.lastActivityTime,
+  })));
   const currentTheme = useGameStore(state => state.currentTheme);
 
   const activityCatalog = useMemo<Record<string, ActivityMeta>>(
@@ -120,7 +126,7 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
                     onClick={dismissBanner}
                     variant="ghost"
                     size="sm"
-                    className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                    className="flex-shrink-0 min-h-[44px] min-w-[44px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     aria-label="Dismiss install banner"
                   >
                     ✕
@@ -141,15 +147,19 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
         </header>
 
         <section className="mb-8 sm:mb-10">
+          <DailyQuestCard />
+        </section>
+
+        <section className="mb-8 sm:mb-10">
           <Card className="border-0 bg-gradient-to-br from-background/80 via-card/80 to-accent/10 shadow-xl backdrop-blur-md">
             <CardContent className="p-5 sm:p-6 lg:p-8 space-y-5">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="space-y-2">
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                    Start with what feels right <span className="text-primary">right now</span>
+                    Or jump straight into <span className="text-primary">a favorite</span>
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-                    Jubee remembers where you love to play. Continue instantly or try a fresh activity hand-picked for this moment.
+                    Jubee remembers where you love to play. Continue instantly.
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -189,9 +199,8 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
           </Card>
         </section>
         
-        <div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto"
-          role="list"
+        <ul
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto list-none p-0"
           aria-label="Available learning activities"
         >
           <GameCard
@@ -248,7 +257,7 @@ const lastActivityTime = useActivityStore(state => state.lastActivityTime);
             path="/reading"
             description="Learn to read with Jubee's pronunciation help"
           />
-        </div>
+        </ul>
       </div>
     </>
   );
@@ -339,39 +348,32 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
     navigate(path);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleClick();
-    }
-  };
-
   return (
-    <button
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      className="
-        game-card group
-        focus:outline-none 
-        focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
-        min-h-[160px] sm:min-h-[180px]
-        transition-all duration-300
-      "
-      aria-label={`Start ${title} - ${description}`}
-      role="listitem"
-    >
-      <div 
-        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-110 group-focus-visible:scale-110 text-primary flex items-center justify-center" 
-        aria-hidden="true"
+    <li>
+      <button
+        onClick={handleClick}
+        className="
+          game-card group w-full h-full
+          focus:outline-none
+          focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
+          min-h-[160px] sm:min-h-[180px]
+          transition-all duration-300
+        "
+        aria-label={`Start ${title} - ${description}`}
       >
-        {typeof icon === 'string' ? <span className="text-5xl sm:text-6xl">{icon}</span> : icon}
-      </div>
-      <span className="text-xl sm:text-2xl md:text-3xl mt-3 sm:mt-4 font-bold text-primary leading-tight">
-        {title}
-      </span>
-      <p className="text-xs sm:text-sm text-foreground/80 mt-2 px-2 sm:px-4 leading-relaxed">
-        {description}
-      </p>
-    </button>
+        <div
+          className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transition-transform duration-300 group-hover:scale-110 group-focus-visible:scale-110 text-primary flex items-center justify-center mx-auto"
+          aria-hidden="true"
+        >
+          {typeof icon === 'string' ? <span className="text-5xl sm:text-6xl">{icon}</span> : icon}
+        </div>
+        <span className="text-xl sm:text-2xl md:text-3xl mt-3 sm:mt-4 font-bold text-primary leading-tight block text-center">
+          {title}
+        </span>
+        <p className="text-xs sm:text-sm text-foreground/80 mt-2 px-2 sm:px-4 leading-relaxed text-center">
+          {description}
+        </p>
+      </button>
+    </li>
   );
 }

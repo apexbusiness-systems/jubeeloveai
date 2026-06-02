@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useOnboardingStore } from '@/store/useOnboardingStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { useTranslatedContent } from '@/i18n/useTranslatedContent'
 import { Button } from '@/components/ui/button'
@@ -49,12 +50,22 @@ const tutorialSteps = [
 ]
 
 export function OnboardingTutorial() {
-  const isActive = useOnboardingStore(state => state.isActive);
-const currentStep = useOnboardingStore(state => state.currentStep);
-const nextStep = useOnboardingStore(state => state.nextStep);
-const previousStep = useOnboardingStore(state => state.previousStep);
-const completeOnboarding = useOnboardingStore(state => state.completeOnboarding);
-const skipOnboarding = useOnboardingStore(state => state.skipOnboarding);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions and memory allocations
+  const {
+    isActive,
+    currentStep,
+    nextStep,
+    previousStep,
+    completeOnboarding,
+    skipOnboarding
+  } = useOnboardingStore(useShallow(state => ({
+    isActive: state.isActive,
+    currentStep: state.currentStep,
+    nextStep: state.nextStep,
+    previousStep: state.previousStep,
+    completeOnboarding: state.completeOnboarding,
+    skipOnboarding: state.skipOnboarding
+  })));
   const interactionCount = useJubeeStore(state => state.interactionCount);
   const { t } = useTranslatedContent()
   const highlightRef = useRef<HTMLDivElement>(null)

@@ -1,3 +1,3 @@
-## 2024-05-14 - React Router `useLocation` Context Leakage
-**Learning:** Components that subscribe to React Router's `useLocation()` hook directly within mapped list items (like navigation tabs) will force a re-render of *all* items on every route change, completely bypassing `React.memo()`. The context update breaks memoization for every instance, even those whose active state didn't change.
-**Action:** When creating lists of items whose state depends on the route (like nav bars or sidebars), pull `useLocation()` up to the parent component and pass the calculated primitive (`isActive: boolean`) down as a prop. This allows `React.memo()` on the child components to effectively block unnecessary re-renders for items whose state didn't actually change.
+## 2024-05-19 - Grouped Zustand Selectors with useShallow
+**Learning:** Multiple individual store subscriptions in a single component can create unnecessary overhead. Grouping them into an object selector and wrapping with `useShallow` reduces the number of store subscriptions.
+**Action:** Use `useShallow` when pulling multiple values from a single Zustand store to optimize component performance.
