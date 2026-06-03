@@ -1,3 +1,4 @@
 ## 2024-05-19 - Grouped Zustand Selectors with useShallow
 **Learning:** Multiple individual store subscriptions in a single component can create unnecessary overhead. Grouping them into an object selector and wrapping with `useShallow` reduces the number of store subscriptions.
 **Action:** Use `useShallow` when pulling multiple values from a single Zustand store to optimize component performance.
+## 2024-05-19 - Grouped Zustand Selectors with useShallow\n**Learning:** Multiple individual store subscriptions in a single component can create unnecessary overhead. Grouping them into an object selector and wrapping with `useShallow` reduces the number of store subscriptions.\n**Action:** Use `useShallow` when pulling multiple values from a single Zustand store to optimize component performance.
