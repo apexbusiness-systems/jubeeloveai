@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { useGameStore } from '@/store/useGameStore';
 import { jubeeDB } from '@/lib/indexedDB';
 import { logger } from '@/lib/logger';
+import { useShallow } from 'zustand/react/shallow';
 
 const DEBOUNCE_MS = 2000; // 2 seconds debounce
 
@@ -10,10 +11,15 @@ const DEBOUNCE_MS = 2000; // 2 seconds debounce
  * Uses debouncing to prevent excessive writes.
  */
 export function useGameProgressAutoSave() {
-  const score = useGameStore(state => state.score);
-const currentTheme = useGameStore(state => state.currentTheme);
-const completedActivities = useGameStore(state => state.completedActivities);
-const stickers = useGameStore(state => state.stickers);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { score, currentTheme, completedActivities, stickers } = useGameStore(
+    useShallow(state => ({
+      score: state.score,
+      currentTheme: state.currentTheme,
+      completedActivities: state.completedActivities,
+      stickers: state.stickers
+    }))
+  );
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<string>('');
   const [isSaving, setIsSaving] = useState(false);
