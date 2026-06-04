@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { SEO } from '@/components/SEO';
-import { Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { validateEmail, validatePassword } from '@/lib/inputValidation';
 
 export default function Auth() {
@@ -20,6 +20,8 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -317,19 +319,34 @@ export default function Auth() {
                       <Lock className="w-4 h-4" />
                       Password
                     </Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        setPasswordError('');
-                      }}
-                      disabled={loading}
-                      required
-                      className={`h-12 text-base ${passwordError ? 'border-destructive' : ''}`}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signin-password"
+                        type={showSignInPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setPasswordError('');
+                        }}
+                        disabled={loading}
+                        required
+                        className={`h-12 text-base pr-10 ${passwordError ? 'border-destructive' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignInPassword(!showSignInPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                        aria-label={showSignInPassword ? "Hide password" : "Show password"}
+                        title={showSignInPassword ? "Hide password" : "Show password"}
+                      >
+                        {showSignInPassword ? (
+                          <EyeOff className="h-5 w-5" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-5 w-5" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                     {passwordError && (
                       <p className="text-sm text-destructive flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
@@ -447,17 +464,32 @@ export default function Auth() {
                       <Lock className="w-4 h-4" />
                       Password
                     </Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="At least 6 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                      minLength={6}
-                      className="h-12 text-base"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showSignUpPassword ? "text" : "password"}
+                        placeholder="At least 6 characters"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={loading}
+                        required
+                        minLength={6}
+                        className="h-12 text-base pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                        aria-label={showSignUpPassword ? "Hide password" : "Show password"}
+                        title={showSignUpPassword ? "Hide password" : "Show password"}
+                      >
+                        {showSignUpPassword ? (
+                          <EyeOff className="h-5 w-5" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-5 w-5" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       Must be at least 6 characters long
                     </p>
