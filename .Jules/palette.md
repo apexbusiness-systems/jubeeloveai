@@ -23,3 +23,7 @@
 ## 2024-05-23 - Hide decorative icons in VoiceCommandButton
 **Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
 **Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
+
+## 2024-05-27 - Add show/hide toggle for password inputs
+**Learning:** Password fields without a way to verify what was typed can cause frustration and errors for users, especially on mobile devices or when dealing with complex password requirements.
+**Action:** Add a show/hide password toggle (using an icon like an Eye) inside password input fields, complete with `aria-label` and `title` for accessibility.
