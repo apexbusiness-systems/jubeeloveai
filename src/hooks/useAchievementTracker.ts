@@ -3,18 +3,33 @@ import { useEffect, useCallback } from 'react'
 import { useGameStore } from '@/store/useGameStore'
 import { useAchievementStore } from '@/store/useAchievementStore'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 import { toast } from '@/hooks/use-toast'
 import { useAchievementWorker } from './useAchievementWorker'
 
 export function useAchievementTracker() {
-  const score = useGameStore(state => state.score);
-const completedActivities = useGameStore(state => state.completedActivities);
-  const initializeAchievements = useAchievementStore(state => state.initializeAchievements);
-const checkAndUnlockAchievements = useAchievementStore(state => state.checkAndUnlockAchievements);
-const updateStreak = useAchievementStore(state => state.updateStreak);
-const trackSpecialAchievement = useAchievementStore(state => state.trackSpecialAchievement);
-const achievements = useAchievementStore(state => state.achievements);
-const streakData = useAchievementStore(state => state.streakData);
+  // ⚡ Bolt: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { score, completedActivities } = useGameStore(useShallow(state => ({
+    score: state.score,
+    completedActivities: state.completedActivities,
+  })));
+
+  const {
+    initializeAchievements,
+    checkAndUnlockAchievements,
+    updateStreak,
+    trackSpecialAchievement,
+    achievements,
+    streakData,
+  } = useAchievementStore(useShallow(state => ({
+    initializeAchievements: state.initializeAchievements,
+    checkAndUnlockAchievements: state.checkAndUnlockAchievements,
+    updateStreak: state.updateStreak,
+    trackSpecialAchievement: state.trackSpecialAchievement,
+    achievements: state.achievements,
+    streakData: state.streakData,
+  })));
+
   const speak = useJubeeStore(state => state.speak);
 
   // Initialize Web Worker for achievement calculations
