@@ -23,3 +23,6 @@
 ## 2024-05-23 - Hide decorative icons in VoiceCommandButton
 **Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
 **Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
+## 2026-06-06 - Prevent Empty Form Submissions via State
+**Learning:** Post-click error toasts (like 'Please enter your feedback') add unnecessary friction. It's much better UX to visually disable the primary action until the form is in a valid state (e.g. `!feedback.trim()`), providing immediate feedback. Adding a character counter and `maxLength` further clarifies expectations.
+**Action:** Always map primary submit button `disabled` state to form validity rather than handling empty states in the submit handler.

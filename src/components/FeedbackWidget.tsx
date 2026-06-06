@@ -85,18 +85,26 @@ export function FeedbackWidget() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Textarea
-          placeholder="Tell us what you think or report an issue..."
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
-          rows={5}
-          className="resize-none"
-          aria-label="Feedback input"
-        />
+        <div className="space-y-1.5">
+          <label htmlFor="feedback-input" className="sr-only">Feedback input</label>
+          <Textarea
+            id="feedback-input"
+            placeholder="Tell us what you think or report an issue..."
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            rows={5}
+            maxLength={500}
+            className="resize-none"
+            aria-describedby="feedback-counter"
+          />
+          <div id="feedback-counter" className="text-xs text-right text-muted-foreground" aria-live="polite">
+            {feedback.length}/500 characters
+          </div>
+        </div>
         <div className="flex gap-2">
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !feedback.trim()}
             className="flex-1"
           >
             {isSubmitting ? (
