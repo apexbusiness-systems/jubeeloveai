@@ -13,6 +13,7 @@
 ## 2024-04-24 - Make interactive Card elements accessible buttons
 **Learning:** Found an accessibility issue pattern where `Card` components from the design system are used as interactive elements with just an `onClick` handler, making them completely inaccessible to keyboard and screen reader users.
 **Action:** Next time I see a Card used for navigation or selection, ensure it has `role="button"`, `tabIndex={0}`, keyboard event handlers (`onKeyDown` for Enter/Space), appropriate focus styling, and an `aria-label`.
+
 ## 2024-05-08 - Added `aria-hidden="true"` to decorative icons in VolumeControlDialog
 **Learning:** Decorative icons in dialogs and buttons should be hidden from screen readers to prevent redundant reading.
 **Action:** Add `aria-hidden="true"` to decorative icons in VolumeControlDialog.
@@ -20,6 +21,11 @@
 ## 2024-05-14 - Make visual collection cards keyboard accessible
 **Learning:** Visual collection items like Sticker Cards that only have a visual UI and an `aria-label` but no interactive behavior (like `onClick`) are completely skipped by keyboard navigation. Users navigating via keyboard cannot read the `aria-label` description.
 **Action:** Add `tabIndex={0}` and `focus-visible` styling to visual collection items so they receive focus during keyboard navigation, allowing screen readers to announce their `aria-label`. Include all necessary context in the `aria-label` (e.g. sticker description, not just name).
+
 ## 2024-05-23 - Hide decorative icons in VoiceCommandButton
 **Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
 **Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
+
+## 2024-06-09 - Upgrade Tooltips on Icon-Only Buttons
+**Learning:** While `title` attributes are good for basic tooltips on icon-only buttons, modern UI components like `Tooltip` provide a superior, more consistent visual experience across platforms.
+**Action:** Replace `title` attributes with proper `Tooltip` components from the design system for icon-only buttons to improve visual polish and accessibility.
