@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useMemo, useRef, useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '../store/useJubeeStore'
 import { useAchievementStore } from '../store/useAchievementStore'
 import {
@@ -90,8 +91,13 @@ export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
   // Use provided pathname or default to home
   const pathname = options.pathname ?? '/'
   const currentMood = useJubeeStore(state => state.currentMood);
-  const streakData = useAchievementStore(state => state.streakData);
-const updateStreak = useAchievementStore(state => state.updateStreak);
+
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { streakData, updateStreak } = useAchievementStore(useShallow(state => ({
+    streakData: state.streakData,
+    updateStreak: state.updateStreak
+  })));
+
   const greetingHistory = useRef<string[]>(loadGreetingHistory())
   const visitInfo = useRef(checkFirstVisitToday())
   
