@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VoiceCommandButton } from './VoiceCommandButton';
 import { useParentalStore } from '@/store/useParentalStore';
 
@@ -32,39 +33,63 @@ export const NavigationHeader = memo(function NavigationHeader({
           <VoiceCommandButton />
           
           {hasChildren && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onChildSelectorClick}
-              className="text-foreground"
-              aria-label={activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}
-              title={activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}
-            >
-              {activeChildName || 'Select Child'}
-            </Button>
+            <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onChildSelectorClick}
+                  className="text-foreground"
+                  aria-label={activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}
+                >
+                  {activeChildName || 'Select Child'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>{activeChildName ? `Switch child profile, currently ${activeChildName}` : "Select child profile"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           )}
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onPersonalizeClick}
-            className="text-foreground"
-            aria-label="Personalize Jubee"
-            title="Personalize Jubee"
-          >
-            🎨
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onPersonalizeClick}
+                  className="text-foreground"
+                  aria-label="Personalize Jubee"
+                >
+                  🎨
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Personalize Jubee</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onVoiceClick}
-            className="text-foreground"
-            aria-label="Change voice"
-            title="Change voice"
-          >
-            🔊
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onVoiceClick}
+                  className="text-foreground"
+                  aria-label="Change voice"
+                >
+                  🔊
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Change voice</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </header>

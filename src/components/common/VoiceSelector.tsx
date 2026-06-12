@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useJubeeStore, type JubeeVoice } from '@/store/useJubeeStore'
 import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Volume2 } from 'lucide-react'
 
 interface Props {
@@ -137,25 +138,33 @@ export function VoiceSelector({ onClose }: Props) {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="text-5xl">{option.emoji}</div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleTestVoice(option.id)
-                  }}
-                  disabled={testingVoice === option.id}
-                  className="h-8 w-8"
-                  aria-label={`Test ${option.name} voice`}
-                  title={`Test ${option.name} voice`}
-                  style={{
-                    background: testingVoice === option.id 
-                      ? 'hsl(var(--primary))' 
-                      : 'transparent'
-                  }}
-                >
-                  <Volume2 className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleTestVoice(option.id)
+                        }}
+                        disabled={testingVoice === option.id}
+                        className="h-8 w-8"
+                        aria-label={`Test ${option.name} voice`}
+                        style={{
+                          background: testingVoice === option.id
+                            ? 'hsl(var(--primary))'
+                            : 'transparent'
+                        }}
+                      >
+                        <Volume2 className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>Test {option.name} voice</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
               
               <h3 
