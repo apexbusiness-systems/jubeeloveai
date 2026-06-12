@@ -29,3 +29,6 @@
 ## 2024-06-09 - Upgrade Tooltips on Icon-Only Buttons
 **Learning:** While `title` attributes are good for basic tooltips on icon-only buttons, modern UI components like `Tooltip` provide a superior, more consistent visual experience across platforms.
 **Action:** Replace `title` attributes with proper `Tooltip` components from the design system for icon-only buttons to improve visual polish and accessibility.
+## 2024-03-24 - Accessibility improvements in NumberGame
+**Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
+**Action:** Always verify keyboard accessibility on all buttons.
