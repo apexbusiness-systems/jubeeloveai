@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityStore } from '@/store/useActivityStore';
 
 /**
@@ -8,10 +9,13 @@ import { useActivityStore } from '@/store/useActivityStore';
  */
 export function usePageVisitTracker() {
   const location = useLocation();
-  const startSession = useActivityStore((state) => state.startSession);
-  const endSession = useActivityStore((state) => state.endSession);
-  const recordPageVisit = useActivityStore((state) => state.recordPageVisit);
-  const recordActivity = useActivityStore((state) => state.recordActivity);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { startSession, endSession, recordPageVisit, recordActivity } = useActivityStore(useShallow(state => ({
+    startSession: state.startSession,
+    endSession: state.endSession,
+    recordPageVisit: state.recordPageVisit,
+    recordActivity: state.recordActivity
+  })));
   const initialPathRef = useRef(location.pathname);
 
   // Start session on mount and capture the first page
