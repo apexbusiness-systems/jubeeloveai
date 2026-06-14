@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { sanitizeVoiceInput, checkPronunciation } from '@/lib/voiceInputSanitizer';
 import { useJubeeStore } from '@/store/useJubeeStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Mic, Volume2, ArrowLeft, Trophy, Star } from 'lucide-react';
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { 
@@ -21,8 +22,9 @@ import {
 export default function ReadingPractice() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const speak = useJubeeStore(state => state.speak);
-const updatePosition = useJubeeStore(state => state.updatePosition);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { speak, updatePosition } = useJubeeStore(useShallow(state => ({ speak: state.speak, updatePosition: state.updatePosition })));
   
   const [selectedCategory, setSelectedCategory] = useState<WordCategory | 'all'>('all');
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('easy');
