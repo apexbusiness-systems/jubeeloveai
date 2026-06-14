@@ -142,8 +142,9 @@ export default function StoryTime() {
   const [isPaused, setIsPaused] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({ speak: state.speak, triggerAnimation: state.triggerAnimation })));
   const addScore = useGameStore(state => state.addScore);
   const { user } = useAuth()
   const { preloadStoryContext } = useSmartAudioPreloader()

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useGameStore } from '../../store/useGameStore'
 
 interface LetterChallenge {
@@ -16,8 +17,9 @@ export default function AlphabetGame() {
   const [challenge, setChallenge] = useState<LetterChallenge | null>(null)
   const [score, setScore] = useState(0)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({ speak: state.speak, triggerAnimation: state.triggerAnimation })));
   const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (): LetterChallenge => {
