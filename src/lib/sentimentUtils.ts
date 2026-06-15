@@ -21,6 +21,15 @@ const MAX_KEYWORDS = 5
 const ALLOWED_SENTIMENTS: Sentiment[] = ['positive', 'negative', 'neutral', 'anxious', 'excited', 'frustrated']
 const ALLOWED_MOODS: Mood[] = ['happy', 'excited', 'frustrated', 'curious', 'tired']
 
+// ⚡ Bolt Optimization: Use Sets for O(1) lookup to improve performance
+const PATTERNS_SET = {
+  excitement: new Set(['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'yippee', 'hooray']),
+  frustration: new Set(['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried']),
+  curiosity: new Set(['what', 'why', 'how', 'when', 'where', 'who', 'which']),
+  positive: new Set(['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty', 'beautiful']),
+  negative: new Set(['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad', 'mean'])
+}
+
 /**
  * SECURE sentiment analysis with input validation
  */
@@ -43,22 +52,17 @@ export function analyzeSentiment(text: string): SentimentAnalysis {
     // SAFE: Use simple word splitting instead of regex
     const words = sanitized.split(/\s+/)
     
-    // SAFE: Define word lists (no regex injection)
-    const patterns = {
-      excitement: ['wow', 'yay', 'love', 'amazing', 'awesome', 'cool', 'fun', 'best', 'yippee', 'hooray'],
-      frustration: ['hard', 'difficult', 'cant', 'help', 'stuck', 'confused', 'scared', 'worried'],
-      curiosity: ['what', 'why', 'how', 'when', 'where', 'who', 'which'],
-      positive: ['good', 'great', 'happy', 'yes', 'like', 'enjoy', 'nice', 'pretty', 'beautiful'],
-      negative: ['bad', 'sad', 'no', 'hate', 'boring', 'tired', 'angry', 'mad', 'mean']
-    }
+    // ⚡ Bolt Optimization: Calculate scores and matches in a single O(N) pass
+    const scores = { excitement: 0, frustration: 0, curiosity: 0, positive: 0, negative: 0 }
+    const matches = { excitement: [] as string[], frustration: [] as string[], curiosity: [] as string[], positive: [] as string[], negative: [] as string[] }
 
-    // SAFE: Count matches safely
-    const scores = {
-      excitement: words.filter(w => patterns.excitement.includes(w)).length,
-      frustration: words.filter(w => patterns.frustration.includes(w)).length,
-      curiosity: words.filter(w => patterns.curiosity.includes(w)).length,
-      positive: words.filter(w => patterns.positive.includes(w)).length,
-      negative: words.filter(w => patterns.negative.includes(w)).length
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      if (PATTERNS_SET.excitement.has(w)) { scores.excitement++; matches.excitement.push(w); }
+      if (PATTERNS_SET.frustration.has(w)) { scores.frustration++; matches.frustration.push(w); }
+      if (PATTERNS_SET.curiosity.has(w)) { scores.curiosity++; matches.curiosity.push(w); }
+      if (PATTERNS_SET.positive.has(w)) { scores.positive++; matches.positive.push(w); }
+      if (PATTERNS_SET.negative.has(w)) { scores.negative++; matches.negative.push(w); }
     }
 
     // SAFE: Check for punctuation safely
@@ -78,31 +82,31 @@ export function analyzeSentiment(text: string): SentimentAnalysis {
       mood = 'excited'
       intensity = 'high'
       confidence = 0.85
-      keywords.push(...patterns.excitement.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+      keywords.push(...matches.excitement.slice(0, MAX_KEYWORDS))
     } else if (scores.frustration >= 2) {
       sentiment = 'frustrated'
       mood = 'frustrated'
       intensity = 'high'
       confidence = 0.8
-      keywords.push(...patterns.frustration.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+      keywords.push(...matches.frustration.slice(0, MAX_KEYWORDS))
     } else if (scores.frustration > 0 || hasQuestions) {
       sentiment = 'anxious'
       mood = 'curious'
       intensity = 'medium'
       confidence = 0.7
-      keywords.push(...patterns.frustration.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+      keywords.push(...matches.frustration.slice(0, MAX_KEYWORDS))
     } else if (scores.positive > scores.negative) {
       sentiment = 'positive'
       mood = 'happy'
       intensity = scores.positive >= 2 ? 'medium' : 'low'
       confidence = 0.65
-      keywords.push(...patterns.positive.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+      keywords.push(...matches.positive.slice(0, MAX_KEYWORDS))
     } else if (scores.negative > scores.positive) {
       sentiment = 'negative'
       mood = 'tired'
       intensity = scores.negative >= 2 ? 'medium' : 'low'
       confidence = 0.65
-      keywords.push(...patterns.negative.filter(w => sanitized.includes(w)).slice(0, MAX_KEYWORDS))
+      keywords.push(...matches.negative.slice(0, MAX_KEYWORDS))
     }
 
     // SECURITY: Validate results
