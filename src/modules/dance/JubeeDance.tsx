@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Music, Play, Pause, RotateCcw, Home, Lock, Star, Trophy, Sparkles, ChevronLeft, ChevronRight,
 } from 'lucide-react';
@@ -422,9 +423,18 @@ export default function JubeeDancePage() {
 
               {/* Game Header */}
               <div className="flex items-center justify-between mb-3">
-                <Button variant="ghost" size="icon" onClick={handleBackToMenu} className="rounded-xl" aria-label="Back to menu" title="Back to menu">
-                  <Home className="w-5 h-5" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={handleBackToMenu} className="rounded-xl" aria-label="Back to menu">
+                        <Home className="w-5 h-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Back to menu</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
                 <div className="flex items-center gap-3">
                   {/* Score pill */}
@@ -441,13 +451,31 @@ export default function JubeeDancePage() {
                 </div>
 
                 {context.state === 'playing' ? (
-                  <Button variant="ghost" size="icon" onClick={pause} className="rounded-xl" aria-label="Pause game" title="Pause game">
-                    <Pause className="w-5 h-5" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={pause} className="rounded-xl" aria-label="Pause game">
+                          <Pause className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Pause game</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : context.state === 'paused' ? (
-                  <Button variant="ghost" size="icon" onClick={resume} className="rounded-xl" aria-label="Resume game" title="Resume game">
-                    <Play className="w-5 h-5" />
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={resume} className="rounded-xl" aria-label="Resume game">
+                          <Play className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Resume game</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 ) : <div className="w-10" />}
               </div>
 
