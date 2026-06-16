@@ -8,6 +8,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { playMoodSound } from '@/lib/jubeeAudioEffects';
 import { getViewportBounds } from '@/core/jubee/JubeeDom';
@@ -111,11 +112,22 @@ function getRandomLandingPosition(): { bottom: number; right: number } {
 
 export function useJubeePageTransition() {
   const location = useLocation();
-  const containerPosition = useJubeeStore(state => state.containerPosition);
-const setContainerPosition = useJubeeStore(state => state.setContainerPosition);
-const isVisible = useJubeeStore(state => state.isVisible);
-const setMood = useJubeeStore(state => state.setMood);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+
+  // ⚡ Bolt: Grouped Zustand selectors with useShallow to reduce store subscriptions and memory allocations
+  const {
+    containerPosition,
+    setContainerPosition,
+    isVisible,
+    setMood,
+    triggerAnimation
+  } = useJubeeStore(useShallow(state => ({
+    containerPosition: state.containerPosition,
+    setContainerPosition: state.setContainerPosition,
+    isVisible: state.isVisible,
+    setMood: state.setMood,
+    triggerAnimation: state.triggerAnimation
+  })));
+
   const transitionStateRef = useRef<TransitionState | null>(null);
   const animationFrameRef = useRef<number>();
   const previousPathnameRef = useRef(location.pathname);
