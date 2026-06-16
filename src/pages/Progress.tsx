@@ -100,7 +100,7 @@ export default function ProgressPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-3xl font-bold text-primary">{Math.round(progressPercentage)}%</p>
-              <Progress value={progressPercentage} className="h-3" />
+              <Progress value={progressPercentage} className="h-3" aria-label="Overall learning progress" />
             </CardContent>
           </Card>
         </div>
