@@ -90,9 +90,9 @@ export function ScheduleConfigurator({
         {/* Add Schedule Form */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="space-y-2">
-            <Label>Day</Label>
+            <Label htmlFor="day-select">Day</Label>
             <Select value={selectedDay.toString()} onValueChange={(v) => setSelectedDay(parseInt(v))}>
-              <SelectTrigger>
+              <SelectTrigger id="day-select">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -106,8 +106,9 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="space-y-2">
-            <Label>Start Time</Label>
+            <Label htmlFor="start-time">Start Time</Label>
             <Input
+              id="start-time"
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
@@ -115,8 +116,9 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="space-y-2">
-            <Label>End Time</Label>
+            <Label htmlFor="end-time">End Time</Label>
             <Input
+              id="end-time"
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
@@ -124,7 +126,7 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="flex items-end">
-            <Button onClick={handleAddSchedule} className="w-full">
+            <Button onClick={handleAddSchedule} className="w-full" aria-label="Add schedule">
               <Plus className="h-4 w-4 mr-2" />
               Add
             </Button>
