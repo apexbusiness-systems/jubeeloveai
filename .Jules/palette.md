@@ -32,3 +32,6 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
+## 2025-03-08 - Added accessible form connections in ScheduleConfigurator
+**Learning:** Found instances of floating `<Label>` tags without `htmlFor` properties paired with `<Input>` and `<SelectTrigger>` components missing `id` properties. This breaks accessibility as screen readers cannot associate the label with its respective form control, and users cannot click the label to focus the input.
+**Action:** Always ensure any `<Label>` has a matching `htmlFor` attribute that strictly equals the `id` of its corresponding input or interactive trigger.
