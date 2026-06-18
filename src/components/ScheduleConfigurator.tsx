@@ -90,9 +90,9 @@ export function ScheduleConfigurator({
         {/* Add Schedule Form */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="space-y-2">
-            <Label>Day</Label>
+            <Label htmlFor="schedule-day">Day</Label>
             <Select value={selectedDay.toString()} onValueChange={(v) => setSelectedDay(parseInt(v))}>
-              <SelectTrigger>
+              <SelectTrigger id="schedule-day">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -106,8 +106,9 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="space-y-2">
-            <Label>Start Time</Label>
+            <Label htmlFor="start-time">Start Time</Label>
             <Input
+              id="start-time"
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
@@ -115,8 +116,9 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="space-y-2">
-            <Label>End Time</Label>
+            <Label htmlFor="end-time">End Time</Label>
             <Input
+              id="end-time"
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
@@ -124,8 +126,14 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="flex items-end">
-            <Button onClick={handleAddSchedule} className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button
+              onClick={handleAddSchedule}
+              className="w-full"
+              disabled={!startTime || !endTime}
+              aria-label="Add new schedule"
+              title={(!startTime || !endTime) ? "Please select both start and end times" : "Add schedule"}
+            >
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Add
             </Button>
           </div>
