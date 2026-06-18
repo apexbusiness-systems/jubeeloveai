@@ -22,3 +22,9 @@ export const Skills = {
 } as const;
 
 export type SkillId = typeof Skills[keyof typeof Skills]['id'];
+
+// ⚡ Bolt Optimization: Pre-compute a map of skill IDs to names for O(1) lookups
+export const SkillNamesMap: Record<string, string> = Object.values(Skills).reduce((acc, skill) => {
+  acc[skill.id] = skill.name;
+  return acc;
+}, {} as Record<string, string>);

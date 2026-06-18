@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMasteryStore } from '@/store/useMasteryStore';
-import { Skills } from '@/lib/mastery/taxonomy';
+import { Skills, SkillNamesMap } from '@/lib/mastery/taxonomy';
 import { useParentalStore } from '@/store/useParentalStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/components/ui/button';
@@ -142,7 +142,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
                               {strongest.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {strongest.map(s => <li key={s.skillId}>{SkillNamesMap[s.skillId] || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">Keep playing to see strengths!</p>
@@ -153,7 +153,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
                               {needsReview.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {needsReview.map(s => <li key={s.skillId}>{SkillNamesMap[s.skillId] || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">All caught up!</p>
