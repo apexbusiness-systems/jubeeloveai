@@ -121,15 +121,15 @@ export function VolumeControlDialog() {
               className="w-full"
             />
             <Button
-              aria-label="Test voice volume"
-              title="Test voice volume"
+              aria-label={voiceVolume === 0 ? "Voice is muted" : "Test voice volume"}
+              title={voiceVolume === 0 ? "Increase volume to test voice" : "Test voice volume"}
               onClick={handleTestVoice}
               variant="outline"
               size="sm"
               className="w-full mt-2"
               disabled={voiceVolume === 0}
             >
-              Test Voice
+              {voiceVolume === 0 ? "Voice Muted" : "Test Voice"}
             </Button>
           </div>
         </div>
