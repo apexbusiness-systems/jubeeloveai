@@ -32,3 +32,6 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
+## 2026-06-19 - Prevent Screen Reader Duplication
+**Learning:** When using `aria-label` on a button that also contains visible text, screen readers will often read both the `aria-label` and the visible text (e.g. "Navigate to Home, Home").
+**Action:** Add `aria-hidden="true"` to the visible text span inside the button to ensure the screen reader only announces the `aria-label`.
