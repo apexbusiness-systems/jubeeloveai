@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -286,7 +286,10 @@ interface InfoPillProps {
   value: string;
 }
 
-function InfoPill({ icon, label, value }: InfoPillProps) {
+// ⚡ Bolt Optimization: Wrapped InfoPill in React.memo
+// Expected impact: Prevents unnecessary re-renders of the stat counters when the Home page updates
+// (e.g., from unrelated JubeeStore/ActivityStore state changes), saving rendering overhead.
+const InfoPill = memo(function InfoPill({ icon, label, value }: InfoPillProps) {
   return (
     <div className="flex items-center gap-2 rounded-full bg-card/90 border border-border px-3 py-2 shadow-sm">
       <div className="w-6 h-6 rounded-full bg-foreground/5 text-foreground flex items-center justify-center">
@@ -298,9 +301,11 @@ function InfoPill({ icon, label, value }: InfoPillProps) {
       </div>
     </div>
   );
-}
+});
 
-function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
+// ⚡ Bolt Optimization: Wrapped QuickActionCard in React.memo
+// Expected impact: Prevents unnecessary re-renders of quick action cards on Home page updates.
+const QuickActionCard = memo(function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
   const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
@@ -336,9 +341,12 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
       </div>
     </button>
   );
-}
+});
 
-function GameCard({ title, icon, path, description }: GameCardProps) {
+// ⚡ Bolt Optimization: Wrapped GameCard in React.memo
+// Expected impact: Prevents unnecessary re-renders of the large list of activity cards (9 total)
+// when unrelated parent state changes, saving significant rendering time on low-end devices.
+const GameCard = memo(function GameCard({ title, icon, path, description }: GameCardProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
   const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
@@ -376,4 +384,4 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
       </button>
     </li>
   );
-}
+});
