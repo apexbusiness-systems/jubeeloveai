@@ -4,6 +4,7 @@ import { useGameStore } from '../../store/useGameStore';
 import { SEO } from '../../components/SEO';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { useShallow } from 'zustand/react/shallow';
 
 type Shape = 'circle' | 'square' | 'triangle' | 'star';
 
@@ -19,8 +20,10 @@ const shapeDescriptions: Record<Shape, string> = {
 export default function ShapeSorter() {
   const [targetShape, setTargetShape] = useState<Shape>('circle');
   const [score, setScore] = useState(0);
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const checkShape = (shape: Shape) => {

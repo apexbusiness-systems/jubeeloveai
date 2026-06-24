@@ -29,6 +29,7 @@ import { saveDrawing } from '@/types/drawing';
 import { triggerConfetti } from '@/lib/confetti';
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { useDrawingWorker } from '@/hooks/useDrawingWorker';
+import { useShallow } from 'zustand/react/shallow';
 
 const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
 const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -52,8 +53,10 @@ export default function WritingCanvas() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawColor, setDrawColor] = useState('hsl(217 91% 60%)');
   const navigate = useNavigate();
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
   const { playDrawSound, playClearSound, playSuccessSound } = useAudioEffects();
   const { processDrawing, isProcessing } = useDrawingWorker();

@@ -17,8 +17,10 @@ export function SessionMonitor() {
     state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
   ));
 
-  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
-  const endSession = useParentalStore(state => state.endSession);
+  const { updateSessionTime, endSession } = useParentalStore(useShallow(state => ({
+    updateSessionTime: state.updateSessionTime,
+    endSession: state.endSession
+  })));
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 

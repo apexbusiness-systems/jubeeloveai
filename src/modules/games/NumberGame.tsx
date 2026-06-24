@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useShallow } from 'zustand/react/shallow';
 
 interface NumberChallenge {
   question: string
@@ -21,8 +22,10 @@ export default function NumberGame() {
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [totalQuestions, setTotalQuestions] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (level: 'easy' | 'medium' | 'hard'): NumberChallenge => {

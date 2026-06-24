@@ -1,3 +1,3 @@
-## 2025-02-12 - [Zustand useShallow Optimization]
-**Learning:** Multiple individual Zustand selectors in React components/hooks (e.g. `const score = useGameStore(s => s.score); const theme = useGameStore(s => s.theme);`) create multiple subscriptions to the store.
-**Action:** Group related selectors into a single object and wrap them with `useShallow` (e.g. `const { score, theme } = useGameStore(useShallow(s => ({ score: s.score, theme: s.theme })))`) to reduce store subscriptions and unnecessary re-renders.
+## 2024-06-24 - Grouping Zustand Selectors
+**Learning:** Selecting individual state properties in separate `useStore` calls causes unnecessary component re-renders every time any state in the store updates. Zustand's `useShallow` hook combined with an object selector enables selecting multiple properties while preserving memoization and avoiding extra subscriptions.
+**Action:** Always group multiple Zustand selectors into a single `useStore(useShallow(state => ({ ... })))` call instead of multiple `const prop = useStore(state => state.prop);` calls within the same component.
