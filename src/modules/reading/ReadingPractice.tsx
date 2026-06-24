@@ -10,6 +10,7 @@ import { sanitizeVoiceInput, checkPronunciation } from '@/lib/voiceInputSanitize
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { Mic, Volume2, ArrowLeft, Trophy, Star } from 'lucide-react';
 import { triggerHaptic } from '@/lib/hapticFeedback';
+import { useShallow } from "zustand/react/shallow";
 import { 
   getRandomWords, 
   categoryLabels, 
@@ -21,8 +22,10 @@ import {
 export default function ReadingPractice() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const speak = useJubeeStore(state => state.speak);
-const updatePosition = useJubeeStore(state => state.updatePosition);
+  const { speak, updatePosition } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    updatePosition: state.updatePosition
+  })));
   
   const [selectedCategory, setSelectedCategory] = useState<WordCategory | 'all'>('all');
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('easy');

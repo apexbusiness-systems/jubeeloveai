@@ -12,6 +12,7 @@ import { audioManager } from '@/lib/audioManager'
 import { Slider } from '@/components/ui/slider'
 import { useSmartAudioPreloader } from '@/hooks/useSmartAudioPreloader'
 import StoryIllustration from '@/components/stories/StoryIllustration'
+import { useShallow } from 'zustand/react/shallow';
 
 // -----------------------------------------------------------------------------
 // 1. Strict Type Definitions
@@ -142,8 +143,10 @@ export default function StoryTime() {
   const [isPaused, setIsPaused] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
   const { user } = useAuth()
   const { preloadStoryContext } = useSmartAudioPreloader()

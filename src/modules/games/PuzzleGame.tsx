@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useShallow } from 'zustand/react/shallow';
 
 interface Piece {
   id: number
@@ -20,8 +21,10 @@ export default function PuzzleGame() {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null)
   const [moves, setMoves] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = (level: 'easy' | 'medium' | 'hard') => {

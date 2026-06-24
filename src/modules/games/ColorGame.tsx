@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
+import { useShallow } from 'zustand/react/shallow';
 
 interface ColorChallenge {
   targetColor: Color
@@ -32,8 +33,10 @@ export default function ColorGame() {
   const [challenge, setChallenge] = useState<ColorChallenge | null>(null)
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (difficulty: 'easy' | 'medium' | 'hard'): ColorChallenge => {

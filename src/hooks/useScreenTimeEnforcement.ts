@@ -22,8 +22,10 @@ export function useScreenTimeEnforcement() {
   const activeChild = useParentalStore(useShallow(state =>
     state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
   ));
-  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
-const endSession = useParentalStore(state => state.endSession);
+  const { updateSessionTime, endSession } = useParentalStore(useShallow(state => ({
+    updateSessionTime: state.updateSessionTime,
+    endSession: state.endSession
+  })));
   
   const [status, setStatus] = useState<ScreenTimeStatus>({
     isWithinSchedule: true,
