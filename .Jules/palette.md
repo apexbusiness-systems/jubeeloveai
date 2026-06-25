@@ -32,3 +32,4 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
+## 2024-06-25 - Add autoComplete to Auth Forms\n**Learning:** Input fields like email and password in authentication forms must include `autoComplete` attributes (e.g., `email`, `current-password`, `new-password`, `name`) to support password managers and browser autofill features.\n**Action:** Always verify authentication forms have correct `autoComplete` tags to improve usability.
