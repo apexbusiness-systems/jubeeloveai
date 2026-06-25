@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useGameStore } from '../../store/useGameStore'
 
 interface PatternItem {
@@ -22,8 +23,12 @@ export default function PatternGame() {
   const [activePattern, setActivePattern] = useState<number | null>(null)
   const [level, setLevel] = useState(1)
   const [score, setScore] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const speeds = {
