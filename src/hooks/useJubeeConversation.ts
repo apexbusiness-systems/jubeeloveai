@@ -1,14 +1,18 @@
 import { useCallback } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 
 /**
  * Hook for conversing with Jubee AI
  * Provides empathetic, child-friendly responses with fail-safes
  */
 export function useJubeeConversation() {
-  const converse = useJubeeStore(state => state.converse);
-const isProcessing = useJubeeStore(state => state.isProcessing);
-const lastError = useJubeeStore(state => state.lastError);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { converse, isProcessing, lastError } = useJubeeStore(useShallow(state => ({
+    converse: state.converse,
+    isProcessing: state.isProcessing,
+    lastError: state.lastError
+  })));
 
   const askJubee = useCallback(async (
     message: string,
