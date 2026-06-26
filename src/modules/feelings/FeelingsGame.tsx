@@ -20,6 +20,7 @@ import { useJubeeStore } from '@/store/useJubeeStore';
 import { useGameStore } from '@/store/useGameStore';
 import { useFeelingsStore } from '@/store/useFeelingsStore';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { triggerConfetti } from '@/lib/confetti';
 import {
@@ -45,10 +46,16 @@ export default function FeelingsGame() {
   const addScore = useGameStore(s => s.addScore);
   const calmMode = useParentalStore(s => s.settings?.calmMode ?? false);
 
-  const playedSceneIds = useFeelingsStore(s => s.playedSceneIds);
-  const journal = useFeelingsStore(s => s.journal);
-  const recordScenePlayed = useFeelingsStore(s => s.recordScenePlayed);
-  const recordSelfReport = useFeelingsStore(s => s.recordSelfReport);
+  // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
+  // to reduce the number of store subscriptions and prevent unnecessary re-renders.
+  const { playedSceneIds, journal, recordScenePlayed, recordSelfReport } = useFeelingsStore(
+    useShallow(s => ({
+      playedSceneIds: s.playedSceneIds,
+      journal: s.journal,
+      recordScenePlayed: s.recordScenePlayed,
+      recordSelfReport: s.recordSelfReport
+    }))
+  );
 
   const [phase, setPhase] = useState<Phase>('menu');
   const [scene, setScene] = useState<Scene | null>(null);

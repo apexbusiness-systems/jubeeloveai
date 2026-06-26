@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 
 /**
  * Enhanced conversation hook with sentiment awareness
@@ -17,9 +18,15 @@ const MAX_NAME_LENGTH = 50
 const MAX_ACTIVITY_LENGTH = 200
 
 export function useEmpatheticConversation() {
-  const converse = useJubeeStore(state => state.converse);
-const speak = useJubeeStore(state => state.speak);
-const isProcessing = useJubeeStore(state => state.isProcessing);
+  // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
+  // to reduce the number of store subscriptions and prevent unnecessary re-renders.
+  const { converse, speak, isProcessing } = useJubeeStore(
+    useShallow(state => ({
+      converse: state.converse,
+      speak: state.speak,
+      isProcessing: state.isProcessing
+    }))
+  );
 
   /**
    * SECURE sentiment detection with input validation
