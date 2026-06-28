@@ -118,6 +118,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <button
             onClick={() => startGame('easy')}
+            aria-label="Easy difficulty"
             className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
@@ -131,6 +132,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => startGame('medium')}
+            aria-label="Medium difficulty"
             className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-cool)',
@@ -144,6 +146,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
 
           <button
             onClick={() => startGame('hard')}
+            aria-label="Hard difficulty"
             className="difficulty-card p-8 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-game)',
@@ -185,6 +188,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               key={pattern.id}
               onClick={() => handlePatternClick(index)}
               disabled={isShowingPattern}
+              aria-label={`Pattern ${pattern.emoji}`}
               className="pattern-button aspect-square rounded-3xl flex flex-col items-center justify-center text-8xl transform transition-all duration-200 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
                 background: activePattern === index
@@ -223,6 +227,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       <div className="controls text-center">
         <button
           onClick={() => setDifficulty(null)}
+          aria-label="Back to Menu"
           className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-warm)',
