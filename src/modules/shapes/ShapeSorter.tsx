@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useJubeeStore } from '../../store/useJubeeStore';
 import { useGameStore } from '../../store/useGameStore';
 import { SEO } from '../../components/SEO';
@@ -19,8 +20,11 @@ const shapeDescriptions: Record<Shape, string> = {
 export default function ShapeSorter() {
   const [targetShape, setTargetShape] = useState<Shape>('circle');
   const [score, setScore] = useState(0);
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const checkShape = (shape: Shape) => {
