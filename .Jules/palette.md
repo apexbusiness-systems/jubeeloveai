@@ -36,3 +36,6 @@
 ## 2024-06-29 - Added aria-live="polite" to screen time warnings
 **Learning:** Dynamic status indicators (like screen time warnings or connection state) that appear visually need `aria-live` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
 **Action:** Always add `aria-live="polite"` (or `assertive` if extremely urgent) to elements that conditionally render important status messages or warnings.
+## 2024-06-30 - Added role="status" and aria-live="polite" to OfflineIndicator
+**Learning:** Dynamic status indicators (like offline warnings or sync conflicts) that appear visually need `aria-live` and `role` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
+**Action:** Always add `role="status"` and `aria-live="polite"` to elements that conditionally render important status messages or warnings.
