@@ -36,3 +36,7 @@
 ## 2024-06-29 - Added aria-live="polite" to screen time warnings
 **Learning:** Dynamic status indicators (like screen time warnings or connection state) that appear visually need `aria-live` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
 **Action:** Always add `aria-live="polite"` (or `assertive` if extremely urgent) to elements that conditionally render important status messages or warnings.
+
+## 2024-07-01 - Missing Tooltip on icon-only read-aloud button
+**Learning:** Found an accessibility issue pattern where `DailyQuestCard` contains an icon-only speaker button (`Volume2`) but it lacked a tooltip. This is helpful for sighted users to understand what the icon does before clicking it.
+**Action:** Replaced simple `<button>` with `<TooltipProvider><Tooltip><TooltipTrigger asChild><button.../></TooltipTrigger><TooltipContent>...</TooltipContent></Tooltip></TooltipProvider>` format from the `components/ui/tooltip` design system. This should be a standard across this app for all icon-only buttons.
