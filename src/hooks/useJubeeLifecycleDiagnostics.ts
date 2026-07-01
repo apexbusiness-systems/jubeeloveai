@@ -10,6 +10,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect, useRef } from 'react'
 import { useJubeeStore } from '@/store/useJubeeStore'
+import { useShallow } from 'zustand/react/shallow'
 
 declare global {
   interface Window {
@@ -95,11 +96,19 @@ function captureSnapshot(event: string, containerRef: React.RefObject<HTMLDivEle
 
 export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLDivElement>) {
   const prevStateRef = useRef<ReturnType<typeof useJubeeStore.getState> | null>(null)
-  const isVisible = useJubeeStore(state => state.isVisible);
-const containerPosition = useJubeeStore(state => state.containerPosition);
-const position = useJubeeStore(state => state.position);
-const currentAnimation = useJubeeStore(state => state.currentAnimation);
-const isDragging = useJubeeStore(state => state.isDragging);
+  const {
+    isVisible,
+    containerPosition,
+    position,
+    currentAnimation,
+    isDragging
+  } = useJubeeStore(useShallow(state => ({
+    isVisible: state.isVisible,
+    containerPosition: state.containerPosition,
+    position: state.position,
+    currentAnimation: state.currentAnimation,
+    isDragging: state.isDragging
+  })));
   
   // Track all state changes
   useEffect(() => {
