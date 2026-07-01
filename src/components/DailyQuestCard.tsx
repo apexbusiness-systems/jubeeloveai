@@ -12,6 +12,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sun, Moon, Cloud, Volume2, Sparkles, SparklesIcon } from 'lucide-react';
 import { useDailyQuestStore } from '@/store/useDailyQuestStore';
 import { useMasteryStore } from '@/store/useMasteryStore';
@@ -490,20 +491,29 @@ export function DailyQuestCard() {
                   </button>
 
                   {/* Read-aloud speaker */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleSpeakStep(e, idx, step.title)}
-                    className="
-                      absolute top-1 left-1 w-9 h-9 rounded-full
-                      bg-background/90 border-2 border-primary/40
-                      flex items-center justify-center shadow-md
-                      text-primary active:scale-90 transition-transform
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
-                    "
-                    aria-label={`Hear step ${idx + 1}: ${step.title}`}
-                  >
-                    <Volume2 className="w-4 h-4" aria-hidden="true" />
-                  </button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={(e) => handleSpeakStep(e, idx, step.title)}
+                          className="
+                            absolute top-1 left-1 w-9 h-9 rounded-full
+                            bg-background/90 border-2 border-primary/40
+                            flex items-center justify-center shadow-md
+                            text-primary active:scale-90 transition-transform
+                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+                          "
+                          aria-label={`Hear step ${idx + 1}: ${step.title}`}
+                        >
+                          <Volume2 className="w-4 h-4" aria-hidden="true" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p>{`Hear step ${idx + 1}: ${step.title}`}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </li>
             );
