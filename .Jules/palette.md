@@ -32,3 +32,7 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
+
+## 2024-06-26 - Added Missing ARIA Labels to Icon-Only Buttons in UI Components
+**Learning:** Found a pattern where reusable UI components from standard templates (like `Sidebar` and `Carousel`) may lack `aria-label` attributes on their internal icon-only buttons (`SidebarTrigger`, `CarouselPrevious`, `CarouselNext`), leading to poor screen reader experiences by default.
+**Action:** When implementing or adapting reusable UI component libraries (like shadcn/ui), always audit internal icon-only buttons for missing `aria-label` attributes.
