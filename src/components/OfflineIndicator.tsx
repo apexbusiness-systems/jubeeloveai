@@ -20,6 +20,8 @@ export function OfflineIndicator() {
           ? "bg-warning text-warning-foreground"
           : "bg-primary text-primary-foreground"
       )}
+      role="status"
+      aria-live="polite"
     >
       {!isOnline ? (
         <>
@@ -57,6 +59,7 @@ export function OfflineIndicator() {
           variant="ghost"
           onClick={manualSync}
           className="h-6 px-2 text-xs"
+          title="Force offline sync"
         >
           <Wifi className="h-3 w-3 mr-1" aria-hidden="true" />
           Sync Now

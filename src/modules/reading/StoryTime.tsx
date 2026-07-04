@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 import { useAuth } from '@/hooks/useAuth'
+import { useShallow } from 'zustand/react/shallow'
 import { supabase } from '@/integrations/supabase/client'
 import { triggerHaptic } from '@/lib/hapticFeedback'
+import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'sonner'
 import { Loader2, Volume2, Pause, Play } from 'lucide-react'
 import { premiumStories } from '@/data/storySeedData'
@@ -142,8 +144,14 @@ export default function StoryTime() {
   const [isPaused, setIsPaused] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
+  // to reduce the number of store subscriptions and prevent unnecessary re-renders.
+  const { speak, triggerAnimation } = useJubeeStore(
+    useShallow(state => ({
+      speak: state.speak,
+      triggerAnimation: state.triggerAnimation
+    }))
+  );
   const addScore = useGameStore(state => state.addScore);
   const { user } = useAuth()
   const { preloadStoryContext } = useSmartAudioPreloader()

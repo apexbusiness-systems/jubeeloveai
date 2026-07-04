@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 
@@ -20,8 +21,11 @@ export default function PuzzleGame() {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null)
   const [moves, setMoves] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const initializeGame = (level: 'easy' | 'medium' | 'hard') => {

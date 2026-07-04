@@ -126,7 +126,7 @@ export function VolumeControlDialog() {
               onClick={handleTestVoice}
               variant="outline"
               size="sm"
-              className="w-full mt-2"
+              className="w-full mt-2 gap-2"
               disabled={voiceVolume === 0}
             >
               {voiceVolume === 0 ? "Voice Muted" : "Test Voice"}
