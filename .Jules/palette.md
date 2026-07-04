@@ -32,10 +32,6 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
-
-## 2024-06-29 - Added aria-live="polite" to screen time warnings
-**Learning:** Dynamic status indicators (like screen time warnings or connection state) that appear visually need `aria-live` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
-**Action:** Always add `aria-live="polite"` (or `assertive` if extremely urgent) to elements that conditionally render important status messages or warnings.
-## 2024-06-30 - Added role="status" and aria-live="polite" to OfflineIndicator
-**Learning:** Dynamic status indicators (like offline warnings or sync conflicts) that appear visually need `aria-live` and `role` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
-**Action:** Always add `role="status"` and `aria-live="polite"` to elements that conditionally render important status messages or warnings.
+## 2024-06-28 - Pattern Game Accessibility Enhancements
+**Learning:** Added `aria-label` attributes to pattern and difficulty buttons in the Pattern Game, significantly improving screen reader context for buttons that primarily display emojis or visual elements without explicit text labels.
+**Action:** Always check interactive elements containing primarily visual data (like emojis) for missing ARIA labels to ensure full accessibility for screen readers.
