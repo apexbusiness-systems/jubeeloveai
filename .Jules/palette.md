@@ -25,13 +25,6 @@
 ## 2024-05-23 - Hide decorative icons in VoiceCommandButton
 **Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
 **Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
-
-## 2024-06-09 - Upgrade Tooltips on Icon-Only Buttons
-**Learning:** While `title` attributes are good for basic tooltips on icon-only buttons, modern UI components like `Tooltip` provide a superior, more consistent visual experience across platforms.
-**Action:** Replace `title` attributes with proper `Tooltip` components from the design system for icon-only buttons to improve visual polish and accessibility.
-## 2024-03-24 - Accessibility improvements in NumberGame
-**Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
-**Action:** Always verify keyboard accessibility on all buttons.
-## 2026-06-19 - Prevent Screen Reader Duplication
-**Learning:** When using `aria-label` on a button that also contains visible text, screen readers will often read both the `aria-label` and the visible text (e.g. "Navigate to Home, Home").
-**Action:** Add `aria-hidden="true"` to the visible text span inside the button to ensure the screen reader only announces the `aria-label`.
+## 2026-06-06 - Prevent Empty Form Submissions via State
+**Learning:** Post-click error toasts (like 'Please enter your feedback') add unnecessary friction. It's much better UX to visually disable the primary action until the form is in a valid state (e.g. `!feedback.trim()`), providing immediate feedback. Adding a character counter and `maxLength` further clarifies expectations.
+**Action:** Always map primary submit button `disabled` state to form validity rather than handling empty states in the submit handler.
