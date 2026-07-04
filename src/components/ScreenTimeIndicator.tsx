@@ -53,6 +53,7 @@ export function ScreenTimeIndicator() {
           <Progress 
             value={progressPercent} 
             className={`h-2 ${status.shouldWarn ? 'bg-yellow-500/20' : ''}`}
+            aria-label="Screen time used today"
           />
         </div>
 

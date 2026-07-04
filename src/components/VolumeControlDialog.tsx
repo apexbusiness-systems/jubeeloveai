@@ -126,9 +126,10 @@ export function VolumeControlDialog() {
               onClick={handleTestVoice}
               variant="outline"
               size="sm"
-              className="w-full mt-2"
+              className="w-full mt-2 gap-2"
               disabled={voiceVolume === 0}
             >
+              <Volume2 className="w-4 h-4" aria-hidden="true" />
               Test Voice
             </Button>
           </div>
