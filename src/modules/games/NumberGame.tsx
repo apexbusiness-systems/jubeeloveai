@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 
@@ -21,8 +22,11 @@ export default function NumberGame() {
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [totalQuestions, setTotalQuestions] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (level: 'easy' | 'medium' | 'hard'): NumberChallenge => {
@@ -144,6 +148,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Easy difficulty"
           >
             <div className="text-6xl mb-4">🌱</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Easy</h2>
@@ -157,6 +162,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
             }}
+            aria-label="Medium difficulty"
           >
             <div className="text-6xl mb-4">🌿</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Medium</h2>
@@ -170,6 +176,7 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               background: 'var(--gradient-game)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Hard difficulty"
           >
             <div className="text-6xl mb-4">🌳</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Hard</h2>
@@ -223,11 +230,12 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
               <button
                 key={option}
                 onClick={() => handleAnswer(option)}
-                className="option-button p-8 rounded-3xl text-4xl font-bold transform hover:scale-110 transition-all duration-200 border-4 border-game-accent"
+                className="option-button p-8 rounded-3xl text-4xl font-bold transform hover:scale-110 transition-all duration-200 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
                 style={{
                   background: 'var(--gradient-game)',
                   boxShadow: 'var(--shadow-game)'
                 }}
+                aria-label={`Select answer ${option}`}
               >
                 <span className="text-primary-foreground">{option}</span>
               </button>
@@ -239,11 +247,12 @@ const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
       <div className="controls text-center mt-12">
         <button
           onClick={endGame}
-          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent"
+          className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-warm)',
             boxShadow: 'var(--shadow-game)'
           }}
+          aria-label="Back to Menu"
         >
           ← Back to Menu
         </button>

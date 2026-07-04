@@ -16,25 +16,34 @@ export function VoiceCommandButton() {
   const label = isListening ? "Stop listening" : "Start voice command"
 
   return (
-    <Button
-      onClick={handleClick}
-      disabled={isProcessing}
-      variant={isListening ? "default" : "outline"}
-      size="icon"
-      className={cn(
-        "fixed bottom-24 left-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all",
-        isListening && "animate-pulse bg-primary"
-      )}
-      aria-label={isListening ? "Stop listening" : "Start voice command"}
-      title={isListening ? "Stop listening" : "Start voice command"}
-    >
-      {isProcessing ? (
-        <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
-      ) : isListening ? (
-        <MicOff className="h-6 w-6" aria-hidden="true" />
-      ) : (
-        <Mic className="h-6 w-6" aria-hidden="true" />
-      )}
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={handleClick}
+            disabled={isProcessing}
+            variant={isListening ? "default" : "outline"}
+            size="icon"
+            className={cn(
+              "fixed bottom-24 left-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all",
+              isListening && "animate-pulse bg-primary"
+            )}
+            aria-label={label}
+            title={label}
+          >
+            {isProcessing ? (
+              <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
+            ) : isListening ? (
+              <MicOff className="h-6 w-6" aria-hidden="true" />
+            ) : (
+              <Mic className="h-6 w-6" aria-hidden="true" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          <p>{label}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
