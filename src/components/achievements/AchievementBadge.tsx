@@ -92,7 +92,7 @@ export function AchievementBadge({ achievement, size = 'md' }: Props) {
 
         {!achievement.earned && achievement.progress > 0 && (
           <div className="w-full space-y-1">
-            <Progress value={achievement.progress} className="h-2" />
+            <Progress value={achievement.progress} className="h-2" aria-label={`${achievement.name} progress`} />
             <p className="text-xs text-muted-foreground">
               {Math.round(achievement.progress)}% complete
             </p>

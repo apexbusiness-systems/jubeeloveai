@@ -53,11 +53,14 @@ export function ScreenTimeIndicator() {
           <Progress 
             value={progressPercent} 
             className={`h-2 ${status.shouldWarn ? 'bg-yellow-500/20' : ''}`}
+            aria-label="Screen time used today"
           />
         </div>
 
         {status.remainingMinutes <= 10 && (
-          <div className={`text-xs text-center p-2 rounded-md ${
+          <div
+            aria-live="polite"
+            className={`text-xs text-center p-2 rounded-md ${
             status.isLimitReached 
               ? 'bg-destructive/20 text-destructive' 
               : 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
@@ -70,7 +73,7 @@ export function ScreenTimeIndicator() {
         )}
 
         {!status.isWithinSchedule && (
-          <div className="text-xs text-center p-2 rounded-md bg-destructive/20 text-destructive">
+          <div aria-live="polite" className="text-xs text-center p-2 rounded-md bg-destructive/20 text-destructive">
             Outside allowed schedule
           </div>
         )}
