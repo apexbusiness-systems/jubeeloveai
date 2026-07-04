@@ -96,19 +96,18 @@ function captureSnapshot(event: string, containerRef: React.RefObject<HTMLDivEle
 
 export function useJubeeLifecycleDiagnostics(containerRef: React.RefObject<HTMLDivElement>) {
   const prevStateRef = useRef<ReturnType<typeof useJubeeStore.getState> | null>(null)
-  const {
-    isVisible,
-    containerPosition,
-    position,
-    currentAnimation,
-    isDragging
-  } = useJubeeStore(useShallow(state => ({
-    isVisible: state.isVisible,
-    containerPosition: state.containerPosition,
-    position: state.position,
-    currentAnimation: state.currentAnimation,
-    isDragging: state.isDragging
-  })));
+
+  // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
+  // to reduce the number of store subscriptions and prevent unnecessary re-renders.
+  const { isVisible, containerPosition, position, currentAnimation, isDragging } = useJubeeStore(
+    useShallow(state => ({
+      isVisible: state.isVisible,
+      containerPosition: state.containerPosition,
+      position: state.position,
+      currentAnimation: state.currentAnimation,
+      isDragging: state.isDragging
+    }))
+  );
   
   // Track all state changes
   useEffect(() => {

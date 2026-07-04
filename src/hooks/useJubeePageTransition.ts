@@ -112,19 +112,18 @@ function getRandomLandingPosition(): { bottom: number; right: number } {
 
 export function useJubeePageTransition() {
   const location = useLocation();
-  const {
-    containerPosition,
-    setContainerPosition,
-    isVisible,
-    setMood,
-    triggerAnimation
-  } = useJubeeStore(useShallow(state => ({
-    containerPosition: state.containerPosition,
-    setContainerPosition: state.setContainerPosition,
-    isVisible: state.isVisible,
-    setMood: state.setMood,
-    triggerAnimation: state.triggerAnimation
-  })));
+
+  // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
+  // to reduce the number of store subscriptions and prevent unnecessary re-renders.
+  const { containerPosition, setContainerPosition, isVisible, setMood, triggerAnimation } = useJubeeStore(
+    useShallow(state => ({
+      containerPosition: state.containerPosition,
+      setContainerPosition: state.setContainerPosition,
+      isVisible: state.isVisible,
+      setMood: state.setMood,
+      triggerAnimation: state.triggerAnimation
+    }))
+  );
   const transitionStateRef = useRef<TransitionState | null>(null);
   const animationFrameRef = useRef<number>();
   const previousPathnameRef = useRef(location.pathname);
