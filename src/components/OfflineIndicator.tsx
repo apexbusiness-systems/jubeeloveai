@@ -20,6 +20,8 @@ export function OfflineIndicator() {
           ? "bg-warning text-warning-foreground"
           : "bg-primary text-primary-foreground"
       )}
+      role="status"
+      aria-live="polite"
     >
       {!isOnline ? (
         <>
