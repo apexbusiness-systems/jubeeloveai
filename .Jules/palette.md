@@ -32,7 +32,6 @@
 ## 2024-03-24 - Accessibility improvements in NumberGame
 **Learning:** Game elements with text emojis require explicitly setting aria-labels. When updating standard buttons, always ensure that `focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2` outline classes are applied.
 **Action:** Always verify keyboard accessibility on all buttons.
-
-## 2024-06-29 - Added aria-live="polite" to screen time warnings
-**Learning:** Dynamic status indicators (like screen time warnings or connection state) that appear visually need `aria-live` attributes. Otherwise, screen reader users will not be informed of these critical updates unless they actively navigate to the indicator.
-**Action:** Always add `aria-live="polite"` (or `assertive` if extremely urgent) to elements that conditionally render important status messages or warnings.
+## 2024-06-16 - Add aria-label to Progress elements
+**Learning:** Found an accessibility issue pattern where `Progress` components from Radix UI lack `aria-label` attributes, making them inaccessible to screen readers.
+**Action:** Added context-aware `aria-label` attributes to `Progress` components in `ScreenTimeIndicator`, `AchievementBadge`, and `Progress.tsx` to ensure screen readers can announce their purpose.
