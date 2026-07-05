@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 

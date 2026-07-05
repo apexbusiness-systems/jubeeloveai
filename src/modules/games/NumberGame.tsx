@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '../../store/useJubeeStore'
 import { useGameStore } from '../../store/useGameStore'
 
@@ -21,8 +22,11 @@ export default function NumberGame() {
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
   const [totalQuestions, setTotalQuestions] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
   const addScore = useGameStore(state => state.addScore);
 
   const generateChallenge = (level: 'easy' | 'medium' | 'hard'): NumberChallenge => {

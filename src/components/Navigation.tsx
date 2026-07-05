@@ -134,6 +134,7 @@ const TabButton = memo(function TabButton({ path, emoji, label, longPressPath, i
         className={`text-[11px] mt-0.5 font-bold tracking-tight whitespace-nowrap ${
           isActive ? 'text-primary' : 'text-foreground/80'
         }`}
+        aria-hidden="true"
       >
         {label}
       </span>
