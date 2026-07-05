@@ -72,6 +72,14 @@ export default function MusicPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isPremium = useParentalStore((state) => state.isPremium);
 
+  // Use refs to hold latest state for useCallback without triggering re-renders
+  const stateRef = useRef({ currentSong, isPlaying, isPremium });
+
+  // Update ref in an effect to respect React concurrent mode safety
+  useEffect(() => {
+    stateRef.current = { currentSong, isPlaying, isPremium };
+  }, [currentSong, isPlaying, isPremium]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -95,7 +103,9 @@ export default function MusicPage() {
   }, []);
 
   const playSong = useCallback((song: Song) => {
-    const isLocked = song.tier === 'premium' && !isPremium;
+    const { currentSong: curr, isPlaying: playing, isPremium: premium } = stateRef.current;
+
+    const isLocked = song.tier === 'premium' && !premium;
     if (isLocked) {
       toast.info('Ask your parents to unlock Premium Music! 🎵', {
         duration: 3000,
@@ -104,8 +114,8 @@ export default function MusicPage() {
     }
 
     // Toggle if same song
-    if (currentSong?.id === song.id && audioRef.current) {
-      if (isPlaying) {
+    if (curr?.id === song.id && audioRef.current) {
+      if (playing) {
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
@@ -171,7 +181,7 @@ export default function MusicPage() {
     // Set src LAST to trigger loading after listeners are attached
     audio.src = song.audioUrl;
     audio.load();
-  }, [currentSong, isPlaying, isPremium]);
+  }, []); // Empty dependency array ensures reference stability across renders
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 pb-32">
