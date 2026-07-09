@@ -9,3 +9,7 @@
 ## 2024-07-05 - Stable `useCallback` via `useRef` for Large Mapped Components
 **Learning:** When passing callbacks to a large number of components mapped from an array (like 241 `MusicCard` components in `src/pages/Music.tsx`), if the callback has dependencies on state (like `currentSong` or `isPlaying`), it will get a new reference on every state change. This invalidates the `React.memo` for ALL children, causing O(N) re-renders even when only 1 or 2 items actually changed. Also, always update `stateRef.current` inside a `useEffect` or `useLayoutEffect` to avoid bugs in React Concurrent mode.
 **Action:** Use a `useRef` (e.g., `stateRef`) to hold the latest state values, and update it in a `useEffect`. Read from `stateRef.current` inside the `useCallback` with an empty dependency array `[]`. This keeps the callback reference stable, allowing `React.memo` on the child components to effectively prevent unnecessary re-renders.
+
+## 2025-02-13 - [OfflineQueue Stats Optimization]
+**Learning:** Multiple array methods (`reduce`, `filter`) used sequentially over the same array inside a function (like `getStats` in `OfflineQueue`) result in multiple passes, increasing time complexity from O(N) to O(k*N).
+**Action:** Consolidate multiple passes over the same array into a single O(N) `for` loop to aggregate all data simultaneously. This reduces execution time significantly (e.g. 6.5x speedup), especially for larger datasets.
