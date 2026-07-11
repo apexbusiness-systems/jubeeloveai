@@ -12,8 +12,10 @@ import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lu
 export default function ParentHub() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const children = useParentalStore(useShallow(state => state.children));
-const settings = useParentalStore(useShallow(state => state.settings));
+  const { children, settings } = useParentalStore(useShallow(state => ({
+    children: state.children,
+    settings: state.settings
+  })));
 
   const handleSignOut = async () => {
     await signOut();
