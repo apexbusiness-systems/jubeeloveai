@@ -1,5 +1,15 @@
 import { memo, useMemo } from 'react';
 
+// ⚡ Bolt Optimization: Pre-allocate static arrays for repetitive rendering loops
+// to prevent garbage collection and allocation overhead on every render cycle.
+const ITEMS_4 = Array.from({ length: 4 });
+const ITEMS_5 = Array.from({ length: 5 });
+const ITEMS_6 = Array.from({ length: 6 });
+const ITEMS_12 = Array.from({ length: 12 });
+const ITEMS_15 = Array.from({ length: 15 });
+const ITEMS_25 = Array.from({ length: 25 });
+const ITEMS_40 = Array.from({ length: 40 });
+
 /**
  * StoryIllustration — Premium Vector Art Scenes.
  * Vastly improved with 3D-like radial gradients, drop shadows,
@@ -337,7 +347,7 @@ function PigsStraw() {
         <rect x="120" y="160" width="80" height="50" fill="url(#straw)" />
         <rect x="145" y="175" width="30" height="35" fill="hsl(20 40% 20%)" rx="2" />
         {/* Straw texture lines */}
-        {Array.from({ length: 12 }).map((_, i) => (
+        {ITEMS_12.map((_, i) => (
           <line key={i} x1={125 + i * 6} y1="160" x2={123 + i * 6} y2="210" stroke="hsl(35 60% 30%)" strokeWidth="1.5" opacity="0.4" />
         ))}
       </g>
@@ -371,7 +381,7 @@ function PigsWolfBlow() {
       </g>
 
       {/* Wind */}
-      {[0, 1, 2, 3].map((i) => (
+      {ITEMS_4.map((_, i) => (
         <path key={i} d={`M ${120 + i*40} ${160 + (i%2)*15} Q ${140 + i*40} ${150 - (i%2)*15} ${160 + i*40} ${160 + (i%2)*15}`}
           stroke="white" strokeWidth="4" strokeLinecap="round" fill="none" opacity="0.7"
           style={{ animation: `wind-blow 1.2s ease-out infinite`, animationDelay: `${i * 0.15}s` }} />
@@ -396,8 +406,8 @@ function PigsBricks() {
         <rect x="100" y="120" width="120" height="80" fill="url(#brick)" stroke="hsl(15 60% 25%)" strokeWidth="2" />
         <polygon points="90,120 230,120 160,70" fill="hsl(15 70% 35%)" stroke="hsl(15 60% 20%)" strokeWidth="2" />
         {/* Brick Lines */}
-        {Array.from({ length: 5 }).map((_, row) =>
-          Array.from({ length: 6 }).map((__, col) => (
+        {ITEMS_5.map((_, row) =>
+          ITEMS_6.map((__, col) => (
             <rect key={`${row}-${col}`} x={100 + col * 20 + (row % 2) * 10} y={120 + row * 16} width="20" height="16" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1" />
           ))
         )}
@@ -475,7 +485,7 @@ function DragonBalloon() {
 function SleepyTrain() {
   return (
     <SceneShell gradient={{ id: 'g-sleep-1', from: 'hsl(240 60% 15%)', to: 'hsl(260 50% 35%)' }}>
-      {Array.from({ length: 25 }).map((_, i) => (
+      {ITEMS_25.map((_, i) => (
         <circle key={i} cx={(i * 47) % 320} cy={(i * 31) % 150} r={1.5 + (i % 3) * 0.5}
           fill="white" opacity={0.4 + (i % 4) * 0.15}
           style={{ animation: `star-twinkle 3s ${(i % 5) * 0.4}s ease-in-out infinite` }} filter="url(#glow)" />
@@ -484,7 +494,7 @@ function SleepyTrain() {
 
       {/* Tracks */}
       <line x1="0" y1="210" x2="320" y2="210" stroke="hsl(240 30% 25%)" strokeWidth="4" />
-      {Array.from({ length: 15 }).map((_, i) => (
+      {ITEMS_15.map((_, i) => (
         <rect key={i} x={i * 24} y="210" width="12" height="6" fill="hsl(25 30% 20%)" rx="2" />
       ))}
 
@@ -508,7 +518,7 @@ function SleepyTrain() {
 function SpaceBlastoff() {
   return (
     <SceneShell gradient={{ id: 'g-space-1', from: 'hsl(240 70% 10%)', to: 'hsl(280 60% 25%)' }}>
-      {Array.from({ length: 40 }).map((_, i) => (
+      {ITEMS_40.map((_, i) => (
         <circle key={i} cx={(i * 37) % 320} cy={(i * 19) % 240} r={1 + (i % 3) * 0.6}
           fill="white" opacity={0.5 + (i % 5) * 0.15}
           style={{ animation: `star-twinkle 2s ${(i % 7) * 0.3}s ease-in-out infinite` }} filter="url(#glow)" />
