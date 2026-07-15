@@ -28,3 +28,6 @@
 ## 2026-06-06 - Prevent Empty Form Submissions via State
 **Learning:** Post-click error toasts (like 'Please enter your feedback') add unnecessary friction. It's much better UX to visually disable the primary action until the form is in a valid state (e.g. `!feedback.trim()`), providing immediate feedback. Adding a character counter and `maxLength` further clarifies expectations.
 **Action:** Always map primary submit button `disabled` state to form validity rather than handling empty states in the submit handler.
+## 2025-07-15 - ScheduleConfigurator Labels
+**Learning:** React component libraries (like shadcn/ui) often use sub-components like `<SelectTrigger>` and `<Input>` where the generated ID might not be automatically linked to `<Label>` elements. Custom forms built this way need explicit `htmlFor` and `id` bindings to maintain baseline accessibility.
+**Action:** Always verify that `<Label>` components have `htmlFor` matching the `id` of the interactive `<Input>` or `<SelectTrigger>` they describe.
