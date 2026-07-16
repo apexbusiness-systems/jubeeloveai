@@ -12,7 +12,7 @@ export interface QueuedOperation {
   id: string
   storeName: string
   operation: 'sync' | 'pull' | 'sync_batch'
-  data: Record<string, unknown> & { batch?: any[] }
+  data: Record<string, unknown> & { batch?: Record<string, unknown>[] }
   attempts: number
   lastAttempt: Date
   error?: string
