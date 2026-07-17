@@ -28,3 +28,6 @@
 ## 2026-06-06 - Prevent Empty Form Submissions via State
 **Learning:** Post-click error toasts (like 'Please enter your feedback') add unnecessary friction. It's much better UX to visually disable the primary action until the form is in a valid state (e.g. `!feedback.trim()`), providing immediate feedback. Adding a character counter and `maxLength` further clarifies expectations.
 **Action:** Always map primary submit button `disabled` state to form validity rather than handling empty states in the submit handler.
+## 2023-10-27 - Form Accessibility in ScheduleConfigurator
+**Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
+**Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
