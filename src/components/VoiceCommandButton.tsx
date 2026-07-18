@@ -13,7 +13,7 @@ export function VoiceCommandButton() {
     toggleListening()
   }
 
-  const label = isListening ? "Stop listening" : "Start voice command"
+  const label = isProcessing ? "Processing voice command..." : isListening ? "Stop listening" : "Start voice command"
 
   return (
     <TooltipProvider>

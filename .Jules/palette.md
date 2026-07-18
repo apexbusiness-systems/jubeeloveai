@@ -31,3 +31,7 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2024-05-25 - Improve processing state UX in VoiceCommandButton
+**Learning:** When a button enters a processing or loading state, its `aria-label` and visual tooltip should update to reflect this state, providing better feedback to screen reader users and sighted users hovering over the button.
+**Action:** Always update the `aria-label` and tooltip to clearly indicate a processing state (e.g., "Processing...") when `isProcessing` is true.
