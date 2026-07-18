@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function VolumeControlDialog() {
   const {
@@ -120,17 +121,29 @@ export function VolumeControlDialog() {
               step={0.01}
               className="w-full"
             />
-            <Button
-              aria-label={voiceVolume === 0 ? "Voice is muted" : "Test voice volume"}
-              title={voiceVolume === 0 ? "Increase volume to test voice" : "Test voice volume"}
-              onClick={handleTestVoice}
-              variant="outline"
-              size="sm"
-              className="w-full mt-2 gap-2"
-              disabled={voiceVolume === 0}
-            >
-              {voiceVolume === 0 ? "Voice Muted" : "Test Voice"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {/* Container needed to capture hover events when button is disabled */}
+                  <span className="w-full block" tabIndex={voiceVolume === 0 ? 0 : -1}>
+                    <Button
+                      aria-label={voiceVolume === 0 ? "Voice is muted" : "Test voice volume"}
+                      title={voiceVolume === 0 ? "Increase volume to test voice" : "Test voice volume"}
+                      onClick={handleTestVoice}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2 gap-2"
+                      disabled={voiceVolume === 0}
+                    >
+                      {voiceVolume === 0 ? "Voice Muted" : "Test Voice"}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{voiceVolume === 0 ? "Increase volume to test voice" : "Test voice volume"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </DialogContent>
