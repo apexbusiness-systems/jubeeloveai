@@ -11,8 +11,8 @@ import { jubeeDB as _jubeeDB } from './indexedDB'
 export interface QueuedOperation {
   id: string
   storeName: string
-  operation: 'sync' | 'pull'
-  data: Record<string, unknown>
+  operation: 'sync' | 'pull' | 'sync_batch'
+  data: Record<string, unknown> & { batch?: Record<string, unknown>[] }
   attempts: number
   lastAttempt: Date
   error?: string

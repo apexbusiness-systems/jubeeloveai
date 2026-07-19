@@ -332,14 +332,12 @@ class SyncService {
     if (this.isTransientError(batchError)) {
       logger.info('Transient error - queueing batch for retry')
 
-      for (const item of achievements) {
-        syncQueue.add({
-          storeName: 'achievements',
-          operation: 'sync',
-          data: item,
-          priority: 4
-        })
-      }
+      syncQueue.add({
+        storeName: 'achievements',
+        operation: 'sync_batch',
+        data: { batch: achievements },
+        priority: 4
+      })
 
       result.failed = achievements.length
       result.errors.push(`Transient batch error: ${batchError.message}`)
@@ -541,14 +539,12 @@ class SyncService {
     if (this.isTransientError(batchError)) {
       logger.info('Transient error - queueing batch for retry')
 
-      for (const item of stickers) {
-        syncQueue.add({
-          storeName: 'stickers',
-          operation: 'sync',
-          data: item,
-          priority: 2
-        })
-      }
+      syncQueue.add({
+        storeName: 'stickers',
+        operation: 'sync_batch',
+        data: { batch: stickers },
+        priority: 2
+      })
 
       result.failed = stickers.length
       result.errors.push(`Transient batch error: ${batchError.message}`)
@@ -709,14 +705,12 @@ class SyncService {
     if (this.isTransientError(batchError)) {
       logger.info('Transient error - queueing batch for retry')
 
-      for (const item of profiles) {
-        syncQueue.add({
-          storeName: 'childrenProfiles',
-          operation: 'sync',
-          data: item,
-          priority: 1
-        })
-      }
+      syncQueue.add({
+        storeName: 'childrenProfiles',
+        operation: 'sync_batch',
+        data: { batch: profiles },
+        priority: 1
+      })
 
       result.failed = profiles.length
       result.errors.push(`Transient batch error: ${batchError.message}`)
@@ -930,13 +924,25 @@ class SyncService {
           break
 
         case 'achievements':
-          await supabase.from('achievements').upsert({
-            user_id: user.id,
-            child_profile_id: null,
-            achievement_id: data.achievementId as string,
-            unlocked_at: data.unlockedAt as string,
-          })
-          await jubeeDB.put('achievements', { ...data, synced: true } as DBSchema['achievements']['value'])
+          if (operation.operation === 'sync_batch' && data.batch && Array.isArray(data.batch)) {
+            const batchData = data.batch.map((item: Record<string, unknown>) => ({
+              user_id: user.id,
+              child_profile_id: null,
+              achievement_id: item.achievementId as string,
+              unlocked_at: item.unlockedAt as string,
+            }))
+            await supabase.from('achievements').upsert(batchData)
+            const syncedItems = data.batch.map((item: Record<string, unknown>) => ({ ...item, synced: true }))
+            await jubeeDB.putBulk('achievements', syncedItems as DBSchema['achievements']['value'][])
+          } else {
+            await supabase.from('achievements').upsert({
+              user_id: user.id,
+              child_profile_id: null,
+              achievement_id: data.achievementId as string,
+              unlocked_at: data.unlockedAt as string,
+            })
+            await jubeeDB.put('achievements', { ...data, synced: true } as DBSchema['achievements']['value'])
+          }
           break
 
         case 'drawings':
@@ -952,27 +958,55 @@ class SyncService {
           break
 
         case 'stickers':
-          await supabase.from('stickers').upsert({
-            user_id: user.id,
-            child_profile_id: null,
-            sticker_id: data.stickerId as string,
-            unlocked_at: data.unlockedAt as string,
-          })
-          await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          if (operation.operation === 'sync_batch' && data.batch && Array.isArray(data.batch)) {
+            const batchData = data.batch.map((item: Record<string, unknown>) => ({
+              user_id: user.id,
+              child_profile_id: null,
+              sticker_id: item.stickerId as string,
+              unlocked_at: item.unlockedAt as string,
+            }))
+            await supabase.from('stickers').upsert(batchData)
+            const syncedItems = data.batch.map((item: Record<string, unknown>) => ({ ...item, synced: true }))
+            await jubeeDB.putBulk('stickers', syncedItems as DBSchema['stickers']['value'][])
+          } else {
+            await supabase.from('stickers').upsert({
+              user_id: user.id,
+              child_profile_id: null,
+              sticker_id: data.stickerId as string,
+              unlocked_at: data.unlockedAt as string,
+            })
+            await jubeeDB.put('stickers', { ...data, synced: true } as DBSchema['stickers']['value'])
+          }
           break
 
         case 'childrenProfiles':
-          await supabase.from('children_profiles').upsert([{
-            id: data.id as string,
-            parent_user_id: user.id,
-            name: data.name as string,
-            age: data.age as number,
-            gender: data.gender as string,
-            avatar_url: data.avatarUrl as string,
-            settings: (data.settings as Json) ?? null,
-            updated_at: data.updatedAt as string,
-          }])
-          await jubeeDB.put('childrenProfiles', { ...data, synced: true } as DBSchema['childrenProfiles']['value'])
+          if (operation.operation === 'sync_batch' && data.batch && Array.isArray(data.batch)) {
+            const batchData = data.batch.map((item: Record<string, unknown>) => ({
+              id: item.id as string,
+              parent_user_id: user.id,
+              name: item.name as string,
+              age: item.age as number,
+              gender: item.gender as string,
+              avatar_url: item.avatarUrl as string,
+              settings: (item.settings as Json) ?? null,
+              updated_at: item.updatedAt as string,
+            }))
+            await supabase.from('children_profiles').upsert(batchData)
+            const syncedItems = data.batch.map((item: Record<string, unknown>) => ({ ...item, synced: true }))
+            await jubeeDB.putBulk('childrenProfiles', syncedItems as DBSchema['childrenProfiles']['value'][])
+          } else {
+            await supabase.from('children_profiles').upsert([{
+              id: data.id as string,
+              parent_user_id: user.id,
+              name: data.name as string,
+              age: data.age as number,
+              gender: data.gender as string,
+              avatar_url: data.avatarUrl as string,
+              settings: (data.settings as Json) ?? null,
+              updated_at: data.updatedAt as string,
+            }])
+            await jubeeDB.put('childrenProfiles', { ...data, synced: true } as DBSchema['childrenProfiles']['value'])
+          }
           break
 
         default:
