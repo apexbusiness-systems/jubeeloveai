@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { SEO } from '@/components/SEO';
 import { useReducedMotion } from 'framer-motion';
+import { useCallback } from 'react';
 
 export default function GamesMenu() {
   const navigate = useNavigate();
@@ -9,10 +10,12 @@ export default function GamesMenu() {
   const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
   const prefersReducedMotion = useReducedMotion();
 
-  const handleGameClick = (path: string, _gameName: string) => {
+  // ⚡ Bolt Optimization: Wrap handleGameClick with useCallback to prevent function re-creation on every render
+  // This avoids passing new function references down to the games list components, minimizing re-renders.
+  const handleGameClick = useCallback((path: string, _gameName: string) => {
     triggerAnimation('excited');
     navigate(path);
-  };
+  }, [triggerAnimation, navigate]);
 
   return (
     <>
