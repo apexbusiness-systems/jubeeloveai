@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -300,7 +300,8 @@ function InfoPill({ icon, label, value }: InfoPillProps) {
   );
 }
 
-function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
+// ⚡ Bolt Optimization: Memoized QuickActionCard to prevent unnecessary re-renders in Home page
+const QuickActionCard = memo(function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
   const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
@@ -336,9 +337,10 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
       </div>
     </button>
   );
-}
+});
 
-function GameCard({ title, icon, path, description }: GameCardProps) {
+// ⚡ Bolt Optimization: Memoized GameCard to prevent unnecessary re-renders in Home page
+const GameCard = memo(function GameCard({ title, icon, path, description }: GameCardProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
   const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
@@ -376,4 +378,4 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
       </button>
     </li>
   );
-}
+});
