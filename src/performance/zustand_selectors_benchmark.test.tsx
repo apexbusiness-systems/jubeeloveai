@@ -1,7 +1,28 @@
 import { useRef } from 'react';
 import { render, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Mock localStorage BEFORE importing the store
+const store: Record<string, string> = {};
+global.localStorage = {
+  getItem: vi.fn((key: string) => store[key] ?? null),
+  setItem: vi.fn((key: string, value: string) => {
+    store[key] = String(value);
+  }),
+  removeItem: vi.fn((key: string) => {
+    delete store[key];
+  }),
+  clear: vi.fn(() => {
+    for (const key in store) delete store[key];
+  }),
+  key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+  get length() {
+    return Object.keys(store).length;
+  },
+} as unknown as Storage;
+
 import { useParentalStore } from '../store/useParentalStore';
+
 
 // We create two mock components that consume the store.
 // One uses full object destructuring (unoptimized), the other uses selectors (optimized).
