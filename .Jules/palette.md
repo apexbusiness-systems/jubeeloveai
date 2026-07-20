@@ -31,3 +31,7 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2026-07-20 - Add Schedule Button Empty State UX
+**Learning:** Form action buttons like the one in ScheduleConfigurator were missing disabled states and failing silently when input fields were incomplete. This creates a confusing UX because the user doesn't know why their click is ignored. Adding a `disabled` state coupled with `aria-label` provides clear visual feedback and accessibility.
+**Action:** When implementing forms, always ensure the submit/add button has a `disabled` property bound to the form's validation state rather than just silently returning inside the click handler.

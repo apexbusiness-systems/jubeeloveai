@@ -126,8 +126,13 @@ export function ScheduleConfigurator({
           </div>
 
           <div className="flex items-end">
-            <Button onClick={handleAddSchedule} className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button
+              onClick={handleAddSchedule}
+              className="w-full"
+              disabled={!startTime || !endTime}
+              aria-label="Add new schedule"
+            >
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Add
             </Button>
           </div>
