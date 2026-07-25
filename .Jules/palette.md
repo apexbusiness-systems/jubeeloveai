@@ -31,3 +31,7 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2024-07-25 - Added Show/Hide Password Feature
+**Learning:** For password inputs, a show/hide toggle is a vital micro-UX feature. When adding an icon button inside an input, ensure the input has right padding (`pr-10`) so text doesn't overlap the button, and ensure the button has `type="button"`, appropriate `aria-label`s, and `focus-visible` styling for keyboard users.
+**Action:** Always include a show/hide password toggle on authentication forms with proper accessibility attributes and styling.
