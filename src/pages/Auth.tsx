@@ -303,9 +303,11 @@ export default function Auth() {
                       disabled={loading}
                       required
                       className={`h-12 text-base ${emailError ? 'border-destructive' : ''}`}
+                      aria-invalid={!!emailError}
+                      aria-describedby={emailError ? "signin-email-error" : undefined}
                     />
                     {emailError && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
+                      <p id="signin-email-error" className="text-sm text-destructive flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
                         {emailError}
                       </p>
@@ -329,9 +331,11 @@ export default function Auth() {
                       disabled={loading}
                       required
                       className={`h-12 text-base ${passwordError ? 'border-destructive' : ''}`}
+                      aria-invalid={!!passwordError}
+                      aria-describedby={passwordError ? "signin-password-error" : undefined}
                     />
                     {passwordError && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
+                      <p id="signin-password-error" className="text-sm text-destructive flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
                         {passwordError}
                       </p>
@@ -435,11 +439,28 @@ export default function Auth() {
                       type="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError('');
+                      }}
+                      onBlur={() => {
+                        const validation = validateEmail(email);
+                        if (!validation.valid && email) {
+                          setEmailError(validation.error || '');
+                        }
+                      }}
                       disabled={loading}
                       required
-                      className="h-12 text-base"
+                      className={`h-12 text-base ${emailError ? 'border-destructive' : ''}`}
+                      aria-invalid={!!emailError}
+                      aria-describedby={emailError ? "signup-email-error" : undefined}
                     />
+                    {emailError && (
+                      <p id="signup-email-error" className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {emailError}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -452,13 +473,24 @@ export default function Auth() {
                       type="password"
                       placeholder="At least 6 characters"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordError('');
+                      }}
                       disabled={loading}
                       required
                       minLength={6}
-                      className="h-12 text-base"
+                      className={`h-12 text-base ${passwordError ? 'border-destructive' : ''}`}
+                      aria-invalid={!!passwordError}
+                      aria-describedby={passwordError ? "signup-password-error signup-password-hint" : "signup-password-hint"}
                     />
-                    <p className="text-sm text-muted-foreground">
+                    {passwordError && (
+                      <p id="signup-password-error" className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {passwordError}
+                      </p>
+                    )}
+                    <p id="signup-password-hint" className="text-sm text-muted-foreground">
                       Must be at least 6 characters long
                     </p>
                   </div>

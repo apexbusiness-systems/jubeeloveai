@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2026-07-26 - Accessible Auth Forms
+**Learning:** Adding `aria-invalid` and linking error messages to inputs using `aria-describedby` ensures screen readers properly announce errors contextually, significantly improving the form experience for visually impaired users.
+**Action:** Always check form fields for clear associations between input fields, helper text, and inline validation errors using appropriate ARIA attributes.
