@@ -397,9 +397,13 @@ function FeelingsMenu({ onStart, onJournal, onSelfReport, onBack, journalCount, 
 }
 
 function FeelingsJournal({ onBack }: { onBack: () => void }) {
-  const journal = useFeelingsStore(s => s.journal);
-  const totalCorrect = useFeelingsStore(s => s.totalCorrect);
-  const totalPlayed = useFeelingsStore(s => s.totalPlayed);
+  const { journal, totalCorrect, totalPlayed } = useFeelingsStore(
+    useShallow(s => ({
+      journal: s.journal,
+      totalCorrect: s.totalCorrect,
+      totalPlayed: s.totalPlayed
+    }))
+  );
   const speak = useJubeeStore(s => s.speak);
 
   return (
