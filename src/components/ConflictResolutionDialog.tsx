@@ -148,17 +148,26 @@ export function ConflictResolutionDialog() {
           }
           return undefined
         })
-        await Promise.all(syncPromises.filter(Boolean))
+        await Promise.allSettled(syncPromises.filter(Boolean))
       }
 
       // Update local database in batches
+      const byStore: Partial<Record<StoreName, Record<string, unknown>[]>> = {};
       for (let i = 0; i < resolvedDataArray.length; i++) {
-        const data = resolvedDataArray[i]
-        const conflict = conflicts[i]
-        if (conflict) {
-          await saveToLocalStore(conflict.storeName, data)
+        const data = resolvedDataArray[i];
+        const conflict = conflicts[i];
+        if (conflict && isStoreName(conflict.storeName)) {
+          if (!byStore[conflict.storeName]) {
+            byStore[conflict.storeName] = [];
+          }
+          byStore[conflict.storeName]!.push(data);
         }
       }
+
+      const putBulkPromises = Object.entries(byStore).map(([storeName, items]) => {
+        return jubeeDB.putBulk(storeName as StoreName, items as (DBSchema[StoreName]['value'])[]);
+      });
+      await Promise.allSettled(putBulkPromises);
 
       toast({
         title: "Conflicts Resolved",
@@ -209,17 +218,30 @@ export function ConflictResolutionDialog() {
       // Sync to server
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        const byStoreLocalSave: Partial<Record<StoreName, Record<string, unknown>[]>> = {};
+        const syncPromises: Promise<void>[] = [];
+
         for (let i = 0; i < resolvedDataArray.length; i++) {
-          const data = resolvedDataArray[i]
-          const conflict = conflicts[i]
+          const data = resolvedDataArray[i];
+          const conflict = conflicts[i];
           if (conflict && isStoreName(conflict.storeName)) {
-            await saveToLocalStore(conflict.storeName, data)
+            if (!byStoreLocalSave[conflict.storeName]) {
+              byStoreLocalSave[conflict.storeName] = [];
+            }
+            byStoreLocalSave[conflict.storeName]!.push(data);
 
             if (diagnosis[conflict.id] === 'local' || diagnosis[conflict.id] === 'merge') {
-              await syncToServer(conflict.storeName, data, user.id)
+              syncPromises.push(syncToServer(conflict.storeName, data, user.id));
             }
           }
         }
+
+        const putBulkPromises = Object.entries(byStoreLocalSave).map(([storeName, items]) => {
+          return jubeeDB.putBulk(storeName as StoreName, items as (DBSchema[StoreName]['value'])[]);
+        });
+
+        await Promise.allSettled(putBulkPromises);
+        await Promise.allSettled(syncPromises);
       }
 
       toast({
