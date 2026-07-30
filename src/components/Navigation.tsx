@@ -42,23 +42,24 @@ export const Navigation = memo(function Navigation() {
       aria-label="Main navigation"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div
+      <ul
         className="
           flex items-stretch gap-1 px-2 py-1.5
           overflow-x-auto overflow-y-hidden
           scrollbar-hide snap-x snap-mandatory
-          min-h-[64px]
+          min-h-[64px] m-0 p-0 list-none
         "
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {items.map((item) => (
-          <TabButton
-            key={item.path}
-            {...item}
-            isActive={location.pathname === item.path}
-          />
+          <li key={item.path} style={{ display: 'contents' }}>
+            <TabButton
+              {...item}
+              isActive={location.pathname === item.path}
+            />
+          </li>
         ))}
-      </div>
+      </ul>
     </nav>
   );
 });

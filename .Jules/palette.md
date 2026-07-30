@@ -31,3 +31,7 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2024-05-19 - Semantic HTML for Main Navigation
+**Learning:** `src/components/Navigation.tsx` used a standard `<nav>` wrapper but inner elements were a raw `div` containing `button` tags. While visually correct and somewhat accessible, screen readers didn't know it was a list of N items. Changing `div` to `ul` (with `list-none m-0 p-0`) and wrapping buttons in `li` elements with `display: 'contents'` provided the exact same flex layout but immediately announced "list, 11 items" to screen readers.
+**Action:** When adding or auditing complex navigation strips (especially memoized/virtualized ones), check if we can cleanly inject `ul`/`li` semantics using `display: contents` without breaking flex/grid layouts.
