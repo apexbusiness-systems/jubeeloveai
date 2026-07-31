@@ -289,6 +289,7 @@ export default function Auth() {
                       id="signin-email"
                       type="email"
                       placeholder="you@example.com"
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
@@ -321,6 +322,7 @@ export default function Auth() {
                       id="signin-password"
                       type="password"
                       placeholder="••••••••"
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value);
@@ -418,6 +420,7 @@ export default function Auth() {
                       id="signup-name"
                       type="text"
                       placeholder="Your name"
+                      autoComplete="name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={loading}
@@ -434,6 +437,7 @@ export default function Auth() {
                       id="signup-email"
                       type="email"
                       placeholder="you@example.com"
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
@@ -451,6 +455,7 @@ export default function Auth() {
                       id="signup-password"
                       type="password"
                       placeholder="At least 6 characters"
+                      autoComplete="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}

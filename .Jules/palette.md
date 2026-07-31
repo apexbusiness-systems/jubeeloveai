@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2026-07-31 - Add autoComplete attributes to Auth forms
+**Learning:** Auth forms without `autoComplete` attributes prevent password managers and browsers from assisting users, leading to a poor user experience and accessibility barriers.
+**Action:** Always include appropriate `autoComplete` attributes (like `email`, `current-password`, `new-password`, `name`) on authentication and registration form inputs.
