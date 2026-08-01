@@ -4,6 +4,7 @@ import { musicLibrary, Song } from '@/data/musicLibrary';
 import { Play, Pause, Lock, Music as MusicIcon, Loader2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -207,33 +208,49 @@ export default function MusicPage() {
                 </p>
                 <p className="font-bold truncate text-foreground">{currentSong.title}</p>
               </div>
-              <Button
-                onClick={() => playSong(currentSong)}
-                size="icon"
-                variant="default"
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-                title={isPlaying ? 'Pause' : 'Play'}
-                className="flex-shrink-0 min-h-[44px] min-w-[44px]"
-                disabled={loadingId === currentSong.id}
-              >
-                {loadingId === currentSong.id ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-5 h-5" />
-                ) : (
-                  <Play className="w-5 h-5" />
-                )}
-              </Button>
-              <Button
-                onClick={stopCurrent}
-                size="icon"
-                variant="ghost"
-                aria-label="Close player"
-                title="Close player"
-                className="flex-shrink-0 min-h-[44px] min-w-[44px]"
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => playSong(currentSong)}
+                      size="icon"
+                      variant="default"
+                      aria-label={isPlaying ? 'Pause' : 'Play'}
+                      className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                      disabled={loadingId === currentSong.id}
+                    >
+                      {loadingId === currentSong.id ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : isPlaying ? (
+                        <Pause className="w-5 h-5" />
+                      ) : (
+                        <Play className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>{isPlaying ? 'Pause' : 'Play'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={stopCurrent}
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Close player"
+                      className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>Close player</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardContent>
           </Card>
         </div>
