@@ -216,11 +216,20 @@ export default function JubeeDancePage() {
       <motion.div
         key={song.id}
         onClick={() => handleSelectSong(song)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSelectSong(song);
+          }
+        }}
         whileHover={prefersReducedMotion ? {} : { y: -4 }}
         whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
-        className="dance-vinyl-card"
+        className="dance-vinyl-card focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         data-selected={isSelected}
         data-locked={isLocked}
+        role="button"
+        tabIndex={0}
+        aria-label={`Select song ${song.title} by ${song.artist}`}
       >
         {isLocked && (
           <div className="absolute top-3 right-3 bg-[hsl(var(--game-accent))] text-[hsl(var(--game-accent-foreground,var(--foreground)))] text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1 z-10">
@@ -319,7 +328,7 @@ export default function JubeeDancePage() {
                   <span className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">Free Songs</span>
                 </h2>
                 <div className="relative">
-                  <button onClick={() => scrollBy(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background" aria-label="Scroll left">
+                  <button onClick={() => scrollBy(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="Scroll left">
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <div ref={scrollContainerRef} className="flex gap-4 overflow-x-auto pb-4 px-12 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
@@ -329,7 +338,7 @@ export default function JubeeDancePage() {
                       </div>
                     ))}
                   </div>
-                  <button onClick={() => scrollBy(1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background" aria-label="Scroll right">
+                  <button onClick={() => scrollBy(1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="Scroll right">
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>

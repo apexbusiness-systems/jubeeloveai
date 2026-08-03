@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2024-11-20 - Interactive components using Framer Motion
+**Learning:** Elements animated with `motion.div` acting as buttons need manual implementations of a11y properties, otherwise keyboard users cannot use them. The song selection cards in JubeeDance had `onClick` but were completely inaccessible via keyboard.
+**Action:** When using `motion.div` as interactive elements, manually add `role="button"`, `tabIndex={0}`, an `onKeyDown` handler for "Enter"/"Space", and proper `focus-visible` styling.
