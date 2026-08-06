@@ -120,7 +120,13 @@ const settings = useParentalStore(useShallow(state => state.settings));
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {children.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">Add a child to see their progress.</p>
+                    <div className="text-center py-6 col-span-full">
+                      <p className="text-muted-foreground mb-4">Add a child profile to see their learning progress here.</p>
+                      <Button onClick={() => navigate('/parent/controls')} variant="outline" size="sm">
+                        <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
+                        Set Up Profile
+                      </Button>
+                    </div>
                   ) : (
                     children.map(child => {
                       const store = useMasteryStore.getState();
