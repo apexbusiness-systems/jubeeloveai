@@ -665,7 +665,7 @@ export default function JubeeDancePage() {
                     <Play className="w-5 h-5 mr-2" /> Next Song
                   </Button>
                   <label className="dance-party-toggle">
-                    <input type="checkbox" checked={partyMode} onChange={(e) => setPartyMode(e.target.checked)} />
+                    <input type="checkbox" aria-label="Toggle party mode" checked={partyMode} onChange={(e) => setPartyMode(e.target.checked)} />
                     <span className="dance-toggle-track" aria-hidden="true" />
                     <span className="text-sm font-semibold">Party mode</span>
                   </label>
