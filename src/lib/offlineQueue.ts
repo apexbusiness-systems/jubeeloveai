@@ -209,17 +209,23 @@ class OfflineQueue {
    * Get queue statistics
    */
   getStats() {
+    // ⚡ Bolt: Single-pass stats aggregation (O(n) instead of O(3n) with reduce/filter)
+    const byType: Record<string, number> = {};
+    const byPriority: Record<number, number> = {};
+    let failed = 0;
+
+    for (let i = 0; i < this.queue.length; i++) {
+      const op = this.queue[i];
+      byType[op.type] = (byType[op.type] || 0) + 1;
+      byPriority[op.priority] = (byPriority[op.priority] || 0) + 1;
+      if (op.retries > 0) failed++;
+    }
+
     return {
       total: this.queue.length,
-      byType: this.queue.reduce((acc, op) => {
-        acc[op.type] = (acc[op.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      byPriority: this.queue.reduce((acc, op) => {
-        acc[op.priority] = (acc[op.priority] || 0) + 1;
-        return acc;
-      }, {} as Record<number, number>),
-      failed: this.queue.filter(op => op.retries > 0).length,
+      byType,
+      byPriority,
+      failed,
     };
   }
 
