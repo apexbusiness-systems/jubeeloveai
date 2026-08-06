@@ -144,6 +144,39 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     },
   });
 
+  const isInViewRef = useRef(true);
+  const isTabVisibleRef = useRef(
+    typeof document !== 'undefined' ? document.visibilityState === 'visible' : true
+  );
+  // Store isVisible in a ref as well to access it inside the animation loop
+  const isVisibleRef = useRef(isVisible);
+
+  useEffect(() => {
+    isVisibleRef.current = isVisible;
+  }, [isVisible]);
+
+  // IntersectionObserver for visibility
+  useEffect(() => {
+    if (!containerRef.current || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isInViewRef.current = !!entries[0]?.isIntersecting;
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Tab visibility tracker
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isTabVisibleRef.current = document.visibilityState === 'visible';
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   // Update dimensions on resize
   useEffect(() => {
     const handleResize = () => {
@@ -302,6 +335,13 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
     let lastTime = performance.now();
     const animate = () => {
       animationFrameRef.current = requestAnimationFrame(animate);
+
+      // Skip expensive physics and rendering if the component is hidden,
+      // scrolled out of view, or if the user is on a different tab.
+      if (!isVisibleRef.current || !isInViewRef.current || !isTabVisibleRef.current) {
+        lastTime = performance.now(); // Keep timer synced so it doesn't jump
+        return;
+      }
       
       const currentTime = performance.now();
       const delta = (currentTime - lastTime) / 1000;
@@ -339,7 +379,7 @@ function JubeeCanvas3DDirectComponent({ className }: JubeeCanvas3DDirectProps) {
       logger.dev('[Jubee3DDirect] Cleaning up Three.js scene');
       window.removeEventListener('resize', handleResize);
       
-      if (animationFrameRef.current) {
+      if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
       
