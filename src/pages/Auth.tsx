@@ -287,6 +287,7 @@ export default function Auth() {
                     </Label>
                     <Input
                       id="signin-email"
+                      autoComplete="email"
                       type="email"
                       placeholder="you@example.com"
                       value={email}
@@ -319,6 +320,7 @@ export default function Auth() {
                     </Label>
                     <Input
                       id="signin-password"
+                      autoComplete="current-password"
                       type="password"
                       placeholder="••••••••"
                       value={password}
@@ -416,6 +418,7 @@ export default function Auth() {
                     </Label>
                     <Input
                       id="signup-name"
+                      autoComplete="name"
                       type="text"
                       placeholder="Your name"
                       value={displayName}
@@ -432,6 +435,7 @@ export default function Auth() {
                     </Label>
                     <Input
                       id="signup-email"
+                      autoComplete="email"
                       type="email"
                       placeholder="you@example.com"
                       value={email}
@@ -449,6 +453,7 @@ export default function Auth() {
                     </Label>
                     <Input
                       id="signup-password"
+                      autoComplete="new-password"
                       type="password"
                       placeholder="At least 6 characters"
                       value={password}
