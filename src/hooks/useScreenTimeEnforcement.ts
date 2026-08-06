@@ -17,13 +17,13 @@ export interface ScreenTimeStatus {
 }
 
 export function useScreenTimeEnforcement() {
-  // ⚡ Bolt: Use useShallow to prevent hook re-execution and effect triggers
-  // when unrelated children update their state in the store
-  const activeChild = useParentalStore(useShallow(state =>
-    state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
-  ));
-  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
-const endSession = useParentalStore(state => state.endSession);
+  // ⚡ Bolt: Group selectors with useShallow to prevent unnecessary re-renders
+  // when unrelated children update their state in the store and to reduce subscriptions
+  const { activeChild, updateSessionTime, endSession } = useParentalStore(useShallow(state => ({
+    activeChild: state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null,
+    updateSessionTime: state.updateSessionTime,
+    endSession: state.endSession
+  })));
   
   const [status, setStatus] = useState<ScreenTimeStatus>({
     isWithinSchedule: true,

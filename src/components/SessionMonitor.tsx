@@ -11,14 +11,13 @@ import { useState } from 'react';
 export function SessionMonitor() {
   const navigate = useNavigate();
 
-  // ⚡ Bolt: Memoize child object selector with useShallow to prevent unnecessary
-  // re-renders when unrelated children update their session time
-  const activeChild = useParentalStore(useShallow(state =>
-    state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null
-  ));
-
-  const updateSessionTime = useParentalStore(state => state.updateSessionTime);
-  const endSession = useParentalStore(state => state.endSession);
+  // ⚡ Bolt: Group selectors into a single object with useShallow to prevent unnecessary
+  // re-renders when unrelated children update their session time, and to reduce subscriptions.
+  const { activeChild, updateSessionTime, endSession } = useParentalStore(useShallow(state => ({
+    activeChild: state.activeChildId ? state.children.find(c => c.id === state.activeChildId) : null,
+    updateSessionTime: state.updateSessionTime,
+    endSession: state.endSession
+  })));
   const [showTimeUpDialog, setShowTimeUpDialog] = useState(false);
   const [showWarningDialog, setShowWarningDialog] = useState(false);
 

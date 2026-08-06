@@ -13,8 +13,10 @@ interface ChildSelectorProps {
 
 export function ChildSelector({ open, onOpenChange }: ChildSelectorProps) {
   const navigate = useNavigate();
-  const children = useParentalStore(useShallow(state => state.children));
-const startSession = useParentalStore(state => state.startSession);
+  const { children, startSession } = useParentalStore(useShallow(state => ({
+    children: state.children,
+    startSession: state.startSession
+  })));
 
   const handleSelectChild = (childId: string) => {
     startSession(childId);
