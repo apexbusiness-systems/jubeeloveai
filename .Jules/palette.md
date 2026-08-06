@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2024-08-06 - Empty states need Call to Actions
+**Learning:** Simple text indicating an empty state (e.g., 'Add a child to see their progress') can be frustrating UX.
+**Action:** When identifying empty states, replace text-only placeholders with structured UI (like a centered div) containing an actionable CTA button that navigates the user to the place they can resolve the empty state.
