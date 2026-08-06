@@ -231,6 +231,9 @@ function AppShell() {
       <DevAuthOverride />
       <SEO />
       <div className="app min-h-screen w-full" data-theme={currentTheme}>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] bg-background text-foreground p-4 rounded-md shadow-md outline-none ring-2 ring-primary">
+          Skip to main content
+        </a>
         {/* Header with score and action buttons - hidden on auth and landing routes */}
         {showAppShellUI && (
           <header 
@@ -313,6 +316,7 @@ function AppShell() {
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
         <main 
+          id="main-content"
           className={`
             main-content
             w-full
