@@ -9,6 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SEO } from '@/components/SEO';
 import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lucide-react';
 
+// Pre-compute skill names for O(1) lookup to avoid Object.values(Skills).find() in loops
+const skillNameMap = Object.values(Skills).reduce((acc, skill) => {
+  acc[skill.id] = skill.name;
+  return acc;
+}, {} as Record<string, string>);
+
 export default function ParentHub() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -122,60 +128,62 @@ const settings = useParentalStore(useShallow(state => state.settings));
                   {children.length === 0 ? (
                     <p className="text-muted-foreground text-sm">Add a child to see their progress.</p>
                   ) : (
-                    children.map(child => {
+                    (() => {
                       const store = useMasteryStore.getState();
-                      const strongest = store.getStrongestSkills(child.id, 2);
-                      const needsReview = store.getNeedsReviewSkills(child.id, 2);
-                      const practicedToday = store.getPracticedToday(child.id);
-                      
-                      return (
-                        <div key={child.id} className="border rounded-lg p-3 space-y-3 bg-card">
-                          <div className="flex items-center gap-2 border-b pb-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-sm">
-                              {child.avatar}
+                      return children.map(child => {
+                        const strongest = store.getStrongestSkills(child.id, 2);
+                        const needsReview = store.getNeedsReviewSkills(child.id, 2);
+                        const practicedToday = store.getPracticedToday(child.id);
+
+                        return (
+                          <div key={child.id} className="border rounded-lg p-3 space-y-3 bg-card">
+                            <div className="flex items-center gap-2 border-b pb-2">
+                              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-sm">
+                                {child.avatar}
+                              </div>
+                              <h3 className="font-medium text-sm">{child.name}'s Week</h3>
                             </div>
-                            <h3 className="font-medium text-sm">{child.name}'s Week</h3>
+                            
+                            <div className="space-y-2 text-xs">
+                              <div>
+                                <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
+                                {strongest.length > 0 ? (
+                                  <ul className="text-muted-foreground list-disc list-inside">
+                                    {strongest.map(s => <li key={s.skillId}>{skillNameMap[s.skillId] || s.skillId}</li>)}
+                                  </ul>
+                                ) : (
+                                  <p className="text-muted-foreground">Keep playing to see strengths!</p>
+                                )}
+                              </div>
+
+                              <div>
+                                <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
+                                {needsReview.length > 0 ? (
+                                  <ul className="text-muted-foreground list-disc list-inside">
+                                    {needsReview.map(s => <li key={s.skillId}>{skillNameMap[s.skillId] || s.skillId}</li>)}
+                                  </ul>
+                                ) : (
+                                  <p className="text-muted-foreground">All caught up!</p>
+                                )}
+                              </div>
+
+                              <div>
+                                <span className="font-medium text-blue-600 block mb-0.5">💡 Offline Suggestion</span>
+                                <p className="text-muted-foreground">
+                                  {needsReview.length > 0 && needsReview[0].skillId === 'counting'
+                                    ? "Try counting the stairs as you walk up together."
+                                    : "Ask them to spot the color red in the room for 3 minutes."}
+                                </p>
+                              </div>
+
+                              <div className="pt-2 border-t font-medium text-muted-foreground">
+                                Practiced Today: {practicedToday.length} skill{practicedToday.length !== 1 && 's'}
+                              </div>
+                            </div>
                           </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div>
-                              <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
-                              {strongest.length > 0 ? (
-                                <ul className="text-muted-foreground list-disc list-inside">
-                                  {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
-                                </ul>
-                              ) : (
-                                <p className="text-muted-foreground">Keep playing to see strengths!</p>
-                              )}
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
-                              {needsReview.length > 0 ? (
-                                <ul className="text-muted-foreground list-disc list-inside">
-                                  {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
-                                </ul>
-                              ) : (
-                                <p className="text-muted-foreground">All caught up!</p>
-                              )}
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-blue-600 block mb-0.5">💡 Offline Suggestion</span>
-                              <p className="text-muted-foreground">
-                                {needsReview.length > 0 && needsReview[0].skillId === 'counting' 
-                                  ? "Try counting the stairs as you walk up together."
-                                  : "Ask them to spot the color red in the room for 3 minutes."}
-                              </p>
-                            </div>
-                            
-                            <div className="pt-2 border-t font-medium text-muted-foreground">
-                              Practiced Today: {practicedToday.length} skill{practicedToday.length !== 1 && 's'}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
+                        );
+                      });
+                    })()
                   )}
                 </CardContent>
               </Card>
