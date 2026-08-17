@@ -25,9 +25,15 @@
 ## 2024-05-23 - Hide decorative icons in VoiceCommandButton
 **Learning:** Decorative icons inside buttons that already have `aria-label` or `title` should be hidden from screen readers.
 **Action:** Added `aria-hidden="true"` to `Loader2`, `MicOff`, and `Mic` icons in `VoiceCommandButton.tsx`.
+
 ## 2026-06-06 - Prevent Empty Form Submissions via State
 **Learning:** Post-click error toasts (like 'Please enter your feedback') add unnecessary friction. It's much better UX to visually disable the primary action until the form is in a valid state (e.g. `!feedback.trim()`), providing immediate feedback. Adding a character counter and `maxLength` further clarifies expectations.
 **Action:** Always map primary submit button `disabled` state to form validity rather than handling empty states in the submit handler.
+
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2024-10-28 - Add Tooltip Context for Disabled Actions
+**Learning:** When actions are disabled due to permissions or tier requirements (e.g., Premium content), it's a poor user experience to leave the user wondering why. Tooltips provide immediate, contextual help without interrupting the flow.
+**Action:** Always wrap disabled interactive elements with descriptive tooltips (e.g., using `TooltipProvider`, `Tooltip`, etc. from the design system) explaining why the element is disabled and how to enable it.

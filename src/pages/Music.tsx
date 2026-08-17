@@ -4,6 +4,7 @@ import { musicLibrary, Song } from '@/data/musicLibrary';
 import { Play, Pause, Lock, Music as MusicIcon, Loader2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -18,7 +19,7 @@ interface MusicCardProps {
 }
 
 const MusicCard = memo(({ song, isLocked, isCurrent, isPlaying, isLoading, onPlay }: MusicCardProps) => {
-  return (
+  const cardContent = (
     <Card
       onClick={() => onPlay(song)}
       onKeyDown={(e) => {
@@ -62,6 +63,23 @@ const MusicCard = memo(({ song, isLocked, isCurrent, isPlaying, isLoading, onPla
       </CardContent>
     </Card>
   );
+
+  if (isLocked) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {cardContent}
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>Ask your parents to unlock Premium Music!</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return cardContent;
 });
 MusicCard.displayName = 'MusicCard';
 
