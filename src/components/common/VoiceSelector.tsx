@@ -157,7 +157,7 @@ export function VoiceSelector({ onClose }: Props) {
                             : 'transparent'
                         }}
                       >
-                        <Volume2 className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} />
+                        <Volume2 className={`h-4 w-4 ${testingVoice === option.id ? 'animate-pulse' : ''}`} aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
