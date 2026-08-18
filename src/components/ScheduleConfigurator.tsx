@@ -69,7 +69,7 @@ export function ScheduleConfigurator({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+              <Clock className="h-5 w-5" aria-hidden="true" />
               Usage Schedule
             </CardTitle>
             <CardDescription>
@@ -127,7 +127,7 @@ export function ScheduleConfigurator({
 
           <div className="flex items-end">
             <Button onClick={handleAddSchedule} className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
               Add
             </Button>
           </div>
@@ -159,7 +159,7 @@ export function ScheduleConfigurator({
                           onClick={() => handleRemoveSchedule(index)}
                           aria-label="Remove schedule"
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="top">

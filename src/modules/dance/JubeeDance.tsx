@@ -320,7 +320,7 @@ export default function JubeeDancePage() {
                 </h2>
                 <div className="relative">
                   <button onClick={() => scrollBy(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background" aria-label="Scroll left">
-                    <ChevronLeft className="w-5 h-5" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden="true" />
                   </button>
                   <div ref={scrollContainerRef} className="flex gap-4 overflow-x-auto pb-4 px-12 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
                     {freeSongs.map((song) => (
@@ -330,7 +330,7 @@ export default function JubeeDancePage() {
                     ))}
                   </div>
                   <button onClick={() => scrollBy(1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center shadow-md hover:bg-background" aria-label="Scroll right">
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </section>

@@ -92,7 +92,7 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
               opacity: selectedGender === 'male' ? 1 : 0.7
             }}
           >
-            <div className="text-8xl mb-4">👦</div>
+            <div className="text-8xl mb-4" aria-hidden="true">👦</div>
             <h3 className="text-3xl font-bold text-white">
               Boy
             </h3>
@@ -119,7 +119,7 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
               opacity: selectedGender === 'female' ? 1 : 0.7
             }}
           >
-            <div className="text-8xl mb-4">👧</div>
+            <div className="text-8xl mb-4" aria-hidden="true">👧</div>
             <h3 className="text-3xl font-bold text-white">
               Girl
             </h3>
