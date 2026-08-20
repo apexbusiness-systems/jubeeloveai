@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2024-05-30 - Replace title attributes with Tooltip components for icon-only buttons
+**Learning:** While `title` provides basic tooltips, it is a native browser feature and often looks unstyled and clunky. Using a design system's `Tooltip` component provides a much more polished and consistent user experience.
+**Action:** When adding tooltips to icon-only buttons, prioritize using the design system's `Tooltip` component over native `title` attributes.
