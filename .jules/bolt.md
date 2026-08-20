@@ -9,3 +9,7 @@
 ## 2024-07-05 - Stable `useCallback` via `useRef` for Large Mapped Components
 **Learning:** When passing callbacks to a large number of components mapped from an array (like 241 `MusicCard` components in `src/pages/Music.tsx`), if the callback has dependencies on state (like `currentSong` or `isPlaying`), it will get a new reference on every state change. This invalidates the `React.memo` for ALL children, causing O(N) re-renders even when only 1 or 2 items actually changed. Also, always update `stateRef.current` inside a `useEffect` or `useLayoutEffect` to avoid bugs in React Concurrent mode.
 **Action:** Use a `useRef` (e.g., `stateRef`) to hold the latest state values, and update it in a `useEffect`. Read from `stateRef.current` inside the `useCallback` with an empty dependency array `[]`. This keeps the callback reference stable, allowing `React.memo` on the child components to effectively prevent unnecessary re-renders.
+
+## 2026-08-20 - [Early Exit over FlatMap + Set]
+**Learning:** When trying to extract a limited number of unique items (e.g. top 10 keywords) from an array of arrays, using `Array.flatMap` followed by `new Set()` forces the entire dataset to be processed and allocated in memory first. This scales poorly (O(N) memory and time).
+**Action:** Use an early-exit loop (`for...of`) combined with a `Set` and a `break` condition when the desired size is reached. This turns the operation into O(1) in the best case when the limit is reached quickly, saving significant compute and memory allocation.

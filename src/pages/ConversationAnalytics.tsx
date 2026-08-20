@@ -125,9 +125,18 @@ export default function ConversationAnalytics() {
 
   // Get all keywords
   const allKeywords = useMemo(() => {
-    return Array.from(
-      new Set(analytics.flatMap(day => day.most_common_keywords || []))
-    ).slice(0, 10)
+    // ⚡ Bolt Optimization: Use a single loop with Set for faster unique keyword extraction instead of flatMap + Set
+    const uniqueKeywords = new Set<string>()
+    for (const day of analytics) {
+      if (day.most_common_keywords) {
+        for (const keyword of day.most_common_keywords) {
+          uniqueKeywords.add(keyword)
+          if (uniqueKeywords.size >= 10) break
+        }
+      }
+      if (uniqueKeywords.size >= 10) break
+    }
+    return Array.from(uniqueKeywords)
   }, [analytics])
 
   if (loading) {
