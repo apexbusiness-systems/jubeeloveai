@@ -9,3 +9,7 @@
 ## 2024-07-05 - Stable `useCallback` via `useRef` for Large Mapped Components
 **Learning:** When passing callbacks to a large number of components mapped from an array (like 241 `MusicCard` components in `src/pages/Music.tsx`), if the callback has dependencies on state (like `currentSong` or `isPlaying`), it will get a new reference on every state change. This invalidates the `React.memo` for ALL children, causing O(N) re-renders even when only 1 or 2 items actually changed. Also, always update `stateRef.current` inside a `useEffect` or `useLayoutEffect` to avoid bugs in React Concurrent mode.
 **Action:** Use a `useRef` (e.g., `stateRef`) to hold the latest state values, and update it in a `useEffect`. Read from `stateRef.current` inside the `useCallback` with an empty dependency array `[]`. This keeps the callback reference stable, allowing `React.memo` on the child components to effectively prevent unnecessary re-renders.
+
+## 2025-02-12 - [Three.js Loop Object Allocation Optimization]
+**Learning:** Instantiating objects like `new THREE.Color()` inside a `requestAnimationFrame` loop (e.g., in `src/modules/dance/DanceCharacter.tsx`) creates unnecessary memory allocations every frame (60+ times per second). This leads to increased Garbage Collection (GC) pressure, which can cause frame drops and stuttering.
+**Action:** Always instantiate objects like `THREE.Color`, `THREE.Vector3`, etc., outside the render loop and reuse them inside the loop using methods like `.setHex()` or `.set()` to update their values without creating new instances.
