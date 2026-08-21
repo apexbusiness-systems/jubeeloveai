@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function GameSkeleton() {
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" role="status" aria-label="Loading games" aria-live="polite">
       <div className="flex items-center justify-between">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-24" />
@@ -29,7 +29,7 @@ export function GameSkeleton() {
 
 export function StoryTimeSkeleton() {
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" role="status" aria-label="Loading story" aria-live="polite">
       <Skeleton className="h-10 w-64 mx-auto" />
       
       <div className="max-w-4xl mx-auto space-y-4">
@@ -52,7 +52,7 @@ export function StoryTimeSkeleton() {
 
 export function ProgressSkeleton() {
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" role="status" aria-label="Loading progress" aria-live="polite">
       <Skeleton className="h-12 w-56" />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -73,7 +73,7 @@ export function ProgressSkeleton() {
 
 export function GallerySkeleton() {
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" role="status" aria-label="Loading gallery" aria-live="polite">
       <div className="flex items-center justify-between">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-10 w-32" />
@@ -90,7 +90,7 @@ export function GallerySkeleton() {
 
 export function SettingsSkeleton() {
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" role="status" aria-label="Loading settings" aria-live="polite">
       <Skeleton className="h-12 w-48" />
       
       <div className="max-w-2xl space-y-6">
