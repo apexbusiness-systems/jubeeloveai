@@ -472,6 +472,8 @@ function DanceCharacterComponent({
     // ── Animation Loop ──
     let blinkTimer = 0;
     let isBlinking = false;
+    // ⚡ Bolt Optimization: Cache THREE.Color outside the loop to prevent allocating new objects every frame (60fps), reducing GC pressure and frame drops.
+    const tempColor = new THREE.Color();
 
     function animate(time: number) {
       if (!renderStateRef.current.isVisible || !renderStateRef.current.isInView || renderStateRef.current.isPaused) {
@@ -548,7 +550,8 @@ function DanceCharacterComponent({
       // ── Spotlight color from combo tier ──
       if (spotlightRef.current) {
         const targetColor = TIER_COLORS[comboTierRef.current] ?? TIER_COLORS.normal;
-        spotlightRef.current.color.lerp(new THREE.Color(targetColor), delta * 3);
+        tempColor.setHex(targetColor);
+        spotlightRef.current.color.lerp(tempColor, delta * 3);
         const intensity = comboTierRef.current === 'legendary' ? 2.5 :
           comboTierRef.current === 'fire' ? 1.8 :
           comboTierRef.current === 'warm' ? 1.3 : 1;
@@ -564,7 +567,8 @@ function DanceCharacterComponent({
         if (glowMat.opacity > 0.01) {
           glowRingRef.current.rotation.z += delta * 0.5;
           const gColor = comboTierRef.current === 'legendary' ? 0xff4ecb : 0xff8a50;
-          glowMat.color.lerp(new THREE.Color(gColor), delta * 3);
+          tempColor.setHex(gColor);
+          glowMat.color.lerp(tempColor, delta * 3);
         }
       }
 
