@@ -197,6 +197,7 @@ export default function AlphabetGame() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           <button
             onClick={startLearnMode}
+            aria-label="Start Learn Mode"
             className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
@@ -210,6 +211,7 @@ export default function AlphabetGame() {
 
           <button
             onClick={startQuizMode}
+            aria-label="Start Quiz Mode"
             className="mode-card p-12 rounded-3xl transform hover:scale-105 transition-all duration-300 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-cool)',
@@ -252,6 +254,7 @@ export default function AlphabetGame() {
             <button
               onClick={handlePrevious}
               disabled={currentIndex === 0}
+              aria-label="Previous Letter"
               className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
                 background: 'var(--gradient-game)',
@@ -262,6 +265,7 @@ export default function AlphabetGame() {
             </button>
             <button
               onClick={handleNext}
+              aria-label={currentIndex === alphabet.length - 1 ? 'Finish' : 'Next Letter'}
               className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               style={{
                 background: 'var(--gradient-game)',
@@ -274,6 +278,7 @@ export default function AlphabetGame() {
 
           <button
             onClick={() => setMode(null)}
+            aria-label="Back to Menu"
             className="mx-auto block px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
             style={{
               background: 'var(--gradient-warm)',
@@ -327,6 +332,7 @@ export default function AlphabetGame() {
               <button
                 key={idx}
                 onClick={() => handleAnswer(option)}
+                aria-label={`Select option ${option}`}
                 className="option-button p-8 rounded-3xl text-4xl font-bold transform hover:scale-105 transition-all duration-200 border-4 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
                 style={{
                   background: 'var(--gradient-game)',
@@ -343,6 +349,7 @@ export default function AlphabetGame() {
       <div className="controls text-center mt-12">
         <button
           onClick={() => setMode(null)}
+          aria-label="Back to Menu"
           className="px-8 py-4 text-2xl font-bold rounded-full transform hover:scale-105 transition-all text-primary-foreground border-3 border-game-accent focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
           style={{
             background: 'var(--gradient-warm)',
