@@ -9,3 +9,9 @@
 ## 2024-07-05 - Stable `useCallback` via `useRef` for Large Mapped Components
 **Learning:** When passing callbacks to a large number of components mapped from an array (like 241 `MusicCard` components in `src/pages/Music.tsx`), if the callback has dependencies on state (like `currentSong` or `isPlaying`), it will get a new reference on every state change. This invalidates the `React.memo` for ALL children, causing O(N) re-renders even when only 1 or 2 items actually changed. Also, always update `stateRef.current` inside a `useEffect` or `useLayoutEffect` to avoid bugs in React Concurrent mode.
 **Action:** Use a `useRef` (e.g., `stateRef`) to hold the latest state values, and update it in a `useEffect`. Read from `stateRef.current` inside the `useCallback` with an empty dependency array `[]`. This keeps the callback reference stable, allowing `React.memo` on the child components to effectively prevent unnecessary re-renders.
+## 2025-02-26 - React Render Formatting O(N) Loop Prevention
+**Learning:** Found an edge case in Progress.tsx where  was being executed in a loop during every component re-render. Since string replacements in large loops are an O(N) operation per render, it introduces unnecessary overhead.
+**Action:** Always wrap arrays undergoing  or string manipulations that are rendered in lists within a  block to memoize the transformed values.
+## 2025-02-26 - React Render Formatting O(N) Loop Prevention
+**Learning:** Found an edge case in Progress.tsx where `activity.replace('-', ' ')` was being executed in a loop during every component re-render. Since string replacements in large loops are an O(N) operation per render, it introduces unnecessary overhead.
+**Action:** Always wrap arrays undergoing `.replace()` or string manipulations that are rendered in lists within a `useMemo` block to memoize the transformed values.
