@@ -217,11 +217,11 @@ export default function MusicPage() {
                 disabled={loadingId === currentSong.id}
               >
                 {loadingId === currentSong.id ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                 ) : isPlaying ? (
-                  <Pause className="w-5 h-5" />
+                  <Pause className="w-5 h-5" aria-hidden="true" />
                 ) : (
-                  <Play className="w-5 h-5" />
+                  <Play className="w-5 h-5" aria-hidden="true" />
                 )}
               </Button>
               <Button
@@ -232,7 +232,7 @@ export default function MusicPage() {
                 title="Close player"
                 className="flex-shrink-0 min-h-[44px] min-w-[44px]"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </Button>
             </CardContent>
           </Card>
