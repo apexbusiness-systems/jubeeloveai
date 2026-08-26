@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Trophy, Star, Award, Target } from 'lucide-react';
 import { AchievementList } from '@/components/achievements/AchievementList';
 import { StreakDisplay } from '@/components/achievements/StreakDisplay';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
 export default function ProgressPage() {
@@ -33,6 +33,12 @@ export default function ProgressPage() {
 
   const totalActivities = 10; // Writing (10 letters) + Shapes (4) + future modules
   const progressPercentage = (completedActivities.length / totalActivities) * 100;
+
+  // ⚡ Bolt Optimization: Memoize formatted strings to prevent O(N) string manipulation on every render
+  const formattedActivities = useMemo(() =>
+    completedActivities.map(activity => activity.replace('-', ' ')),
+    [completedActivities]
+  );
 
   return (
     <>
@@ -138,10 +144,10 @@ export default function ProgressPage() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {completedActivities.map((activity, index) => (
+                {formattedActivities.map((formattedActivity, index) => (
                   <li key={index} className="flex items-center gap-2 text-primary">
                     <Award className="w-5 h-5" />
-                    <span className="font-medium capitalize">{activity.replace('-', ' ')}</span>
+                    <span className="font-medium capitalize">{formattedActivity}</span>
                   </li>
                 ))}
               </ul>
