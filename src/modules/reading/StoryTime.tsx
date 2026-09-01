@@ -470,6 +470,7 @@ export default function StoryTime() {
         onClick={handleNextPage}
         role="button"
         tabIndex={0}
+        aria-label={currentPage === selectedStory.pages.length - 1 ? 'Finish story' : 'Next page'}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             handleNextPage(e as unknown as React.MouseEvent)
