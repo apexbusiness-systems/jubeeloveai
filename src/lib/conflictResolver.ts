@@ -154,6 +154,11 @@ class ConflictResolver {
     const resolvedDataArray: Record<string, unknown>[] = []
     const errors: Array<{ id: string; error: string }> = []
 
+    // ⚡ Bolt Optimization: Replace O(N) Array.find() in the loop with O(1) Map lookup
+    // Expected impact: Speeds up batch conflict resolution from O(N^2) to O(N), which is
+    // significant when resolving large numbers of conflicts (e.g., in resolveAll).
+    const conflictMap = new Map(this.conflicts.map(c => [c.id, c]))
+
     // Process in chunks to avoid blocking
     const chunkSize = 10
     for (let i = 0; i < conflictIds.length; i += chunkSize) {
@@ -162,7 +167,7 @@ class ConflictResolver {
       // Process chunk
       for (const conflictId of chunk) {
         try {
-          const conflict = this.conflicts.find(c => c.id === conflictId)
+          const conflict = conflictMap.get(conflictId)
           if (!conflict) {
             errors.push({ id: conflictId, error: 'Conflict not found' })
             continue

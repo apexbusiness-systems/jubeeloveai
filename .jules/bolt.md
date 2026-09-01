@@ -9,3 +9,11 @@
 ## 2024-07-05 - Stable `useCallback` via `useRef` for Large Mapped Components
 **Learning:** When passing callbacks to a large number of components mapped from an array (like 241 `MusicCard` components in `src/pages/Music.tsx`), if the callback has dependencies on state (like `currentSong` or `isPlaying`), it will get a new reference on every state change. This invalidates the `React.memo` for ALL children, causing O(N) re-renders even when only 1 or 2 items actually changed. Also, always update `stateRef.current` inside a `useEffect` or `useLayoutEffect` to avoid bugs in React Concurrent mode.
 **Action:** Use a `useRef` (e.g., `stateRef`) to hold the latest state values, and update it in a `useEffect`. Read from `stateRef.current` inside the `useCallback` with an empty dependency array `[]`. This keeps the callback reference stable, allowing `React.memo` on the child components to effectively prevent unnecessary re-renders.
+
+## 2025-02-12 - [Zustand primitve de-optimization with useShallow]
+**Learning:** Wrapping individual primitive Zustand selectors in `useShallow` creates an object allocation on every store update and is actually a de-optimization compared to the extremely fast strict equality checks used by primitive selectors.
+**Action:** Do not use `useShallow` for a set of primitive selectors unless they return non-primitive objects. Stick with individual primitive selectors.
+
+## 2025-02-12 - [O(N^2) Array.find optimization]
+**Learning:** Calling `Array.find` inside a loop operating on an array of length N creates an O(N^2) operation.
+**Action:** Always pre-compute a Map or Set before a loop if looking up items in another array by ID or value.
