@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { SEO } from '@/components/SEO';
 import { useGameStore } from '@/store/useGameStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -16,6 +17,10 @@ export default function StickersPage() {
     addSticker: state.addSticker,
     score: state.score,
   })));
+
+  // ⚡ Bolt Optimization: Memoize the Set of owned stickers for O(1) lookup during render
+  const ownedStickersSet = useMemo(() => new Set(stickers), [stickers]);
+
   const stickerCost = 50;
 
   const handleBuySticker = (sticker: string) => {
@@ -102,7 +107,7 @@ export default function StickersPage() {
             <CardContent>
               <div className="grid grid-cols-4 gap-4">
                 {availableStickers.map((sticker, index) => {
-                  const owned = stickers.includes(sticker);
+                  const owned = ownedStickersSet.has(sticker);
                   return (
                     <Button
                       key={index}
