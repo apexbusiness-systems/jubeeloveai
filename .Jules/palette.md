@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2026-09-03 - Added aria-hidden to decorative icons
+**Learning:** Screen readers might try to announce inline SVG icons within buttons even when the button itself has an aria-label or visible text.
+**Action:** Adding `aria-hidden="true"` to SVG icons inside buttons that already have an aria-label or adjacent visible text prevents redundant/confusing screen reader announcements.
