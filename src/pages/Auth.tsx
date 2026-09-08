@@ -288,6 +288,7 @@ export default function Auth() {
                     <Input
                       id="signin-email"
                       type="email"
+                      autoComplete="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => {
@@ -320,6 +321,7 @@ export default function Auth() {
                     <Input
                       id="signin-password"
                       type="password"
+                      autoComplete="current-password"
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => {
@@ -417,6 +419,7 @@ export default function Auth() {
                     <Input
                       id="signup-name"
                       type="text"
+                      autoComplete="name"
                       placeholder="Your name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
@@ -433,6 +436,7 @@ export default function Auth() {
                     <Input
                       id="signup-email"
                       type="email"
+                      autoComplete="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -450,6 +454,7 @@ export default function Auth() {
                     <Input
                       id="signup-password"
                       type="password"
+                      autoComplete="new-password"
                       placeholder="At least 6 characters"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
