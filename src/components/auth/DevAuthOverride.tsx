@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useShallow } from 'zustand/react/shallow'
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
 import { ShieldCheck } from 'lucide-react';
@@ -9,8 +10,7 @@ const DEV_EMAILS = ['unseen_g4@yahoo.com'];
 
 export function DevAuthOverride() {
   const { user } = useAuth();
-  const setPremiumStatus = useParentalStore(state => state.setPremiumStatus);
-const isPremium = useParentalStore(state => state.isPremium);
+  const { setPremiumStatus, isPremium } = useParentalStore(useShallow(state => ({ setPremiumStatus: state.setPremiumStatus, isPremium: state.isPremium })));
 
   useEffect(() => {
     if (user?.email && DEV_EMAILS.includes(user.email)) {

@@ -20,6 +20,7 @@ import { ArrowButtons, StepZone } from './ArrowDisplay';
 import { ComboCounter } from './ComboCounter';
 import { getFreeSongs, getPremiumSongs } from './songLibrary';
 import type { DanceSong, Direction } from './types';
+import { useShallow } from 'zustand/react/shallow'
 import { useParentalStore } from '@/store/useParentalStore';
 import { SEO } from '@/components/SEO';
 
@@ -42,7 +43,7 @@ const difficultyColors: Record<string, string> = {
 
 export default function JubeeDancePage() {
   const navigate = useNavigate();
-  const isPremium = useParentalStore(state => state.isPremium);
+  const { isPremium } = useParentalStore(useShallow(state => ({ isPremium: state.isPremium })));
   const [view, setView] = useState<'menu' | 'playing' | 'results'>('menu');
   const [lastResult, setLastResult] = useState<'perfect' | 'good' | 'miss' | null>(null);
   const [partyMode, setPartyMode] = useState(false);

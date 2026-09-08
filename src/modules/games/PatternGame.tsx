@@ -28,7 +28,7 @@ export default function PatternGame() {
     speak: state.speak,
     triggerAnimation: state.triggerAnimation
   })));
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
 
   const speeds = {
     easy: 1000,

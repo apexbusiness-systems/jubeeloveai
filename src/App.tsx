@@ -60,7 +60,7 @@ function useSyncStatus() {
 
 function AchievementTracker() {
   const { trackActivity, checkAchievements } = useAchievementTracker();
-  const setActivityCompleteCallback = useGameStore(state => state.setActivityCompleteCallback);
+  const { setActivityCompleteCallback } = useGameStore(useShallow(state => ({ setActivityCompleteCallback: state.setActivityCompleteCallback })));
 
   // Initialize smart audio preloader inside Router context
   useSmartAudioPreloader();
@@ -119,7 +119,7 @@ function AppShell() {
     }
   }, [hasCompletedOnboarding, startOnboarding, isAuthRoute, isLandingRoute]);
 
-  const containerPosition = useJubeeStore(state => state.containerPosition);
+  const { containerPosition } = useJubeeStore(useShallow(state => ({ containerPosition: state.containerPosition })));
   const { hasChildren, activeChildId } = useParentalStore(useShallow(state => ({
     hasChildren: state.children.length > 0,
     activeChildId: state.activeChildId

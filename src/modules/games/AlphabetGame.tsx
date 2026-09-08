@@ -22,7 +22,7 @@ export default function AlphabetGame() {
     speak: state.speak,
     triggerAnimation: state.triggerAnimation
   })));
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
 
   const generateChallenge = (): LetterChallenge => {
     const letter = alphabet[Math.floor(Math.random() * alphabet.length)]

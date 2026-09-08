@@ -27,7 +27,7 @@ export default function HomePage() {
     totalTimeSpent: state.totalTimeSpent,
     lastActivityTime: state.lastActivityTime,
   })));
-  const currentTheme = useGameStore(state => state.currentTheme);
+  const { currentTheme } = useGameStore(useShallow(state => ({ currentTheme: state.currentTheme })));
 
   const activityCatalog = useMemo<Record<string, ActivityMeta>>(
     () => ({
@@ -303,7 +303,7 @@ function InfoPill({ icon, label, value }: InfoPillProps) {
 function QuickActionCard({ title, description, icon, accent, path, badge, emphasis }: QuickActionProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
-  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
+  const { triggerAnimation } = useJubeeStore(useShallow(state => ({ triggerAnimation: state.triggerAnimation })));
 
   const handleClick = () => {
     triggerAnimation('excited');
@@ -341,7 +341,7 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
 function GameCard({ title, icon, path, description }: GameCardProps) {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
-  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
+  const { triggerAnimation } = useJubeeStore(useShallow(state => ({ triggerAnimation: state.triggerAnimation })));
 
   const handleClick = () => {
     triggerAnimation('excited');

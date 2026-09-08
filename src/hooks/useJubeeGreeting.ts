@@ -90,7 +90,7 @@ function checkFirstVisitToday(): { isFirst: boolean; totalVisits: number } {
 export function useJubeeGreeting(options: UseJubeeGreetingOptions = {}) {
   // Use provided pathname or default to home
   const pathname = options.pathname ?? '/'
-  const currentMood = useJubeeStore(state => state.currentMood);
+  const { currentMood } = useJubeeStore(useShallow(state => ({ currentMood: state.currentMood })));
 
   // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
   const { streakData, updateStreak } = useAchievementStore(useShallow(state => ({

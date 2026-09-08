@@ -25,7 +25,7 @@ export default function ShapeSorter() {
     speak: state.speak,
     triggerAnimation: state.triggerAnimation
   })));
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
 
   const checkShape = (shape: Shape) => {
     if (shape === targetShape) {

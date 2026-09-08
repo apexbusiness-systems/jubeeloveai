@@ -26,7 +26,7 @@ export default function PuzzleGame() {
     speak: state.speak,
     triggerAnimation: state.triggerAnimation
   })));
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
 
   const initializeGame = (level: 'easy' | 'medium' | 'hard') => {
     const size = level === 'easy' ? 4 : level === 'medium' ? 9 : 16

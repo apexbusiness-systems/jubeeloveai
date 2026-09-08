@@ -152,7 +152,7 @@ export default function StoryTime() {
       triggerAnimation: state.triggerAnimation
     }))
   );
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
   const { user } = useAuth()
   const { preloadStoryContext } = useSmartAudioPreloader()
 

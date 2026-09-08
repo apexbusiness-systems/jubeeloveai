@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { getSavedDrawings, deleteDrawing, clearAllDrawings, type SavedDrawing } from '@/types/drawing';
 import { Trash2, Download, ArrowLeft, ImageIcon } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useOptimizedList } from '@/hooks/useOptimizedList';
@@ -99,7 +100,7 @@ export default function Gallery() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const speak = useJubeeStore(state => state.speak);
+  const { speak } = useJubeeStore(useShallow(state => ({ speak: state.speak })));
 
   useEffect(() => {
     loadDrawings();

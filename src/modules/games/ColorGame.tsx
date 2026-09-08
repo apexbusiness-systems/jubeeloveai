@@ -33,9 +33,11 @@ export default function ColorGame() {
   const [challenge, setChallenge] = useState<ColorChallenge | null>(null)
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
-  const speak = useJubeeStore(state => state.speak);
-const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
-  const addScore = useGameStore(state => state.addScore);
+  const { speak, triggerAnimation } = useJubeeStore(useShallow(state => ({
+    speak: state.speak,
+    triggerAnimation: state.triggerAnimation
+  })));
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
 
   const generateChallenge = (difficulty: 'easy' | 'medium' | 'hard'): ColorChallenge => {
     const availableColors = difficulty === 'easy' ? colors.slice(0, 5) : 

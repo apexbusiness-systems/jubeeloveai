@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore'
 import { Volume1 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -9,7 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
  * Persists for a few seconds after speech ends so the user can read it.
  */
 export function VoiceFallbackIndicator() {
-  const usingFallbackVoice = useJubeeStore((s) => s.usingFallbackVoice)
+  const { usingFallbackVoice } = useJubeeStore(useShallow(s => ({ usingFallbackVoice: s.usingFallbackVoice })));
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {

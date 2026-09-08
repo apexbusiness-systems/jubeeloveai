@@ -4,6 +4,7 @@ import { musicLibrary, Song } from '@/data/musicLibrary';
 import { Play, Pause, Lock, Music as MusicIcon, Loader2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useShallow } from 'zustand/react/shallow'
 import { useParentalStore } from '@/store/useParentalStore';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -70,7 +71,7 @@ export default function MusicPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isPremium = useParentalStore((state) => state.isPremium);
+  const { isPremium } = useParentalStore(useShallow(state => ({ isPremium: state.isPremium })));
 
   // Use refs to hold latest state for useCallback without triggering re-renders
   const stateRef = useRef({ currentSong, isPlaying, isPremium });

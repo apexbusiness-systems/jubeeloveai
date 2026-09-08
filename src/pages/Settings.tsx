@@ -31,7 +31,7 @@ export default function SettingsPage() {
     speak: state.speak
   })));
   // ⚡ Bolt: Select only the boolean we need to prevent unnecessary re-renders when children array mutates
-  const hasChildren = useParentalStore(state => state.children.length > 0);
+  const { hasChildren } = useParentalStore(useShallow(state => ({ hasChildren: state.children.length > 0 })));
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [testingVoice, setTestingVoice] = useState<JubeeVoice | null>(null);
   const startOnboarding = useOnboardingStore(state => state.startOnboarding);

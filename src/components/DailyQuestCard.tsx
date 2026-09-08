@@ -131,7 +131,7 @@ export function DailyQuestCard() {
     pagesVisited: s.pagesVisited
   })));
 
-  const triggerAnimation = useJubeeStore(s => s.triggerAnimation);
+  const { triggerAnimation } = useJubeeStore(useShallow(s => ({ triggerAnimation: s.triggerAnimation })));
 
   const { ensureQuest, markStepComplete, markCelebrated, current } = useDailyQuestStore(useShallow(s => ({
     ensureQuest: s.ensureQuest,
