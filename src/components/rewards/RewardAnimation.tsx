@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useParentalStore } from '@/store/useParentalStore';
 
 
@@ -21,7 +22,7 @@ const celebrationEmojis = ['🎉', '⭐', '✨', '🌟', '💫', '🎊', '🐝',
 
 export function RewardAnimation({ show, message, emoji = '🎉', onComplete }: Props) {
   const [confetti, setConfetti] = useState<Confetti[]>([])
-  const isCalmMode = useParentalStore(state => state.settings?.calmMode ?? false);
+  const { isCalmMode } = useParentalStore(useShallow(state => ({ isCalmMode: state.settings?.calmMode ?? false })));
 
   useEffect(() => {
     if (show) {

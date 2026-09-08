@@ -58,7 +58,7 @@ export default function WritingCanvas() {
     speak: state.speak,
     triggerAnimation: state.triggerAnimation
   })));
-  const addScore = useGameStore(state => state.addScore);
+  const { addScore } = useGameStore(useShallow(state => ({ addScore: state.addScore })));
   const { playDrawSound, playClearSound, playSuccessSound } = useAudioEffects();
   const { processDrawing, isProcessing } = useDrawingWorker();
 

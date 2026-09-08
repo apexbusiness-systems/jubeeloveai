@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { SEO } from '@/components/SEO';
 import { useReducedMotion } from 'framer-motion';
@@ -6,7 +7,7 @@ import { useReducedMotion } from 'framer-motion';
 export default function GamesMenu() {
   const navigate = useNavigate();
   // ⚡ Bolt Optimization: Using selector to prevent re-renders when other JubeeStore state changes
-  const triggerAnimation = useJubeeStore((state) => state.triggerAnimation);
+  const { triggerAnimation } = useJubeeStore(useShallow(state => ({ triggerAnimation: state.triggerAnimation })));
   const prefersReducedMotion = useReducedMotion();
 
   const handleGameClick = (path: string, _gameName: string) => {

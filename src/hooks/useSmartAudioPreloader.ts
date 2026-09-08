@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { audioManager } from '@/lib/audioManager'
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore'
 
 /**
@@ -16,7 +17,7 @@ interface PreloadContext {
 
 export function useSmartAudioPreloader() {
   const location = useLocation()
-  const voice = useJubeeStore(state => state.voice);
+  const { voice } = useJubeeStore(useShallow(state => ({ voice: state.voice })));
   const contextHistory = useRef<PreloadContext[]>([])
   const preloadedRoutes = useRef<Set<string>>(new Set())
 

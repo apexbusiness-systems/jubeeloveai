@@ -42,9 +42,10 @@ const PANEL_INTERVAL_MS = 1100;
 export default function FeelingsGame() {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
-  const speak = useJubeeStore(s => s.speak);
-  const addScore = useGameStore(s => s.addScore);
-  const calmMode = useParentalStore(s => s.settings?.calmMode ?? false);
+  // ⚡ Bolt Optimization: Wrap individual selectors to avoid multiple re-renders
+  const { speak } = useJubeeStore(useShallow(s => ({ speak: s.speak })));
+  const { addScore } = useGameStore(useShallow(s => ({ addScore: s.addScore })));
+  const { calmMode } = useParentalStore(useShallow(s => ({ calmMode: s.settings?.calmMode ?? false })));
 
   // ⚡ Bolt: Grouped multiple separate Zustand selectors into a single object with useShallow
   // to reduce the number of store subscriptions and prevent unnecessary re-renders.
@@ -400,7 +401,7 @@ function FeelingsJournal({ onBack }: { onBack: () => void }) {
   const journal = useFeelingsStore(s => s.journal);
   const totalCorrect = useFeelingsStore(s => s.totalCorrect);
   const totalPlayed = useFeelingsStore(s => s.totalPlayed);
-  const speak = useJubeeStore(s => s.speak);
+  const { speak } = useJubeeStore(useShallow(s => ({ speak: s.speak })));
 
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8 pt-6 mx-auto max-w-3xl">
@@ -456,7 +457,7 @@ function FeelingsJournal({ onBack }: { onBack: () => void }) {
 }
 
 function SelfReport({ onPick, onBack }: { onPick: (e: EmotionKey) => void; onBack: () => void }) {
-  const speak = useJubeeStore(s => s.speak);
+  const { speak } = useJubeeStore(useShallow(s => ({ speak: s.speak })));
   useEffect(() => { speak("How do you feel right now?"); }, [speak]);
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8 pt-6 mx-auto max-w-3xl">

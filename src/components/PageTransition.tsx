@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow'
 import { useJubeeStore } from '@/store/useJubeeStore';
 import { useJubeePageTransition } from '@/hooks/useJubeePageTransition';
 
@@ -10,7 +11,7 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  const triggerAnimation = useJubeeStore(state => state.triggerAnimation);
+  const { triggerAnimation } = useJubeeStore(useShallow(state => ({ triggerAnimation: state.triggerAnimation })));
   const prefersReducedMotion = useReducedMotion();
   const [displayLocation, setDisplayLocation] = useState(location);
 

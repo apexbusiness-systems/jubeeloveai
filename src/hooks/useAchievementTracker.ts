@@ -30,7 +30,7 @@ export function useAchievementTracker() {
     streakData: state.streakData
   })));
 
-  const speak = useJubeeStore(state => state.speak);
+  const { speak } = useJubeeStore(useShallow(state => ({ speak: state.speak })));
 
   // Initialize Web Worker for achievement calculations
   const { processAchievements, isWorkerSupported } = useAchievementWorker({

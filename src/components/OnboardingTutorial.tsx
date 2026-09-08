@@ -66,7 +66,7 @@ export function OnboardingTutorial() {
     completeOnboarding: state.completeOnboarding,
     skipOnboarding: state.skipOnboarding
   })));
-  const interactionCount = useJubeeStore(state => state.interactionCount);
+  const { interactionCount } = useJubeeStore(useShallow(state => ({ interactionCount: state.interactionCount })));
   const { t } = useTranslatedContent()
   const highlightRef = useRef<HTMLDivElement>(null)
   const [showCelebration, setShowCelebration] = useState(false)
