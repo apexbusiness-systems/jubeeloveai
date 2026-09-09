@@ -2,14 +2,77 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMasteryStore } from '@/store/useMasteryStore';
 import { Skills } from '@/lib/mastery/taxonomy';
-import { useParentalStore } from '@/store/useParentalStore';
+import { useParentalStore, ChildProfile } from '@/store/useParentalStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
 import { Users, Settings, BarChart3, Shield, Plus, LogOut, TrendingUp } from 'lucide-react';
 
+
+import { memo } from 'react';
+
+// ⚡ Bolt: Extracted ChildMasteryCard to its own memoized component.
+// This prevents calling useMasteryStore.getState() inside the render loop,
+// allowing proper reactivity (via hook subscription) and avoiding unnecessary re-renders.
+const ChildMasteryCard = memo(function ChildMasteryCard({ child }: { child: ChildProfile }) {
+  const { strongest, needsReview, practicedToday } = useMasteryStore(useShallow(state => ({
+    strongest: state.getStrongestSkills(child.id, 2),
+    needsReview: state.getNeedsReviewSkills(child.id, 2),
+    practicedToday: state.getPracticedToday(child.id)
+  })));
+
+  return (
+    <div className="border rounded-lg p-3 space-y-3 bg-card">
+      <div className="flex items-center gap-2 border-b pb-2">
+        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-sm">
+          {child.avatar}
+        </div>
+        <h3 className="font-medium text-sm">{child.name}'s Week</h3>
+      </div>
+
+      <div className="space-y-2 text-xs">
+        <div>
+          <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
+          {strongest.length > 0 ? (
+            <ul className="text-muted-foreground list-disc list-inside">
+              {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">Keep playing to see strengths!</p>
+          )}
+        </div>
+
+        <div>
+          <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
+          {needsReview.length > 0 ? (
+            <ul className="text-muted-foreground list-disc list-inside">
+              {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">All caught up!</p>
+          )}
+        </div>
+
+        <div>
+          <span className="font-medium text-blue-600 block mb-0.5">💡 Offline Suggestion</span>
+          <p className="text-muted-foreground">
+            {needsReview.length > 0 && needsReview[0].skillId === 'counting'
+              ? "Try counting the stairs as you walk up together."
+              : "Ask them to spot the color red in the room for 3 minutes."}
+          </p>
+        </div>
+
+        <div className="pt-2 border-t font-medium text-muted-foreground">
+          Practiced Today: {practicedToday.length} skill{practicedToday.length !== 1 && 's'}
+        </div>
+      </div>
+    </div>
+  );
+});
+
 export default function ParentHub() {
+
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const children = useParentalStore(useShallow(state => state.children));
@@ -122,60 +185,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                   {children.length === 0 ? (
                     <p className="text-muted-foreground text-sm">Add a child to see their progress.</p>
                   ) : (
-                    children.map(child => {
-                      const store = useMasteryStore.getState();
-                      const strongest = store.getStrongestSkills(child.id, 2);
-                      const needsReview = store.getNeedsReviewSkills(child.id, 2);
-                      const practicedToday = store.getPracticedToday(child.id);
-                      
-                      return (
-                        <div key={child.id} className="border rounded-lg p-3 space-y-3 bg-card">
-                          <div className="flex items-center gap-2 border-b pb-2">
-                            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-sm">
-                              {child.avatar}
-                            </div>
-                            <h3 className="font-medium text-sm">{child.name}'s Week</h3>
-                          </div>
-                          
-                          <div className="space-y-2 text-xs">
-                            <div>
-                              <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
-                              {strongest.length > 0 ? (
-                                <ul className="text-muted-foreground list-disc list-inside">
-                                  {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
-                                </ul>
-                              ) : (
-                                <p className="text-muted-foreground">Keep playing to see strengths!</p>
-                              )}
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
-                              {needsReview.length > 0 ? (
-                                <ul className="text-muted-foreground list-disc list-inside">
-                                  {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
-                                </ul>
-                              ) : (
-                                <p className="text-muted-foreground">All caught up!</p>
-                              )}
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-blue-600 block mb-0.5">💡 Offline Suggestion</span>
-                              <p className="text-muted-foreground">
-                                {needsReview.length > 0 && needsReview[0].skillId === 'counting' 
-                                  ? "Try counting the stairs as you walk up together."
-                                  : "Ask them to spot the color red in the room for 3 minutes."}
-                              </p>
-                            </div>
-                            
-                            <div className="pt-2 border-t font-medium text-muted-foreground">
-                              Practiced Today: {practicedToday.length} skill{practicedToday.length !== 1 && 's'}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
+                    children.map(child => <ChildMasteryCard key={child.id} child={child} />)
                   )}
                 </CardContent>
               </Card>
