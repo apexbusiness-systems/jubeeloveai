@@ -84,7 +84,7 @@ export function FeedbackWidget() {
                 onClick={() => setIsOpen(false)}
                 aria-label="Close feedback widget"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -105,6 +105,7 @@ export function FeedbackWidget() {
             maxLength={500}
             className="resize-none"
             aria-describedby="feedback-counter"
+            autoFocus
           />
           <div id="feedback-counter" className="text-xs text-right text-muted-foreground" aria-live="polite">
             {feedback.length}/500 characters
