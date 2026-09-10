@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useMasteryStore } from '@/store/useMasteryStore';
@@ -14,6 +15,10 @@ export default function ParentHub() {
   const { signOut } = useAuth();
   const children = useParentalStore(useShallow(state => state.children));
 const settings = useParentalStore(useShallow(state => state.settings));
+
+  // ⚡ Bolt Optimization: Memoized O(1) map for skill names instead of repeated O(N) array lookups
+  // Resolves inefficient nested iteration within the render cycle.
+  const skillNameMap = useMemo(() => new Map(Object.values(Skills).map(s => [s.id, s.name])), []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -142,7 +147,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
                               {strongest.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {strongest.map(s => <li key={s.skillId}>{skillNameMap.get(s.skillId) || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">Keep playing to see strengths!</p>
@@ -153,7 +158,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
                               {needsReview.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {needsReview.map(s => <li key={s.skillId}>{skillNameMap.get(s.skillId) || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">All caught up!</p>
