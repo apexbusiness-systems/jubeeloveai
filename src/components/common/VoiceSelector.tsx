@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useJubeeStore, type JubeeVoice } from '@/store/useJubeeStore'
 import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/button'
@@ -99,17 +99,30 @@ export function VoiceSelector({ onClose }: Props) {
     }, 1500)
   }
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="voice-selector-title"
     >
       <div
         className="bg-card rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-game">
+        <h2 id="voice-selector-title" className="text-3xl md:text-4xl font-bold text-center mb-4 text-game">
           🎤 Choose Jubee's Voice! 🎤
         </h2>
 
