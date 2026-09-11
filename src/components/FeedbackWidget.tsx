@@ -105,6 +105,7 @@ export function FeedbackWidget() {
             maxLength={500}
             className="resize-none"
             aria-describedby="feedback-counter"
+            autoFocus
           />
           <div id="feedback-counter" className="text-xs text-right text-muted-foreground" aria-live="polite">
             {feedback.length}/500 characters
