@@ -22,3 +22,9 @@ export const Skills = {
 } as const;
 
 export type SkillId = typeof Skills[keyof typeof Skills]['id'];
+
+// O(1) lookup table for skill names
+export const SkillNames: Record<SkillId, string> = Object.values(Skills).reduce((acc, skill) => {
+  acc[skill.id] = skill.name;
+  return acc;
+}, {} as Record<SkillId, string>);
