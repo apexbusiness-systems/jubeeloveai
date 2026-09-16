@@ -1,8 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAchievementStore } from '@/store/useAchievementStore'
+import { useShallow } from 'zustand/react/shallow'
 
 export function StreakDisplay() {
-  const streakData = useAchievementStore(state => state.streakData);
+  // ⚡ Bolt Optimization: Added useShallow for the complex object streakData
+  // to prevent unnecessary re-renders when other achievement state updates.
+  const streakData = useAchievementStore(useShallow(state => state.streakData));
 
   const getStreakEmoji = (streak: number) => {
     if (streak === 0) return '⭐'
