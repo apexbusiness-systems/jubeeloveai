@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2026-09-17 - Added missing icon in Error Boundary Buttons
+**Learning:** Error boundaries often contain dynamically rendered recovery buttons, and when multiple buttons are present, visual consistency and cues are important.
+**Action:** Always ensure that when there are multiple buttons next to each other, they share similar visual weights, such as icons.

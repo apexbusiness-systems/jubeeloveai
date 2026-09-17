@@ -4,7 +4,7 @@
  */
 
 import { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -64,6 +64,7 @@ export class GameErrorBoundary extends Component<Props, State> {
                   Try Again
                 </Button>
                 <Button variant="outline" onClick={() => window.location.href = '/'} className="flex-1" aria-label="Return to home page after game error">
+                  <Home className="mr-2 h-4 w-4" />
                   Go Home
                 </Button>
               </div>
