@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { VoiceCommandButton } from './VoiceCommandButton';
 import { useParentalStore } from '@/store/useParentalStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface NavigationHeaderProps {
   onPersonalizeClick: () => void;
@@ -15,9 +16,12 @@ export const NavigationHeader = memo(function NavigationHeader({
   onVoiceClick,
   onChildSelectorClick
 }: NavigationHeaderProps) {
-  const hasChildren = useParentalStore(state => state.children.length > 0);
-  const activeChildName = useParentalStore(
-    state => state.activeChildId ? state.children.find(c => c.id === state.activeChildId)?.name : null
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  const { hasChildren, activeChildName } = useParentalStore(
+    useShallow(state => ({
+      hasChildren: state.children.length > 0,
+      activeChildName: state.activeChildId ? state.children.find(c => c.id === state.activeChildId)?.name : null
+    }))
   );
 
   return (
