@@ -96,7 +96,7 @@ export default function Install() {
         <Card className="border-2 border-primary/50">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <Apple className="w-8 h-8 text-primary" />
+              <Apple className="w-8 h-8 text-primary" aria-hidden="true" />
               <CardTitle className="text-2xl">Install on iPhone/iPad</CardTitle>
             </div>
           </CardHeader>
@@ -104,7 +104,7 @@ export default function Install() {
             <ol className="list-decimal list-inside space-y-3 text-base">
               <li className="flex items-start gap-2">
                 <span className="font-bold min-w-[1.5rem]">1.</span>
-                <span>Tap the <Share2 className="inline w-5 h-5 mx-1" /> <strong>Share</strong> button at the bottom of Safari</span>
+                <span>Tap the <Share2 className="inline w-5 h-5 mx-1" aria-hidden="true" /> <strong>Share</strong> button at the bottom of Safari</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold min-w-[1.5rem]">2.</span>
@@ -136,7 +136,7 @@ export default function Install() {
         <Card className="border-2 border-primary/50">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <Chrome className="w-8 h-8 text-primary" />
+              <Chrome className="w-8 h-8 text-primary" aria-hidden="true" />
               <CardTitle className="text-2xl">Install on Android</CardTitle>
             </div>
           </CardHeader>
@@ -144,7 +144,7 @@ export default function Install() {
             <ol className="list-decimal list-inside space-y-3 text-base">
               <li className="flex items-start gap-2">
                 <span className="font-bold min-w-[1.5rem]">1.</span>
-                <span>Tap the <MoreVertical className="inline w-5 h-5 mx-1" /> <strong>menu</strong> button (three dots) at the top right</span>
+                <span>Tap the <MoreVertical className="inline w-5 h-5 mx-1" aria-hidden="true" /> <strong>menu</strong> button (three dots) at the top right</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold min-w-[1.5rem]">2.</span>
@@ -169,7 +169,7 @@ export default function Install() {
         <Card className="border-2 border-primary/50">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <Monitor className="w-8 h-8 text-primary" />
+              <Monitor className="w-8 h-8 text-primary" aria-hidden="true" />
               <CardTitle className="text-2xl">Install on Desktop</CardTitle>
             </div>
           </CardHeader>
@@ -178,7 +178,7 @@ export default function Install() {
               <div>
                 <h3 className="font-bold text-lg mb-2">Chrome/Edge</h3>
                 <ol className="list-decimal list-inside space-y-2 text-base">
-                  <li>Look for the <Download className="inline w-4 h-4 mx-1" /> install icon in the address bar</li>
+                  <li>Look for the <Download className="inline w-4 h-4 mx-1" aria-hidden="true" /> install icon in the address bar</li>
                   <li>Click it and select "Install"</li>
                   <li>Or use the menu → "Install Jubee Love"</li>
                 </ol>
@@ -220,7 +220,7 @@ export default function Install() {
           <Card className="border-4 border-primary">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-4">
-                <Check className="w-20 h-20 text-primary" />
+                <Check className="w-20 h-20 text-primary" aria-hidden="true" />
               </div>
               <CardTitle className="text-4xl text-primary">Already Installed!</CardTitle>
               <CardDescription className="text-xl mt-4">
@@ -262,7 +262,7 @@ export default function Install() {
           <Card className="mb-8 border-4 border-primary bg-gradient-to-br from-primary/20 to-accent/20 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl md:text-3xl text-primary flex items-center gap-3">
-                <Download className="w-6 h-6 md:w-8 md:h-8 animate-bounce" />
+                <Download className="w-6 h-6 md:w-8 md:h-8 animate-bounce" aria-hidden="true" />
                 One-Click Install Available!
               </CardTitle>
               <CardDescription className="text-base md:text-lg">
@@ -275,7 +275,7 @@ export default function Install() {
                 size="lg"
                 className="w-full text-lg md:text-xl py-6 md:py-8"
               >
-                <Download className="mr-2 h-5 w-5 md:h-6 md:w-6" />
+                <Download className="mr-2 h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
                 Install Jubee Love Now
               </Button>
             </CardContent>
@@ -284,7 +284,7 @@ export default function Install() {
           <Card className="mb-8 border-2 border-primary/50">
             <CardHeader>
               <CardTitle className="text-2xl md:text-3xl text-primary flex items-center gap-3">
-                <Smartphone className="w-6 h-6 md:w-8 md:h-8" />
+                <Smartphone className="w-6 h-6 md:w-8 md:h-8" aria-hidden="true" />
                 Install Manually
               </CardTitle>
               <CardDescription className="text-base md:text-lg">
@@ -316,23 +316,23 @@ export default function Install() {
           <CardContent>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="text-base md:text-lg"><strong>Works Offline:</strong> Learn anytime, even without internet</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="text-base md:text-lg"><strong>Lightning Fast:</strong> Opens instantly like a real app</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="text-base md:text-lg"><strong>Home Screen Access:</strong> Find it easily alongside your favorite apps</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="text-base md:text-lg"><strong>Full Screen Mode:</strong> Distraction-free learning experience</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <span className="text-base md:text-lg"><strong>Private & Secure:</strong> All progress saved locally on your device</span>
               </li>
             </ul>
