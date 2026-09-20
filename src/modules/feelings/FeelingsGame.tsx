@@ -21,6 +21,7 @@ import { useGameStore } from '@/store/useGameStore';
 import { useFeelingsStore } from '@/store/useFeelingsStore';
 import { useParentalStore } from '@/store/useParentalStore';
 import { useShallow } from 'zustand/react/shallow';
+
 import { triggerHaptic } from '@/lib/hapticFeedback';
 import { triggerConfetti } from '@/lib/confetti';
 import {
@@ -397,9 +398,13 @@ function FeelingsMenu({ onStart, onJournal, onSelfReport, onBack, journalCount, 
 }
 
 function FeelingsJournal({ onBack }: { onBack: () => void }) {
-  const journal = useFeelingsStore(s => s.journal);
-  const totalCorrect = useFeelingsStore(s => s.totalCorrect);
-  const totalPlayed = useFeelingsStore(s => s.totalPlayed);
+  // ⚡ Bolt Optimization: Grouped Zustand selectors with useShallow to reduce store subscriptions
+  // Expected impact: Reduces component subscription overhead and prevents unnecessary re-renders
+  const { journal, totalCorrect, totalPlayed } = useFeelingsStore(useShallow(s => ({
+    journal: s.journal,
+    totalCorrect: s.totalCorrect,
+    totalPlayed: s.totalPlayed
+  })));
   const speak = useJubeeStore(s => s.speak);
 
   return (
