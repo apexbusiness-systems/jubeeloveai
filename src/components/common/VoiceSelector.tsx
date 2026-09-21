@@ -117,12 +117,14 @@ export function VoiceSelector({ onClose }: Props) {
           Pick a voice that you like best!
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" role="radiogroup" aria-label="Select Jubee's voice">
           {voiceOptions.map((option) => (
             <button
               key={option.id}
+              role="radio"
+              aria-checked={selectedVoice === option.id}
               onClick={() => setSelectedVoice(option.id)}
-              className="relative p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 text-left"
+              className="relative p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 text-left focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label={`Select ${option.name} voice`}
               style={{
                 background: selectedVoice === option.id
@@ -149,6 +151,7 @@ export function VoiceSelector({ onClose }: Props) {
                           handleTestVoice(option.id)
                         }}
                         disabled={testingVoice === option.id}
+                        aria-disabled={testingVoice === option.id}
                         className="h-8 w-8"
                         aria-label={`Test ${option.name} voice`}
                         style={{
