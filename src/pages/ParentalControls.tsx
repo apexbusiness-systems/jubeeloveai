@@ -369,8 +369,9 @@ export default function ParentalControls() {
                           </DialogHeader>
                           <div className="space-y-6">
                             <div className="space-y-2">
-                              <Label>Daily Time Limit (minutes)</Label>
+                              <Label htmlFor={`daily-limit-${child.id}`}>Daily Time Limit (minutes)</Label>
                               <Input
+                                id={`daily-limit-${child.id}`}
                                 type="number"
                                 min="15"
                                 max="180"
@@ -436,24 +437,26 @@ export default function ParentalControls() {
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>PIN Protection</Label>
+                    <Label htmlFor="pin-protection-switch">PIN Protection</Label>
                     <p className="text-sm text-muted-foreground">
                       Require PIN to access parental controls
                     </p>
                   </div>
                   <Switch
+                    id="pin-protection-switch"
                     checked={settings.isLocked}
                     onCheckedChange={(checked) => updateSettings({ isLocked: checked })}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Require PIN for Settings</Label>
+                    <Label htmlFor="require-pin-switch">Require PIN for Settings</Label>
                     <p className="text-sm text-muted-foreground">
                       Require PIN to access settings
                     </p>
                   </div>
                   <Switch
+                    id="require-pin-switch"
                     checked={settings.requirePinForSettings}
                     onCheckedChange={(checked) => updateSettings({ requirePinForSettings: checked })}
                   />
@@ -471,8 +474,9 @@ export default function ParentalControls() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Default Daily Limit (minutes)</Label>
+                  <Label htmlFor="default-daily-limit">Default Daily Limit (minutes)</Label>
                   <Input
+                    id="default-daily-limit"
                     type="number"
                     min="15"
                     max="180"
