@@ -316,7 +316,7 @@ function QuickActionCard({ title, description, icon, accent, path, badge, emphas
       className={`
         group relative w-full rounded-2xl border border-border/60 
         bg-gradient-to-br ${accent} px-4 py-5 sm:px-5 sm:py-6 text-left shadow-lg
-        transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none 
+        transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-[0.98] focus-visible:outline-none
         focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
         ${emphasis ? 'md:row-span-2' : ''}
       `}
@@ -357,7 +357,7 @@ function GameCard({ title, icon, path, description }: GameCardProps) {
           focus:outline-none
           focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-2
           min-h-[160px] sm:min-h-[180px]
-          transition-all duration-300
+          transition-all duration-300 active:scale-[0.98]
         "
         aria-label={`Start ${title} - ${description}`}
       >
