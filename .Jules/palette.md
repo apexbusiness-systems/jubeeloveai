@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2024-05-24 - Touch Feedback on Interactive Cards
+**Learning:** Found that many interactive "Card" style components throughout the app (like `GameCard`, `QuickActionCard`, and child profile cards) lacked visual feedback when tapped/clicked, feeling unresponsive compared to native apps.
+**Action:** Always add an active transform scale class (e.g., `active:scale-95` or `active:scale-[0.98]`) alongside existing hover and focus states to interactive card elements to provide satisfying tactile feedback upon interaction.

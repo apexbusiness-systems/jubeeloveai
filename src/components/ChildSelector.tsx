@@ -56,7 +56,7 @@ const startSession = useParentalStore(state => state.startSession);
                 role="button"
                 tabIndex={0}
                 aria-label={`Select profile for ${child.name}`}
-                className="cursor-pointer hover:border-primary transition-all transform hover:scale-105 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="cursor-pointer hover:border-primary transition-all transform hover:scale-105 active:scale-95 border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 onClick={() => handleSelectChild(child.id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
