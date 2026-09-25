@@ -116,7 +116,7 @@ export default function Landing() {
                 className="text-lg px-8 py-6 rounded-2xl shadow-xl hover:scale-105 transition-transform"
                 onClick={handleStartLearning}
               >
-                <Heart className="w-5 h-5 mr-2" />
+                <Heart className="w-5 h-5 mr-2" aria-hidden="true" />
                 Start Learning
               </Button>
               <Button 
@@ -125,7 +125,7 @@ export default function Landing() {
                 className="text-lg px-8 py-6 rounded-2xl border-2 hover:scale-105 transition-transform"
                 onClick={handleParentHub}
               >
-                <Shield className="w-5 h-5 mr-2" />
+                <Shield className="w-5 h-5 mr-2" aria-hidden="true" />
                 Parent Hub
               </Button>
             </div>
@@ -136,6 +136,7 @@ export default function Landing() {
             className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
+            aria-hidden="true"
           >
             <div className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center pt-2">
               <div className="w-1 h-2 bg-muted-foreground/50 rounded-full" />
@@ -245,7 +246,7 @@ export default function Landing() {
               className="text-xl px-10 py-7 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
               onClick={handleStartLearning}
             >
-              <Sparkles className="w-6 h-6 mr-2" />
+              <Sparkles className="w-6 h-6 mr-2" aria-hidden="true" />
               Let's Go!
             </Button>
           </motion.div>
