@@ -31,3 +31,7 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+
+## 2024-05-24 - Accessibility and Error Handling in Forms
+**Learning:** Found an accessibility issue pattern where Signup forms are missing inline validation and error state styling compared to the Sign-in forms. Additionally, SVGs used inside of OAuth buttons lack `aria-hidden="true"`, causing screen readers to misread standard graphical elements.
+**Action:** Next time I work on a form, I will ensure parity between Sign-in and Sign-up paths (e.g. `onBlur` handlers, dynamic `border-destructive` styling) and verify that all decorative SVG icons used inside of buttons are properly labeled with `aria-hidden="true"`.
