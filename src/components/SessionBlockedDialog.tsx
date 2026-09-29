@@ -1,6 +1,6 @@
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Clock, Lock } from 'lucide-react';
+import { Clock, Lock, Home, MessageCircle } from 'lucide-react';
 
 interface SessionBlockedDialogProps {
   open: boolean;
@@ -43,14 +43,17 @@ export function SessionBlockedDialog({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           {reason === 'time-limit' && onRequestMoreTime && (
-            <Button variant="outline" onClick={onRequestMoreTime} className="w-full">
+            <Button variant="outline" onClick={onRequestMoreTime} className="w-full" aria-label="Ask Parent for More Time">
+              <MessageCircle className="w-4 h-4 mr-2" aria-hidden="true" />
               Ask Parent for More Time
             </Button>
           )}
           <Button 
             onClick={() => window.location.href = '/'}
             className="w-full"
+            aria-label="Return to Home"
           >
+            <Home className="w-4 h-4 mr-2" aria-hidden="true" />
             Return to Home
           </Button>
         </AlertDialogFooter>
