@@ -37,6 +37,7 @@ import { validatePosition } from './core/jubee/JubeePositionManager';
 import { DevAuthOverride } from './components/auth/DevAuthOverride';
 import { isFirstTimeVisitor } from './lib/visitorStatus';
 import { usePageVisitTracker } from './hooks/usePageVisitTracker';
+import { SkipToContent } from './components/SkipToContent';
 
 const JubeeCanvas3DDirect = lazy(() => import('./components/JubeeCanvas3DDirect'));
 
@@ -231,6 +232,7 @@ function AppShell() {
       <DevAuthOverride />
       <SEO />
       <div className="app min-h-screen w-full" data-theme={currentTheme}>
+        <SkipToContent />
         {/* Header with score and action buttons - hidden on auth and landing routes */}
         {showAppShellUI && (
           <header 
@@ -313,6 +315,7 @@ function AppShell() {
 
         {/* Main content with proper spacing and safe areas; padding adapts when header/nav are hidden */}
         <main 
+          id="main-content"
           className={`
             main-content
             w-full
