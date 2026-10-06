@@ -15,7 +15,7 @@ export function GameSkeleton() {
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {[...Array(6)].map((_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="space-y-3">
             <Skeleton className="h-48 w-full rounded-lg" />
             <Skeleton className="h-4 w-3/4" />
@@ -56,7 +56,7 @@ export function ProgressSkeleton() {
       <Skeleton className="h-12 w-56" />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="space-y-3 p-4 border rounded-lg">
             <div className="flex items-center justify-between">
               <Skeleton className="h-6 w-32" />
@@ -80,7 +80,7 @@ export function GallerySkeleton() {
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {[...Array(12)].map((_, i) => (
+        {Array.from({ length: 12 }, (_, i) => (
           <Skeleton key={i} className="h-64 w-full rounded-lg" />
         ))}
       </div>
@@ -94,7 +94,7 @@ export function SettingsSkeleton() {
       <Skeleton className="h-12 w-48" />
       
       <div className="max-w-2xl space-y-6">
-        {[...Array(5)].map((_, i) => (
+        {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="space-y-3 p-4 border rounded-lg">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-4 w-full" />
