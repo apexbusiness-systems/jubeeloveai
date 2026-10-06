@@ -161,6 +161,8 @@ export function StickerBook({ onClose }: Props) {
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
         className="bg-card rounded-3xl p-8 max-w-5xl w-full mx-4 my-8 border-4 border-game-accent"
