@@ -420,7 +420,7 @@ export default function WritingCanvas() {
                         description: "Start drawing with your new color.",
                       });
                     }}
-                    className="w-12 h-12 rounded-full border-2 border-border hover:scale-110 transition-transform"
+                    className="w-12 h-12 rounded-full border-2 border-border hover:scale-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                     style={{ backgroundColor: color.value }}
                     aria-label={`Select ${color.name} color`}
                     title={color.name}

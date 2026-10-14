@@ -31,3 +31,6 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## $(date +%Y-%m-%d) - Added focus styles to color selection buttons
+**Learning:** Color selection buttons in `src/modules/writing/WritingCanvas.tsx` lacked focus styles, making it difficult for keyboard users to identify the currently focused color.
+**Action:** Always ensure that interactive elements have clear focus states, typically by adding `focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none` classes to buttons.
