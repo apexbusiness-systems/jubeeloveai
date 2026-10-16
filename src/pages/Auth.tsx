@@ -302,6 +302,7 @@ export default function Auth() {
                       }}
                       disabled={loading}
                       required
+                      autoComplete="email"
                       className={`h-12 text-base ${emailError ? 'border-destructive' : ''}`}
                     />
                     {emailError && (
@@ -328,6 +329,7 @@ export default function Auth() {
                       }}
                       disabled={loading}
                       required
+                      autoComplete="current-password"
                       className={`h-12 text-base ${passwordError ? 'border-destructive' : ''}`}
                     />
                     {passwordError && (
@@ -421,6 +423,7 @@ export default function Auth() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={loading}
+                      autoComplete="name"
                       className="h-12 text-base"
                     />
                   </div>
@@ -438,6 +441,7 @@ export default function Auth() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
                       required
+                      autoComplete="email"
                       className="h-12 text-base"
                     />
                   </div>
@@ -456,6 +460,7 @@ export default function Auth() {
                       disabled={loading}
                       required
                       minLength={6}
+                      autoComplete="new-password"
                       className="h-12 text-base"
                     />
                     <p className="text-sm text-muted-foreground">
