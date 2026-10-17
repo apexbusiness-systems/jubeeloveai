@@ -124,6 +124,7 @@ export function VoiceSelector({ onClose }: Props) {
               onClick={() => setSelectedVoice(option.id)}
               className="relative p-6 rounded-2xl transform hover:scale-105 transition-all duration-300 text-left"
               aria-label={`Select ${option.name} voice`}
+              aria-pressed={selectedVoice === option.id}
               style={{
                 background: selectedVoice === option.id
                   ? `linear-gradient(135deg, var(--gradient-warm))`
