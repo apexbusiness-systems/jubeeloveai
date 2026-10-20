@@ -137,8 +137,9 @@ export function ScheduleConfigurator({
         <div className="space-y-2">
           <Label>Active Schedules</Label>
           {schedules.length === 0 ? (
-            <div className="text-sm text-muted-foreground text-center py-4 border-2 border-dashed rounded-lg">
-              No schedules set. Add a schedule to restrict usage times.
+            <div className="flex flex-col items-center justify-center text-sm text-muted-foreground text-center py-8 px-4 border-2 border-dashed rounded-lg bg-muted/20">
+              <Clock className="h-8 w-8 text-muted-foreground mb-3 opacity-50" aria-hidden="true" />
+              <p>No schedules set. Add a schedule to restrict usage times.</p>
             </div>
           ) : (
             <div className="space-y-2">
