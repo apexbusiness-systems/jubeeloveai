@@ -13,6 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 export function VolumeControlDialog() {
   const {
@@ -120,17 +122,40 @@ export function VolumeControlDialog() {
               step={0.01}
               className="w-full"
             />
-            <Button
-              aria-label={voiceVolume === 0 ? "Voice is muted" : "Test voice volume"}
-              title={voiceVolume === 0 ? "Increase volume to test voice" : "Test voice volume"}
-              onClick={handleTestVoice}
-              variant="outline"
-              size="sm"
-              className="w-full mt-2 gap-2"
-              disabled={voiceVolume === 0}
-            >
-              {voiceVolume === 0 ? "Voice Muted" : "Test Voice"}
-            </Button>
+                        {voiceVolume === 0 ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-full mt-2">
+                      <Button
+                        aria-label="Voice is muted"
+                        onClick={handleTestVoice}
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2"
+                        disabled={true}
+                      >
+                        Voice Muted
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p>Increase volume to test voice</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Button
+                aria-label="Test voice volume"
+                title="Test voice volume"
+                onClick={handleTestVoice}
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 gap-2"
+              >
+                Test Voice
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
