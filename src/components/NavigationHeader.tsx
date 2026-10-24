@@ -62,6 +62,7 @@ export const NavigationHeader = memo(function NavigationHeader({
                   onClick={onPersonalizeClick}
                   className="text-foreground"
                   aria-label="Personalize Jubee"
+                  title="Personalize Jubee"
                 >
                   🎨
                 </Button>
@@ -81,6 +82,7 @@ export const NavigationHeader = memo(function NavigationHeader({
                   onClick={onVoiceClick}
                   className="text-foreground"
                   aria-label="Change voice"
+                  title="Change voice"
                 >
                   🔊
                 </Button>
