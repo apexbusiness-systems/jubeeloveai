@@ -158,6 +158,7 @@ export function ScheduleConfigurator({
                           size="icon"
                           onClick={() => handleRemoveSchedule(index)}
                           aria-label="Remove schedule"
+                          title="Remove schedule"
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
