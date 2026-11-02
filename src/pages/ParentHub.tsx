@@ -4,6 +4,7 @@ import { useMasteryStore } from '@/store/useMasteryStore';
 import { Skills } from '@/lib/mastery/taxonomy';
 import { useParentalStore } from '@/store/useParentalStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from '@/components/SEO';
@@ -14,6 +15,17 @@ export default function ParentHub() {
   const { signOut } = useAuth();
   const children = useParentalStore(useShallow(state => state.children));
 const settings = useParentalStore(useShallow(state => state.settings));
+
+  // ⚡ Bolt Optimization: Precompute map for O(1) skill name lookups
+  // Avoids O(n^2) behavior when rendering skill lists
+  const skillNamesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const key in Skills) {
+      const skill = Skills[key as keyof typeof Skills];
+      map[skill.id] = skill.name;
+    }
+    return map;
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -142,7 +154,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-green-600 block mb-0.5">🌟 Strongest Skills</span>
                               {strongest.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {strongest.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {strongest.map(s => <li key={s.skillId}>{skillNamesMap[s.skillId] || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">Keep playing to see strengths!</p>
@@ -153,7 +165,7 @@ const settings = useParentalStore(useShallow(state => state.settings));
                               <span className="font-medium text-amber-600 block mb-0.5">🎯 Needs Another Turn</span>
                               {needsReview.length > 0 ? (
                                 <ul className="text-muted-foreground list-disc list-inside">
-                                  {needsReview.map(s => <li key={s.skillId}>{Object.values(Skills).find(sk => sk.id === s.skillId)?.name || s.skillId}</li>)}
+                                  {needsReview.map(s => <li key={s.skillId}>{skillNamesMap[s.skillId] || s.skillId}</li>)}
                                 </ul>
                               ) : (
                                 <p className="text-muted-foreground">All caught up!</p>
