@@ -345,7 +345,7 @@ export default function Auth() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
                         Signing in...
                       </>
                     ) : (
@@ -470,7 +470,7 @@ export default function Auth() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
                         Creating account...
                       </>
                     ) : (

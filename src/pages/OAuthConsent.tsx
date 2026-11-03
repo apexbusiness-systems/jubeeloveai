@@ -94,15 +94,15 @@ export default function OAuthConsent() {
           
           <CardContent className="flex flex-col items-center justify-center py-8 space-y-4">
             {status === 'processing' && (
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <Loader2 className="h-12 w-12 animate-spin text-primary" aria-hidden="true" />
             )}
             
             {status === 'success' && (
-              <div className="text-6xl">✅</div>
+              <div className="text-6xl" aria-hidden="true">✅</div>
             )}
             
             {status === 'error' && (
-              <div className="text-6xl">❌</div>
+              <div className="text-6xl" aria-hidden="true">❌</div>
             )}
             
             <p className="text-center text-muted-foreground">{message}</p>
