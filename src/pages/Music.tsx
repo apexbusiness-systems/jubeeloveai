@@ -52,7 +52,7 @@ const MusicCard = memo(({ song, isLocked, isCurrent, isPlaying, isLoading, onPla
         </div>
         <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center" aria-hidden="true">
           {isLoading && isCurrent ? (
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <Loader2 className="w-6 h-6 text-primary animate-spin" aria-hidden="true" />
           ) : isCurrent && isPlaying ? (
             <Pause className="w-6 h-6 text-primary" />
           ) : (
@@ -217,7 +217,7 @@ export default function MusicPage() {
                 disabled={loadingId === currentSong.id}
               >
                 {loadingId === currentSong.id ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                 ) : isPlaying ? (
                   <Pause className="w-5 h-5" />
                 ) : (
