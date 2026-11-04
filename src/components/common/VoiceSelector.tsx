@@ -108,8 +108,11 @@ export function VoiceSelector({ onClose }: Props) {
         className="bg-card rounded-3xl p-6 md:p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="voice-selector-title"
       >
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-game">
+        <h2 id="voice-selector-title" className="text-3xl md:text-4xl font-bold text-center mb-4 text-game">
           🎤 Choose Jubee's Voice! 🎤
         </h2>
 

@@ -64,8 +64,11 @@ export function JubeePersonalization({ onClose, onOpenVoiceSelector }: Props) {
         className="bg-card rounded-3xl p-8 max-w-2xl w-full mx-4 border-4 border-game-accent"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="jubee-personalization-title"
       >
-        <h2 className="text-4xl font-bold text-center mb-8 text-game">
+        <h2 id="jubee-personalization-title" className="text-4xl font-bold text-center mb-8 text-game">
           🐝 Customize Jubee! 🐝
         </h2>
 
