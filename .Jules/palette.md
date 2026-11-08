@@ -31,3 +31,4 @@
 ## 2023-10-27 - Form Accessibility in ScheduleConfigurator
 **Learning:** Found that custom select inputs (`SelectTrigger`) and standard time inputs (`Input`) in `ScheduleConfigurator.tsx` were missing explicit label associations (`htmlFor` / `id`). Custom select components also benefit from explicit `aria-label`s.
 **Action:** Always ensure custom Radix-style UI components have proper explicit label linkage, especially when used inside dynamic lists or configurators, to maintain screen reader compatibility.
+## 2026-11-08 - Added Skip to Main Content Link\n**Learning:** The 'Skip to main content' link is an essential accessibility requirement that was missing from the application shell, which is especially important for SPAs where navigation is consistent.\n**Action:** Add a visually-hidden (sr-only) link at the top of the DOM that becomes visible on focus, targeting an ID on the main content element.
