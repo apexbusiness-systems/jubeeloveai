@@ -202,6 +202,7 @@ export default function AlphabetGame() {
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Learn Letters. Explore the alphabet A-Z"
           >
             <div className="text-7xl mb-4">📚</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Learn Letters</h2>
@@ -215,6 +216,7 @@ export default function AlphabetGame() {
               background: 'var(--gradient-cool)',
               boxShadow: 'var(--shadow-accent)'
             }}
+            aria-label="Quiz Mode. Test your knowledge"
           >
             <div className="text-7xl mb-4">🎯</div>
             <h2 className="text-3xl font-bold text-primary-foreground mb-2">Quiz Mode</h2>
@@ -257,6 +259,7 @@ export default function AlphabetGame() {
                 background: 'var(--gradient-game)',
                 boxShadow: 'var(--shadow-game)'
               }}
+              aria-label="Previous letter"
             >
               ← Previous
             </button>
@@ -267,6 +270,7 @@ export default function AlphabetGame() {
                 background: 'var(--gradient-game)',
                 boxShadow: 'var(--shadow-game)'
               }}
+              aria-label={currentIndex === alphabet.length - 1 ? 'Finish learning' : 'Next letter'}
             >
               {currentIndex === alphabet.length - 1 ? 'Finish' : 'Next →'}
             </button>
@@ -279,6 +283,7 @@ export default function AlphabetGame() {
               background: 'var(--gradient-warm)',
               boxShadow: 'var(--shadow-game)'
             }}
+            aria-label="Back to Menu"
           >
             ← Back to Menu
           </button>
@@ -332,6 +337,7 @@ export default function AlphabetGame() {
                   background: 'var(--gradient-game)',
                   boxShadow: 'var(--shadow-game)'
                 }}
+                aria-label={`Select letter ${option}`}
               >
                 <span className="text-primary-foreground">{option}</span>
               </button>
@@ -348,6 +354,7 @@ export default function AlphabetGame() {
             background: 'var(--gradient-warm)',
             boxShadow: 'var(--shadow-game)'
           }}
+          aria-label="Back to Menu"
         >
           ← Back to Menu
         </button>
